@@ -1,3 +1,29 @@
+/**
+ * Configuración de la Aplicación Express
+ * --------------------------------------------------------------------------
+ * Configura la aplicación Express con middlewares, rutas y manejadores de error.
+ *
+ *  • Middlewares implementados
+ *      - helmet         → Protección contra vulnerabilidades web comunes
+ *      - cors           → Control de acceso entre dominios configurado para el frontend
+ *      - morgan         → Registro de solicitudes HTTP para desarrollo
+ *      - express.json   → Análisis de cuerpos JSON en solicitudes
+ *      - express.urlencoded → Análisis de datos codificados en URL
+ *
+ *  • Rutas configuradas
+ *      - /api/health    → Verificación del estado del servidor
+ *      - /api/*         → Rutas principales (comentadas, pendientes de implementación)
+ *
+ *  • Manejo de errores
+ *      - notFoundMiddleware → Captura rutas no definidas (404)
+ *      - errorMiddleware    → Procesamiento centralizado de errores
+ *
+ *  • Notas
+ *      – Las opciones CORS están configuradas para permitir conexiones desde el frontend
+ *      – Las rutas principales están comentadas hasta su implementación
+ *      – La ruta /api/health proporciona un punto de verificación simple
+ */
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -21,7 +47,7 @@ const corsOptions = {
 };
 
 // Importación de rutas (a implementar)
-// const routes = require('./src/routes');
+const routes = require('./src/routes');
 
 // Importación de middlewares
 const { notFoundMiddleware, errorMiddleware } = require('./src/middlewares/errorMiddleware');
@@ -42,7 +68,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Implementación de rutas (descomentá cuando implementes las rutas)
-// app.use('/api', routes);
+app.use('/api/v1', routes);
 
 // Middlewares para manejo de errores
 app.use(notFoundMiddleware); // Manejo de rutas no encontradas (404)
