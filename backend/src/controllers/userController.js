@@ -61,6 +61,12 @@ const getUserById = async (req, res, next) => {
  */
 const updateUser = async (req, res, next) => {
   try {
+    // Verificar si el usuario tiene permisos para esta actualización
+    // Solo se permite si es admin o si está actualizando su propio perfil
+    if (req.user.rol !== 'admin' && req.user.id != req.params.id) {
+      return res.status(403).json({ message: 'Sin permisos para editar este usuario' });
+    }
+    
     const user = await updateUserService(req.params.id, req.body);
     res.json(user);
   } catch (err) { next(err); }

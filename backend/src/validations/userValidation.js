@@ -24,7 +24,11 @@ const { validateRequest } = require('../middlewares/validateRequest');
 /* ─── Reglas de campos reutilizables ──────────────────────────────────── */
 const name = body('nombre').isString().isLength({ min: 2, max: 50 });
 const lastname = body('apellido').isString().isLength({ min: 2, max: 50 });
-const email = body('email').notEmpty().isEmail().normalizeEmail();
+const email = body('email')
+  .trim() // Eliminar espacios antes y después
+  .notEmpty()
+  .isEmail()
+  .normalizeEmail();
 const password = body('contrasena').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/);
 
 /* ─── Conjuntos de reglas exportados ─────────────────────────────────── */

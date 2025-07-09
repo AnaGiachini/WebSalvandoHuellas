@@ -1,9 +1,10 @@
 /**
  * Configuración de Base de Datos
  * --------------------------------------------------------------------------
- * Establece y configura la conexión a la base de datos PostgreSQL en Neon.
+ * Establece y configura la conexión a la base de datos PostgreSQL.
  *
  *  • Características principales
+ *      - Soporta múltiples entornos (desarrollo, pruebas, producción)
  *      - Utiliza DATABASE_URL   → Conexión mediante URL completa desde variables de entorno
  *      - SSL configurado        → Seguridad en la conexión basada en configuración
  *      - Pool de conexiones     → Manejo eficiente de múltiples conexiones simultáneas
@@ -16,29 +17,54 @@
  *
  *  • Notas
  *      – Las credenciales se obtienen del archivo .env mediante dotenv
- *      – La configuración simplificada utiliza DATABASE_URL para todos los parámetros
+ *      – Para pruebas automatizadas se puede usar una base de datos local específica
  *      – Se establece rejectUnauthorized: false para permitir certificados autofirmados
  */
 
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-// Configuración para conectar a la base de datos PostgreSQL en Neon
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: process.env.DB_SSL === 'true',
-      rejectUnauthorized: false
+// Determinar el entorno actual (desarrollo, prueba o producción)
+const env = process.env.NODE_ENV || 'development';
+
+// Configuración según el entorno
+let sequelize;
+
+if (env === 'test') {
+  // Configuración para entorno de pruebas (base de datos PostgreSQL local)
+  sequelize = new Sequelize({
+    database: process.env.TEST_DB_NAME || 'salvando_huellas_test',
+    username: process.env.TEST_DB_USER || process.env.DB_USER || 'postgres',
+    password: process.env.TEST_DB_PASSWORD || process.env.DB_PASSWORD || 'postgres',
+    host: process.env.TEST_DB_HOST || 'localhost',
+    port: process.env.TEST_DB_PORT || process.env.DB_PORT || 5432,
+    dialect: 'postgres',
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
     }
-  },
-  logging: false,
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  }
-});
+  });
+} else {
+  // Configuración para entorno de desarrollo/producción (Neon o similar)
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: process.env.DB_SSL === 'true',
+        rejectUnauthorized: false
+      }
+    },
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  });
+}
 
 module.exports = sequelize;

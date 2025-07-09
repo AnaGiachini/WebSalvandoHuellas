@@ -44,11 +44,24 @@ const comparePassword = (plain, hash) => bcrypt.compare(plain, hash);
  * @param {string} userData.apellido - Apellido del usuario
  * @param {string} userData.email - Email (normalizado)
  * @param {string} userData.contrasena - Contraseña (sin encriptar)
+ * @param {string} userData.direccion - Dirección del usuario
  * @returns {Promise<string>} Token JWT para autenticación
  */
-const registerService = async ({ nombre, apellido, email, contrasena }) => {
+const registerService = async ({ nombre, apellido, email, contrasena, direccion }) => {
+  // Normalización de datos
+  const datosNormalizados = {
+    nombre: nombre ? nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase() : nombre,
+    apellido: apellido ? apellido.charAt(0).toUpperCase() + apellido.slice(1).toLowerCase() : apellido,
+    email: email ? email.trim().toLowerCase() : email,
+    direccion: direccion ? direccion.trim() : direccion,
+  };
+  
   const hash = await hashPassword(contrasena);
-  const user = await Usuario.create({ nombre, apellido, email, contrasena: hash });
+  const user = await Usuario.create({ 
+    ...datosNormalizados,
+    contrasena: hash 
+  });
+  
   return jwt.generate({ id: user.idUsuario, rol: user.rol });
 };
 
