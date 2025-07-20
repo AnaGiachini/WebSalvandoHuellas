@@ -24,4 +24,8 @@ describe('authService unit tests', () => {
       loginService({ email: data.email, contrasena: 'mala123' })
     ).rejects.toHaveProperty('status', 401);
   });
+
+  afterAll(async () => {
+    await db.close();
+  });
 });

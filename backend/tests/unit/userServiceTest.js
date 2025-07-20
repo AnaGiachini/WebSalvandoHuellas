@@ -44,9 +44,9 @@ describe('userService unit tests', () => {
     const users = await getAllUsersService();
     expect(Array.isArray(users)).toBe(true);
     expect(users.length).toBeGreaterThan(0);
-    expect(users[0].email).toBe(testUser.email);
+    expect(users.some(user => user.email === testUser.email)).toBe(true);
   });
-
+  
   it('getUserByIdService obtiene un usuario por ID', async () => {
     const user = await getUserByIdService(userId);
     expect(user.nombre).toBe(testUser.nombre);
@@ -76,11 +76,17 @@ describe('userService unit tests', () => {
   it('deleteUserService elimina un usuario', async () => {
     await deleteUserService(userId);
     
+    // Verificar que el usuario específico ya no existe
     await expect(
       getUserByIdService(userId)
     ).rejects.toHaveProperty('status', 404);
 
-    const userCount = await Usuario.count();
-    expect(userCount).toBe(0);
+    // Verificar que el usuario específico ya no está en la base de datos
+    const deletedUser = await Usuario.findByPk(userId);
+    expect(deletedUser).toBeNull();
+  });
+
+  afterAll(async () => {
+    await db.close();
   });
 });

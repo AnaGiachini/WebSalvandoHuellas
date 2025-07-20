@@ -50,5 +50,7 @@ describe('Auth: Registro y Login', () => {
     expect(res.body.message).toBe('Credenciales inválidas');
   });
 
-  afterAll(() => db.close());
+  afterAll(async () => {
+    await db.close();
+  });
 });

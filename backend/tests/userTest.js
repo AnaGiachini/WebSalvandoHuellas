@@ -189,5 +189,7 @@ describe('API de Usuarios', () => {
     expect(createdUser.direccion).toBe('Calle Principal 123'); // Sin espacios al inicio/final
   });
 
-  afterAll(() => db.close());
+  afterAll(async () => {
+    await db.close();
+  });
 });

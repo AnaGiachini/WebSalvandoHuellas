@@ -88,4 +88,8 @@ describe('animalService unit tests', () => {
       getAnimalByIdService(animalId)
     ).rejects.toHaveProperty('status', 404);
   });
+
+  afterAll(async () => {
+    await db.close();
+  });
 });
