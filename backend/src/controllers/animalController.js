@@ -99,13 +99,13 @@ const deleteAnimal = async (req, res, next) => {
 
 /**
  * Obtiene animales filtrados por su estado de adopción
- * @param {Object} req - Objeto de solicitud Express con parámetro de consulta status
+ * @param {Object} req - Objeto de solicitud Express con parámetro de consulta estadoAdopcion
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const getAnimalsByStatus = async (req, res, next) => {
   try {
-    const animals = await getAnimalsByStatusService(req.query.adoptado);
+    const animals = await getAnimalsByStatusService(req.query.estadoAdopcion);
     res.json(animals);
   } catch (err) { next(err); }
 };

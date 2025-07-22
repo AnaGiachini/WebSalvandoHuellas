@@ -9,7 +9,7 @@
  *      edad        → debe ser un número entero positivo
  *      tamano      → entre 2-20 caracteres
  *      historia    → texto libre
- *      adoptado    → valor booleano
+ *      estadoAdopcion → debe ser 'adoptado', 'en_proceso' o 'sin_hogar'
  *      foto        → ruta de la imagen (string)
  *
  *  • Conjuntos de reglas
@@ -47,9 +47,9 @@ const historia = body('historia')
   .isString()
   .withMessage('La historia debe ser un texto');
 
-const adoptado = body('adoptado')
-  .isBoolean()
-  .withMessage('El estado de adopción debe ser verdadero o falso');
+const estadoAdopcion = body('estadoAdopcion')
+  .isIn(['adoptado', 'en_proceso', 'sin_hogar'])
+  .withMessage('El estado de adopción debe ser uno de los siguientes valores: adoptado, en_proceso, sin_hogar');
 
 const foto = body('foto')
   .isString()
@@ -62,7 +62,7 @@ const createAnimalValidation = [
   edad.optional(), 
   tamano.optional(), 
   historia.optional(), 
-  adoptado.optional(), 
+  estadoAdopcion.optional(), 
   foto.optional(),
   validateRequest
 ];
@@ -73,7 +73,7 @@ const updateAnimalValidation = [
   edad.optional(),
   tamano.optional(),
   historia.optional(),
-  adoptado.optional(),
+  estadoAdopcion.optional(),
   foto.optional(),
   validateRequest
 ];

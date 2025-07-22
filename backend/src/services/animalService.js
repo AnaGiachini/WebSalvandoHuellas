@@ -73,11 +73,11 @@ const deleteAnimalService = async (id) => {
 
 /**
  * Filtra animales por su estado de adopción
- * @param {boolean} adoptado - Estado de adopción para filtrar (true/false)
+ * @param {string} estadoAdopcion - Estado de adopción para filtrar ('adoptado', 'en_proceso', 'sin_hogar')
  * @returns {Promise<Array>} Lista de animales que cumplen el criterio
  */
-const getAnimalsByStatusService = async (adoptado) => {
-  return await Animal.findAll({ where: { adoptado } });
+const getAnimalsByStatusService = async (estadoAdopcion) => {
+  return await Animal.findAll({ where: { estadoAdopcion } });
 };
 
 module.exports = { 
