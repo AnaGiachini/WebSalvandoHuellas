@@ -16,11 +16,13 @@ const {
   updateUserService, 
   deleteUserService 
 } = require('../../src/services/userService');
-const db = require("../../src/configs/db");
+
 const Usuario = require('../../src/models/usuario');
 const bcrypt = require('bcryptjs');
+const resetDatabase = require('../../src/utils/resetDatabase.helper');
 
 describe('userService unit tests', () => {
+  // Datos base del usuario
   const testUser = { 
     nombre: 'Juan', 
     apellido: 'Pérez', 
@@ -32,21 +34,22 @@ describe('userService unit tests', () => {
   
   let userId;
 
-  beforeAll(() => db.sync({ force: true }));
-
+  // Limpieza total antes de cada test
   beforeEach(async () => {
-    await Usuario.destroy({ where: {} });
+    await resetDatabase();
     const user = await Usuario.create(testUser);
     userId = user.idUsuario;
   });
 
+  // Test: obtener todos los usuarios
   it('getAllUsersService obtiene todos los usuarios', async () => {
     const users = await getAllUsersService();
     expect(Array.isArray(users)).toBe(true);
     expect(users.length).toBeGreaterThan(0);
     expect(users.some(user => user.email === testUser.email)).toBe(true);
   });
-  
+
+  // Test: obtener usuario por ID
   it('getUserByIdService obtiene un usuario por ID', async () => {
     const user = await getUserByIdService(userId);
     expect(user.nombre).toBe(testUser.nombre);
@@ -54,12 +57,14 @@ describe('userService unit tests', () => {
     expect(user.email).toBe(testUser.email);
   });
 
+  // Test: error si el usuario no existe
   it('getUserByIdService lanza error si el usuario no existe', async () => {
     await expect(
       getUserByIdService(9999)
     ).rejects.toHaveProperty('status', 404);
   });
 
+  // Test: actualizar usuario
   it('updateUserService actualiza datos de un usuario', async () => {
     const updatedData = { 
       nombre: 'Pedro', 
@@ -68,25 +73,19 @@ describe('userService unit tests', () => {
     const user = await updateUserService(userId, updatedData);
     expect(user.nombre).toBe(updatedData.nombre);
     expect(user.direccion).toBe(updatedData.direccion);
-    // Verificamos que los campos no actualizados permanecen iguales
-    expect(user.apellido).toBe(testUser.apellido);
-    expect(user.email).toBe(testUser.email);
+    expect(user.apellido).toBe(testUser.apellido); // no fue actualizado
+    expect(user.email).toBe(testUser.email); // no fue actualizado
   });
 
+  // Test: eliminar usuario
   it('deleteUserService elimina un usuario', async () => {
     await deleteUserService(userId);
     
-    // Verificar que el usuario específico ya no existe
     await expect(
       getUserByIdService(userId)
     ).rejects.toHaveProperty('status', 404);
 
-    // Verificar que el usuario específico ya no está en la base de datos
     const deletedUser = await Usuario.findByPk(userId);
     expect(deletedUser).toBeNull();
-  });
-
-  afterAll(async () => {
-    await db.close();
   });
 });

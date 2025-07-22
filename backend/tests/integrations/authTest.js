@@ -1,6 +1,17 @@
-const request = require('supertest');
-const app = require('../app');
-const db = require("../src/configs/db");
+/**
+ * Test: authAPI
+ * --------------------------------------------------------------------------
+ * Tests de integración para el registro y login de usuarios.
+ *
+ *  • Pruebas principales
+ *      - Registro de usuario y obtención de token
+ *      - Login con credenciales válidas
+ *      - Login con credenciales inválidas
+ */
+
+const request = require('supertest'); 
+const app = require('../../app');
+const resetDatabase = require('../../src/utils/resetDatabase.helper');
 
 describe('Auth: Registro y Login', () => {
   const userTest = {
@@ -10,13 +21,12 @@ describe('Auth: Registro y Login', () => {
     contrasena: 'Test1234'
   };
 
-  beforeAll(() => db.sync());
+  // Limpieza total antes de cada test
+  beforeEach(async () => {
+    await resetDatabase();
+  });
 
-  // beforeAll(async () => {
-  //   // Conectamos y limpiamos la tabla de usuarios antes del test
-  //   await db.sync({ force: true }); // ¡Atención! borra todo
-  // });
-
+  // Test: registro exitoso
   it('Registro exitoso', async () => {
     const res = await request(app)
       .post('/api/v1/auth/register')
@@ -26,7 +36,13 @@ describe('Auth: Registro y Login', () => {
     expect(res.body.token).toBeDefined();
   });
 
+  // Test: login exitoso
   it('Login exitoso', async () => {
+    // Registramos al usuario primero
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send(userTest);
+
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
@@ -38,7 +54,13 @@ describe('Auth: Registro y Login', () => {
     expect(res.body.token).toBeDefined();
   });
 
+  // Test: login con datos incorrectos
   it('Login con datos incorrectos', async () => {
+    // Registramos al usuario primero
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send(userTest);
+
     const res = await request(app)
       .post('/api/v1/auth/login')
       .send({
@@ -48,9 +70,5 @@ describe('Auth: Registro y Login', () => {
 
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toBe('Credenciales inválidas');
-  });
-
-  afterAll(async () => {
-    await db.close();
   });
 });

@@ -19,77 +19,88 @@ const {
   getAllAnimalsService,
   getAnimalsByStatusService 
 } = require('../../src/services/animalService');
-const db = require("../../src/configs/db");
-const Animal = require('../../src/models/animal');
+
+const resetDatabase = require('../../src/utils/resetDatabase.helper');
 
 describe('animalService unit tests', () => {
-  const testAnimal = { 
+  // Datos base de prueba
+  const animalData = { 
     nombre: 'Firulais', 
     sexo: 'macho', 
     edad: 3, 
     tamano: 'mediano', 
     historia: 'Historia de prueba',
-    adoptado: false,
+    estadoAdopcion: 'sin_hogar',
     foto: 'ruta/imagen.jpg' 
   };
-  
-  let animalId;
 
-  beforeAll(() => db.sync({ force: true }));
-
-  it('createAnimalService crea un animal correctamente', async () => {
-    const animal = await createAnimalService(testAnimal);
-    expect(animal).toHaveProperty('idAnimal');
-    expect(animal.nombre).toBe(testAnimal.nombre);
-    expect(animal.sexo).toBe(testAnimal.sexo);
-    animalId = animal.idAnimal;
+  // Limpieza completa antes de cada test
+  beforeEach(async () => {
+    await resetDatabase();
   });
 
+  // Test: creación de animal
+  it('createAnimalService crea un animal correctamente', async () => {
+    const animal = await createAnimalService(animalData);
+    expect(animal).toHaveProperty('idAnimal');
+    expect(animal.nombre).toBe(animalData.nombre);
+    expect(animal.sexo).toBe(animalData.sexo);
+    expect(animal.estadoAdopcion).toBe('sin_hogar');
+  });
+
+  // Test: obtener todos los animales
   it('getAllAnimalsService obtiene todos los animales', async () => {
+    await createAnimalService(animalData);
     const animals = await getAllAnimalsService();
     expect(Array.isArray(animals)).toBe(true);
     expect(animals.length).toBeGreaterThan(0);
   });
 
+  // Test: obtener animal por ID
   it('getAnimalByIdService obtiene un animal por ID', async () => {
-    const animal = await getAnimalByIdService(animalId);
-    expect(animal.nombre).toBe(testAnimal.nombre);
-    expect(animal.sexo).toBe(testAnimal.sexo);
+    const animal = await createAnimalService(animalData);
+    const found = await getAnimalByIdService(animal.idAnimal);
+    expect(found.nombre).toBe(animalData.nombre);
+    expect(found.sexo).toBe(animalData.sexo);
   });
 
+  // Test: error si el animal no existe
   it('getAnimalByIdService lanza error si el animal no existe', async () => {
     await expect(
       getAnimalByIdService(9999)
     ).rejects.toHaveProperty('status', 404);
   });
 
+  // Test: actualizar animal
   it('updateAnimalService actualiza datos de un animal', async () => {
-    const updatedData = { nombre: 'Firulais Updated', adoptado: true };
-    const animal = await updateAnimalService(animalId, updatedData);
-    expect(animal.nombre).toBe(updatedData.nombre);
-    expect(animal.adoptado).toBe(true);
+    const animal = await createAnimalService(animalData);
+    const updated = await updateAnimalService(animal.idAnimal, {
+      nombre: 'Firulais Updated',
+      estadoAdopcion: 'adoptado'
+    });
+    expect(updated.nombre).toBe('Firulais Updated');
+    expect(updated.estadoAdopcion).toBe('adoptado');
   });
 
+  // Test: filtrar por estado de adopción
   it('getAnimalsByStatusService filtra animales por estado de adopción', async () => {
-    const adoptedAnimals = await getAnimalsByStatusService(true);
-    expect(Array.isArray(adoptedAnimals)).toBe(true);
-    expect(adoptedAnimals.length).toBeGreaterThan(0);
-    expect(adoptedAnimals[0].adoptado).toBe(true);
+    await createAnimalService({ ...animalData, estadoAdopcion: 'adoptado' });
+    await createAnimalService({ nombre: 'Luna', sexo: 'hembra', estadoAdopcion: 'sin_hogar' });
 
-    const nonAdoptedAnimals = await getAnimalsByStatusService(false);
-    expect(Array.isArray(nonAdoptedAnimals)).toBe(true);
-    expect(nonAdoptedAnimals.every(animal => !animal.adoptado)).toBe(true);
+    const adopted = await getAnimalsByStatusService('adoptado');
+    expect(Array.isArray(adopted)).toBe(true);
+    expect(adopted.every(a => a.estadoAdopcion === 'adoptado')).toBe(true);
+
+    const homeless = await getAnimalsByStatusService('sin_hogar');
+    expect(homeless.some(a => a.estadoAdopcion === 'sin_hogar')).toBe(true);
   });
 
+  // Test: eliminar animal
   it('deleteAnimalService elimina un animal', async () => {
-    await deleteAnimalService(animalId);
-    
+    const animal = await createAnimalService(animalData);
+    await deleteAnimalService(animal.idAnimal);
     await expect(
-      getAnimalByIdService(animalId)
+      getAnimalByIdService(animal.idAnimal)
     ).rejects.toHaveProperty('status', 404);
-  });
-
-  afterAll(async () => {
-    await db.close();
   });
 });

@@ -12,18 +12,18 @@
  */
 
 const request = require('supertest');
-const app = require('../app');
-const db = require("../src/configs/db");
-const Usuario = require('../src/models/usuario');
+const app = require('../../app');
+const Usuario = require('../../src/models/usuario');
 const bcrypt = require('bcryptjs');
-const { generate } = require('../src/utils/jwt');
+const { generate } = require('../../src/utils/jwt');
+const resetDatabase = require('../../src/utils/resetDatabase.helper');
 
 describe('API de Usuarios', () => {
   let adminToken;
   let userToken;
   let testUserId;
   let adminId;
-  
+
   const testAdmin = { 
     nombre: 'Admin', 
     apellido: 'Test', 
@@ -31,165 +31,131 @@ describe('API de Usuarios', () => {
     contrasena: bcrypt.hashSync('Admin1234', 10),
     rol: 'admin'
   };
-  
+
   const testUser = { 
     nombre: 'Usuario', 
     apellido: 'Test', 
     email: 'usuario@test.com', 
     contrasena: bcrypt.hashSync('User1234', 10)
   };
-  
-  beforeAll(async () => {
-    await db.sync();
-    
-    // Limpiamos la tabla antes de pruebas
-    await Usuario.destroy({ where: {} });
-    
-    // Creamos un admin y un usuario regular para pruebas
+
+  // Limpieza y creación de datos antes de cada test
+  beforeEach(async () => {
+    await resetDatabase();
+
     const admin = await Usuario.create(testAdmin);
     adminId = admin.idUsuario;
     adminToken = generate({ id: adminId, rol: 'admin' });
-    
+
     const user = await Usuario.create(testUser);
     testUserId = user.idUsuario;
     userToken = generate({ id: testUserId, rol: 'user' });
   });
 
+  // Test: obtener todos los usuarios
   it('GET /users - Obtiene todos los usuarios (solo admin)', async () => {
-    // Con token admin
     const res = await request(app)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${adminToken}`);
-      
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(1); // Al menos admin y usuario regular
-    
-    // Sin token debe dar error
-    const resNoAuth = await request(app)
-      .get('/api/v1/users');
-      
+    expect(res.body.length).toBeGreaterThan(1);
+
+    const resNoAuth = await request(app).get('/api/v1/users');
     expect(resNoAuth.statusCode).toBe(401);
-    
-    // Con token de usuario normal debe dar error
+
     const resUserAuth = await request(app)
       .get('/api/v1/users')
       .set('Authorization', `Bearer ${userToken}`);
-      
     expect(resUserAuth.statusCode).toBe(403);
   });
-  
+
+  // Test: obtener usuario por ID
   it('GET /users/:id - Obtiene un usuario por ID (solo admin)', async () => {
-    // Con token admin
     const res = await request(app)
       .get(`/api/v1/users/${testUserId}`)
       .set('Authorization', `Bearer ${adminToken}`);
-      
     expect(res.statusCode).toBe(200);
     expect(res.body.nombre).toBe(testUser.nombre);
     expect(res.body.email).toBe(testUser.email);
-    
-    // Sin token debe dar error
-    const resNoAuth = await request(app)
-      .get(`/api/v1/users/${testUserId}`);
-      
+
+    const resNoAuth = await request(app).get(`/api/v1/users/${testUserId}`);
     expect(resNoAuth.statusCode).toBe(401);
   });
-  
+
+  // Test: actualizar usuario (admin o propietario)
   it('PUT /users/:id - Actualiza un usuario (admin o propietario)', async () => {
-    const updatedData = { 
-      nombre: 'Actualizado', 
-      direccion: 'Dirección de prueba' 
+    const updatedData = {
+      nombre: 'Actualizado',
+      direccion: 'Dirección de prueba'
     };
-    
-    // Admin puede actualizar cualquier usuario
+
     const resAdmin = await request(app)
       .put(`/api/v1/users/${testUserId}`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send(updatedData);
-      
     expect(resAdmin.statusCode).toBe(200);
     expect(resAdmin.body.nombre).toBe(updatedData.nombre);
-    
-    // Usuario puede actualizar su propio perfil
+
     const resUser = await request(app)
       .put(`/api/v1/users/${testUserId}`)
       .set('Authorization', `Bearer ${userToken}`)
       .send({ nombre: 'Auto Actualizado' });
-      
     expect(resUser.statusCode).toBe(200);
     expect(resUser.body.nombre).toBe('Auto Actualizado');
-    
-    // Usuario no puede actualizar otros perfiles
+
     const resOtherUser = await request(app)
       .put(`/api/v1/users/${adminId}`)
       .set('Authorization', `Bearer ${userToken}`)
       .send({ nombre: 'Hackeo' });
-      
     expect(resOtherUser.statusCode).toBe(403);
   });
-  
+
+  // Test: eliminar usuario (solo admin)
   it('DELETE /users/:id - Elimina un usuario (solo admin)', async () => {
-    // Primero creamos un usuario para eliminar
     const userToDelete = await Usuario.create({
       nombre: 'Eliminar',
       apellido: 'Usuario',
       email: 'delete@test.com',
       contrasena: bcrypt.hashSync('Delete123', 10)
     });
-    
-    // Admin puede eliminar usuarios
+
     const res = await request(app)
       .delete(`/api/v1/users/${userToDelete.idUsuario}`)
       .set('Authorization', `Bearer ${adminToken}`);
-      
     expect(res.statusCode).toBe(204);
-    
-    // Verificamos que ya no existe
+
     const checkRes = await request(app)
       .get(`/api/v1/users/${userToDelete.idUsuario}`)
       .set('Authorization', `Bearer ${adminToken}`);
-      
     expect(checkRes.statusCode).toBe(404);
-    
-    // Usuario normal no puede eliminar usuarios
+
     const resUser = await request(app)
       .delete(`/api/v1/users/${adminId}`)
       .set('Authorization', `Bearer ${userToken}`);
-      
     expect(resUser.statusCode).toBe(403);
   });
-  
-  // Test para verificar la normalización de datos en el registro
+
+  // Test: normalización de datos en registro
   it('POST /auth/register - Normaliza los datos del usuario', async () => {
     const newUser = {
-      nombre: 'maría', // minúscula
-      apellido: 'GARCÍA', // mayúscula
-      email: ' TEST@EXAMPLE.COM ', // con espacios y mayúsculas
-      direccion: ' Calle Principal 123 ', // con espacios al inicio y final
+      nombre: 'maría',
+      apellido: 'GARCÍA',
+      email: ' TEST@EXAMPLE.COM ',
+      direccion: ' Calle Principal 123 ',
       contrasena: 'Password123'
     };
-    
+
     const res = await request(app)
       .post('/api/v1/auth/register')
       .send(newUser);
-      
     expect(res.statusCode).toBe(201);
-    
-    // Buscamos el usuario creado en la base de datos
-    const createdUser = await Usuario.findOne({ 
-      where: { email: 'test@example.com' } 
-    });
-    
-    // Verificamos la normalización de datos
-    expect(createdUser).not.toBeNull();
-    expect(createdUser.nombre).toBe('María'); // Primera letra mayúscula, resto minúscula
-    expect(createdUser.apellido).toBe('García'); // Primera letra mayúscula, resto minúscula
-    expect(createdUser.email).toBe('test@example.com'); // Todo en minúsculas
-    expect(createdUser.direccion).toBe('Calle Principal 123'); // Sin espacios al inicio/final
-  });
 
-  afterAll(async () => {
-    await db.close();
+    const createdUser = await Usuario.findOne({ where: { email: 'test@example.com' } });
+    expect(createdUser).not.toBeNull();
+    expect(createdUser.nombre).toBe('María');
+    expect(createdUser.apellido).toBe('García');
+    expect(createdUser.email).toBe('test@example.com');
+    expect(createdUser.direccion).toBe('Calle Principal 123');
   });
 });
