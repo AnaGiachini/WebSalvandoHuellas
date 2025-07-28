@@ -30,6 +30,10 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 require('dotenv').config();
 
+// Importación de asociaciones
+const associations = require('./src/configs/associations');
+associations(); // Cargar asociaciones de modelos
+
 // Configuración de CORS
 const corsOptions = {
   origin: process.env.FRONT_URL || 'http://localhost:3000',

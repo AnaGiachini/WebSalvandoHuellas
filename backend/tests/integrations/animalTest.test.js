@@ -2,14 +2,6 @@
  * Test: animalAPI
  * --------------------------------------------------------------------------
  * Tests de integración para las rutas de API relacionadas con animales.
- *
- *  • Pruebas principales
- *      - Obtención de listado de animales
- *      - Obtención de animal por ID
- *      - Creación de nuevos animales (requiere autenticación)
- *      - Actualización de animales (requiere autenticación)
- *      - Eliminación de animales (requiere autenticación)
- *      - Filtrado por estado de adopción
  */
 
 const request = require('supertest');
@@ -26,14 +18,13 @@ describe('API de Animales', () => {
   const testAnimal = { 
     nombre: 'Firulais', 
     sexo: 'macho', 
-    edad: 3, 
+    edad: 'adulto', 
     tamano: 'mediano', 
     historia: 'Historia de prueba',
     estadoAdopcion: 'sin_hogar',
     foto: 'ruta/imagen.jpg' 
   };
 
-  // Limpieza total y datos base antes de cada test
   beforeEach(async () => {
     await resetDatabase();
 
@@ -51,21 +42,18 @@ describe('API de Animales', () => {
     animalId = animal.idAnimal;
   });
 
-  // Test: obtener todos los animales
   it('GET /animals - Obtiene todos los animales', async () => {
     const res = await request(app).get('/api/v1/animals');
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  // Test: obtener animal por ID
   it('GET /animals/:id - Obtiene un animal por ID', async () => {
     const res = await request(app).get(`/api/v1/animals/${animalId}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.nombre).toBe(testAnimal.nombre);
   });
 
-  // Test: filtrar por estado de adopción
   it('GET /animals/status - Filtra animales por estado de adopción', async () => {
     const res = await request(app)
       .get('/api/v1/animals/status')
@@ -77,12 +65,11 @@ describe('API de Animales', () => {
     });
   });
 
-  // Test: crear nuevo animal (autenticación requerida)
   it('POST /animals - Crea un nuevo animal (requiere autenticación)', async () => {
     const newAnimal = {
       nombre: 'Pelusa',
       sexo: 'hembra',
-      edad: 2,
+      edad: 'joven',
       tamano: 'pequeño',
       historia: 'Gata rescatada',
       estadoAdopcion: 'sin_hogar'
@@ -100,7 +87,6 @@ describe('API de Animales', () => {
     expect(resNoAuth.statusCode).toBe(401);
   });
 
-  // Test: actualizar animal (autenticación requerida)
   it('PUT /animals/:id - Actualiza un animal (requiere autenticación)', async () => {
     const updatedData = { nombre: 'Firulais Updated', estadoAdopcion: 'adoptado' };
 
@@ -120,11 +106,12 @@ describe('API de Animales', () => {
     expect(resNoAuth.statusCode).toBe(401);
   });
 
-  // Test: eliminar animal (autenticación requerida)
   it('DELETE /animals/:id - Elimina un animal (requiere autenticación)', async () => {
     const animalToDelete = await Animal.create({
       nombre: 'AnimalToDelete',
       sexo: 'macho',
+      edad: 'cachorro',
+      tamano: 'pequeño',
       estadoAdopcion: 'sin_hogar'
     });
 

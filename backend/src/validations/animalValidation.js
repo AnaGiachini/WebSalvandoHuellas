@@ -35,19 +35,18 @@ const sexo = body('sexo')
   .withMessage('El sexo debe ser macho o hembra');
 
 const edad = body('edad')
-  .isInt({ min: 0 })
-  .withMessage('La edad debe ser un número entero positivo');
+  .isIn(['cachorro', 'joven', 'adulto', 'adulto mayor'])
+  .withMessage('La edad debe ser cachorro, joven, adulto o adulto mayor');
 
 const tamano = body('tamano')
-  .isString()
-  .isLength({ min: 2, max: 20 })
-  .withMessage('El tamaño debe tener entre 2 y 20 caracteres');
+  .isIn(['pequeño', 'mediano', 'grande'])
+  .withMessage('El tamaño debe ser pequeño, mediano o grande');
 
 const historia = body('historia')
   .isString()
   .withMessage('La historia debe ser un texto');
 
-const estadoAdopcion = body('estadoAdopcion')
+const estadoAdopcion = body('estadoAdopcion') 
   .isIn(['adoptado', 'en_proceso', 'sin_hogar'])
   .withMessage('El estado de adopción debe ser uno de los siguientes valores: adoptado, en_proceso, sin_hogar');
 

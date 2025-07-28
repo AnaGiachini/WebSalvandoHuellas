@@ -31,7 +31,14 @@ const protect = (req, res, next) => {
   if (!token) return res.status(401).json({ message: 'Token requerido' });
 
   try {
-    req.user = jwt.verify(token);
+    const decoded = jwt.verify(token);
+
+    // Normalizamos la estructura del usuario
+    req.user = {
+      idUsuario: decoded.idUsuario || decoded.id || decoded.userId,
+      rol: decoded.rol
+    };
+
     next();
   } catch {
     res.status(401).json({ message: 'Token inválido' });
