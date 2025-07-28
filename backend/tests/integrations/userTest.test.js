@@ -45,11 +45,11 @@ describe('API de Usuarios', () => {
 
     const admin = await Usuario.create(testAdmin);
     adminId = admin.idUsuario;
-    adminToken = generate({ id: adminId, rol: 'admin' });
+    adminToken = generate({ idUsuario: adminId, rol: 'admin' });
 
     const user = await Usuario.create(testUser);
     testUserId = user.idUsuario;
-    userToken = generate({ id: testUserId, rol: 'user' });
+    userToken = generate({ idUsuario: testUserId, rol: 'user' });
   });
 
   // Test: obtener todos los usuarios

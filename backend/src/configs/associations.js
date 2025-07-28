@@ -34,8 +34,12 @@ const SolicitudAdopcion = require("../models/solicitudAdopcion");
 const Usuario = require("../models/usuario");
 const Animal = require("../models/animal");
 
+let associationsLoaded = false;
+
 const associations = () => {
-  
+  if (associationsLoaded) return;
+  associationsLoaded = true;
+
   /* ───────────────────────────  USUARIO  ─────────────────────────────── */
   /**
    * Relaciones del Usuario con otras entidades

@@ -28,8 +28,8 @@ const Animal = sequelize.define("Animal", {
   idAnimal: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   nombre: { type: DataTypes.STRING(50), allowNull: false },
   sexo: { type: DataTypes.ENUM('macho', 'hembra'), allowNull: false },
-  edad: { type: DataTypes.INTEGER },
-  tamano: { type: DataTypes.STRING(20) },
+  edad: { type: DataTypes.ENUM('cachorro', 'joven', 'adulto', 'adulto mayor'), allowNull: false },
+  tamano: { type: DataTypes.ENUM('pequeño', 'mediano', 'grande'), allowNull: false },
   historia: { type: DataTypes.TEXT },
   estadoAdopcion: { 
     type: DataTypes.ENUM('adoptado', 'en_proceso', 'sin_hogar'), 
