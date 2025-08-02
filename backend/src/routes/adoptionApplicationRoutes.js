@@ -27,6 +27,7 @@ const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
 // Validaciones
 const { createAdoptionApplicationValidation, updateAdoptionApplicationValidation } = require('../validations/adoptionApplicationValidation');
+const { validateRequest } = require('../middlewares/validateRequest');
 
 // Rutas para filtrar por usuario y animal
 router.get('/usuario/:idUsuario', protect, adoptionApplicationController.getAdoptionApplicationByUser);
@@ -37,10 +38,10 @@ router.get('/', protect, restrictTo('admin'), adoptionApplicationController.getA
 router.get('/:id', protect, adoptionApplicationController.getAdoptionApplicationById);
 
 // Crear solicitud (requiere usuario autenticado)
-router.post('/', protect, createAdoptionApplicationValidation, adoptionApplicationController.createAdoptionApplication);
+router.post('/', protect, createAdoptionApplicationValidation, validateRequest, adoptionApplicationController.createAdoptionApplication);
 
 // Actualizar estado (solo admin)
-router.put('/:id/estado', protect, restrictTo('admin'), updateAdoptionApplicationValidation, adoptionApplicationController.updateAdoptionApplication);
+router.put('/:id/estado', protect, restrictTo('admin'), updateAdoptionApplicationValidation, validateRequest, adoptionApplicationController.updateAdoptionApplication);
 
 // Eliminar solicitud (solo admin)
 router.delete('/:id', protect, restrictTo('admin'), adoptionApplicationController.deleteAdoptionApplication);

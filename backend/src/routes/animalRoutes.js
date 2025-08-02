@@ -26,6 +26,7 @@ const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
 // Validaciones
 const { createAnimalValidation, updateAnimalValidation } = require('../validations/animalValidation');
+const { validateRequest } = require('../middlewares/validateRequest');
 
 // Ruta para filtrar por estado de adopción
 router.get('/status', animalController.getAnimalsByStatus);
@@ -35,8 +36,8 @@ router.get('/', animalController.getAllAnimals);
 router.get('/:id', animalController.getAnimalById);
 
 // Rutas protegidas (requieren autenticación y autorización)
-router.post('/', protect, restrictTo('admin'), createAnimalValidation, animalController.createAnimal);
-router.put('/:id', protect, restrictTo('admin'), updateAnimalValidation, animalController.updateAnimal);
+router.post('/', protect, restrictTo('admin'), createAnimalValidation, validateRequest, animalController.createAnimal);
+router.put('/:id', protect, restrictTo('admin'), updateAnimalValidation, validateRequest, animalController.updateAnimal);
 router.delete('/:id', protect, restrictTo('admin'), animalController.deleteAnimal);
 
 module.exports = router;
