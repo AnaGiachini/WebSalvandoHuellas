@@ -18,12 +18,12 @@
 const express = require('express');
 const router = express.Router();
 const purchaseController = require('../controllers/purchaseController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const { protect } = require('../middlewares/authMiddleware');
 const { validateCreatePurchase, validateUpdateStatus } = require('../validations/purchaseValidations');
 const { validateRequest } = require('../middlewares/validateRequest');
 
 // Aplicar middleware de autenticación a todas las rutas
-router.use(authMiddleware);
+router.use(protect);
 
 // Crear una nueva compra
 router.post('/', validateCreatePurchase, validateRequest, purchaseController.createPurchase);
