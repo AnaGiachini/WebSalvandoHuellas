@@ -26,17 +26,20 @@ const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
 // Validaciones
 const { createAnimalValidation, updateAnimalValidation } = require('../validations/animalValidation');
+const { validateRequest } = require('../middlewares/validateRequest');
 
+// Rutas protegidas
 // Ruta para filtrar por estado de adopción
-router.get('/status', animalController.getAnimalsByStatus);
-
-// Rutas CRUD básicas
-router.get('/', animalController.getAllAnimals);
-router.get('/:id', animalController.getAnimalById);
-
-// Rutas protegidas (requieren autenticación y autorización)
-router.post('/', protect, restrictTo('admin'), createAnimalValidation, animalController.createAnimal);
-router.put('/:id', protect, restrictTo('admin'), updateAnimalValidation, animalController.updateAnimal);
-router.delete('/:id', protect, restrictTo('admin'), animalController.deleteAnimal);
+router.get('/status', validateRequest, animalController.getAnimalsByStatus);
+// Obtener todos los animales
+router.get('/', validateRequest, animalController.getAllAnimals);
+// Obtener un animal específico
+router.get('/:id', validateRequest, animalController.getAnimalById);
+// Crear un animal (solo admin)
+router.post('/', protect, restrictTo('admin'), createAnimalValidation, validateRequest, animalController.createAnimal);
+// Actualizar un animal (solo admin)
+router.put('/:id', protect, restrictTo('admin'), updateAnimalValidation, validateRequest, animalController.updateAnimal);
+// Eliminar un animal (solo admin)
+router.delete('/:id', protect, restrictTo('admin'), validateRequest, animalController.deleteAnimal);
 
 module.exports = router;

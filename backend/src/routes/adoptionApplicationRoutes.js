@@ -27,22 +27,22 @@ const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
 // Validaciones
 const { createAdoptionApplicationValidation, updateAdoptionApplicationValidation } = require('../validations/adoptionApplicationValidation');
+const { validateRequest } = require('../middlewares/validateRequest');
 
-// Rutas para filtrar por usuario y animal
-router.get('/usuario/:idUsuario', protect, adoptionApplicationController.getAdoptionApplicationByUser);
-router.get('/animal/:idAnimal', protect, adoptionApplicationController.getAdoptionApplicationByAnimal);
-
-// Rutas CRUD básicas
-router.get('/', protect, restrictTo('admin'), adoptionApplicationController.getAllAdoptionApplications);
-router.get('/:id', protect, adoptionApplicationController.getAdoptionApplicationById);
-
+// Rutas protegidas
+// Obtener solicitudes de un usuario
+router.get('/usuario/:idUsuario', protect, validateRequest, adoptionApplicationController.getAdoptionApplicationByUser);
+// Obtener solicitudes para un animal
+router.get('/animal/:idAnimal', protect, validateRequest, adoptionApplicationController.getAdoptionApplicationByAnimal);
+// Obtener todas las solicitudes (solo admin)
+router.get('/', protect, restrictTo('admin'), validateRequest, adoptionApplicationController.getAllAdoptionApplications);
+// Obtener una solicitud específica
+router.get('/:id', protect, validateRequest, adoptionApplicationController.getAdoptionApplicationById);
 // Crear solicitud (requiere usuario autenticado)
-router.post('/', protect, createAdoptionApplicationValidation, adoptionApplicationController.createAdoptionApplication);
-
+router.post('/', protect, createAdoptionApplicationValidation, validateRequest, adoptionApplicationController.createAdoptionApplication);
 // Actualizar estado (solo admin)
-router.put('/:id/estado', protect, restrictTo('admin'), updateAdoptionApplicationValidation, adoptionApplicationController.updateAdoptionApplication);
-
+router.put('/:id/estado', protect, restrictTo('admin'), updateAdoptionApplicationValidation, validateRequest, adoptionApplicationController.updateAdoptionApplication);
 // Eliminar solicitud (solo admin)
-router.delete('/:id', protect, restrictTo('admin'), adoptionApplicationController.deleteAdoptionApplication);
+router.delete('/:id', protect, restrictTo('admin'), validateRequest, adoptionApplicationController.deleteAdoptionApplication);
 
 module.exports = router;
