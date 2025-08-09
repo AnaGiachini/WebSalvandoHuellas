@@ -16,198 +16,171 @@
  *      - Manejo de estados de pago
  */
 
+const sequelize = require('../configs/db');
+const AppError = require('../utils/AppError');
+
 const Compra = require('../models/compra');
 const ItemCompra = require('../models/itemCompra');
 const Articulo = require('../models/articulo');
 const Carrito = require('../models/carrito');
 const ItemCarrito = require('../models/itemCarrito');
-const AppError = require('../utils/AppError');
-const sequelize = require('../configs/db');
 
 /**
  * Crea una nueva compra a partir del carrito de un usuario
- * @param {number} idCarrito - ID del carrito a convertir en compra
- * @param {number} idUsuario - ID del usuario que realiza la compra
+ * @param {number} idCarrito
+ * @param {number} idUsuario
  * @returns {Promise<Object>} Compra creada con sus ítems
- * @throws {AppError} Si el carrito no existe o está vacío
  */
 const createPurchaseService = async (idCarrito, idUsuario) => {
-  // Usar transacción para asegurar integridad
-  const transaction = await sequelize.transaction();
-  
+  const t = await sequelize.transaction();
   try {
-    // Verificar si el carrito existe y tiene ítems
+    // Traer carrito + items + artículo (con alias correctos)
     const cart = await Carrito.findByPk(idCarrito, {
-      include: [{
-        model: ItemCarrito,
-        include: [Articulo]
-      }],
-      transaction
+      include: [
+        {
+          model: ItemCarrito,
+          as: 'items',
+          include: [{ model: Articulo, as: 'articulo', attributes: ['idArticulo', 'nombre', 'precio', 'stock'] }]
+        }
+      ],
+      transaction: t
     });
-    
-    if (!cart) {
-      throw new AppError('Carrito no encontrado', 404);
-    }
-    
-    if (!cart.ItemCarritos || cart.ItemCarritos.length === 0) {
-      throw new AppError('El carrito está vacío', 400);
-    }
-    
-    // Calcular total de la compra
+
+    if (!cart) throw new AppError(404, 'Carrito no encontrado');
+    if (!cart.items || cart.items.length === 0) throw new AppError(400, 'El carrito está vacío');
+
+    // Verificar stock y calcular total
     let total = 0;
-    
-    // Verificar stock de todos los artículos
-    for (const item of cart.ItemCarritos) {
-      if (item.cantidad > item.Articulo.stock) {
-        throw new AppError(`Stock insuficiente para ${item.Articulo.nombre}`, 400);
+    for (const it of cart.items) {
+      if (!it.articulo) throw new AppError(400, 'Artículo no encontrado en item del carrito');
+      if (it.cantidad > it.articulo.stock) {
+        throw new AppError(400, `Stock insuficiente para ${it.articulo.nombre}`);
       }
-      total += item.cantidad * item.Articulo.precio;
+      total += it.cantidad * it.articulo.precio;
     }
-    
-    // Crear la compra
-    const purchase = await Compra.create({
-      idUsuario,
-      total,
-      estadoPago: 'pendiente'
-    }, { transaction });
-    
-    // Crear los ítems de compra y actualizar stock
-    for (const item of cart.ItemCarritos) {
-      // Crear ítem de compra
-      await ItemCompra.create({
-        idCompra: purchase.idCompra,
-        idArticulo: item.idArticulo,
-        cantidad: item.cantidad,
-        precioUnitario: item.Articulo.precio,
-        subtotal: item.cantidad * item.Articulo.precio
-      }, { transaction });
-      
-      // Actualizar stock del artículo
-      const articulo = await Articulo.findByPk(item.idArticulo, { transaction });
-      articulo.stock -= item.cantidad;
-      await articulo.save({ transaction });
+
+    // Crear compra en estado pendiente
+    const purchase = await Compra.create(
+      { idUsuario, total, estadoPago: 'pendiente' },
+      { transaction: t }
+    );
+
+    // Crear ítems de compra y descontar stock
+    for (const it of cart.items) {
+      await ItemCompra.create(
+        {
+          idCompra: purchase.idCompra,
+          idArticulo: it.idArticulo, // viene del ItemCarrito
+          cantidad: it.cantidad,
+          precioUnitario: it.articulo.precio,
+          // ⚠️ si tu modelo ItemCompra NO tiene "subtotal", comenta la línea siguiente:
+          subtotal: it.cantidad * it.articulo.precio
+        },
+        { transaction: t }
+      );
+
+      // Descontar stock
+      await Articulo.update(
+        { stock: it.articulo.stock - it.cantidad },
+        { where: { idArticulo: it.idArticulo }, transaction: t }
+      );
     }
-    
-    // Eliminar los ítems del carrito
-    await ItemCarrito.destroy({
-      where: { idCarrito },
-      transaction
-    });
-    
-    // Confirmar transacción
-    await transaction.commit();
-    
-    // Retornar la compra creada con todos sus ítems
-    return getPurchaseByIdService(purchase.idCompra);
-    
-  } catch (error) {
-    // Revertir transacción en caso de error
-    await transaction.rollback();
-    throw error;
+
+    // Vaciar carrito
+    await ItemCarrito.destroy({ where: { idCarrito }, transaction: t });
+
+    await t.commit();
+
+    // Devolver la compra ya con include y alias correctos
+    return await getPurchaseByIdService(purchase.idCompra);
+  } catch (err) {
+    await t.rollback();
+    throw err;
   }
 };
 
 /**
- * Obtiene una compra específica por su ID
- * @param {number} idCompra - ID de la compra
- * @returns {Promise<Object>} Compra con sus ítems
- * @throws {AppError} Si la compra no existe
+ * Obtiene una compra específica por su ID (incluye items y artículo)
  */
 const getPurchaseByIdService = async (idCompra) => {
   const purchase = await Compra.findByPk(idCompra, {
-    include: [{
-      model: ItemCompra,
-      include: [Articulo]
-    }]
+    include: [
+      {
+        model: ItemCompra,
+        as: 'items', // alias de Compra.hasMany(ItemCompra)
+        attributes: ['idItemCompra', 'idArticulo', 'cantidad', 'precioUnitario', 'subtotal'],
+        include: [
+          { model: Articulo, as: 'articulo', attributes: ['idArticulo', 'nombre', 'precio'] } // alias de ItemCompra.belongsTo(Articulo)
+        ]
+      }
+    ]
   });
-  
-  if (!purchase) {
-    throw new AppError('Compra no encontrada', 404);
-  }
-  
+
+  if (!purchase) throw new AppError(404, 'Compra no encontrada');
   return purchase;
 };
 
 /**
- * Obtiene todas las compras de un usuario
- * @param {number} idUsuario - ID del usuario
- * @returns {Promise<Array>} Lista de compras del usuario
+ * Obtiene todas las compras de un usuario (incluye items y artículo)
  */
 const getUserPurchasesService = async (idUsuario) => {
   const purchases = await Compra.findAll({
     where: { idUsuario },
-    include: [{
-      model: ItemCompra,
-      include: [Articulo]
-    }],
+    include: [
+      {
+        model: ItemCompra,
+        as: 'items',
+        attributes: ['idItemCompra', 'idArticulo', 'cantidad', 'precioUnitario', 'subtotal'],
+        include: [
+          { model: Articulo, as: 'articulo', attributes: ['idArticulo', 'nombre', 'precio'] }
+        ]
+      }
+    ],
     order: [['fechaCompra', 'DESC']]
   });
-  
+
   return purchases;
 };
 
 /**
  * Actualiza el estado de pago de una compra
- * @param {number} idCompra - ID de la compra
- * @param {string} estadoPago - Nuevo estado ('pendiente', 'pagado', 'cancelado')
- * @returns {Promise<Object>} Compra actualizada
- * @throws {AppError} Si la compra no existe o el estado es inválido
+ * @param {number} idCompra
+ * @param {('pendiente'|'pagado'|'cancelado')} estadoPago
  */
 const updatePurchaseStatusService = async (idCompra, estadoPago) => {
-  // Validar estado
   const validStates = ['pendiente', 'pagado', 'cancelado'];
-  if (!validStates.includes(estadoPago)) {
-    throw new AppError('Estado de pago inválido', 400);
-  }
-  
+  if (!validStates.includes(estadoPago)) throw new AppError(400, 'Estado de pago inválido');
+
   const purchase = await Compra.findByPk(idCompra);
-  
-  if (!purchase) {
-    throw new AppError('Compra no encontrada', 404);
-  }
-  
-  // Si se cancela una compra pagada, manejar lógica específica
+  if (!purchase) throw new AppError(404, 'Compra no encontrada');
+
   if (purchase.estadoPago === 'pagado' && estadoPago === 'cancelado') {
-    throw new AppError('No se puede cancelar una compra ya pagada', 400);
+    throw new AppError(400, 'No se puede cancelar una compra ya pagada');
   }
-  
-  // Si se cancela una compra pendiente, devolver stock
+
+  // Si cancelás una compra pendiente, devolver stock
   if (purchase.estadoPago === 'pendiente' && estadoPago === 'cancelado') {
-    // Usar transacción para asegurar integridad
-    const transaction = await sequelize.transaction();
-    
+    const t = await sequelize.transaction();
     try {
-      // Obtener ítems de la compra
-      const purchaseItems = await ItemCompra.findAll({
-        where: { idCompra },
-        transaction
-      });
-      
-      // Devolver stock de cada artículo
-      for (const item of purchaseItems) {
-        const articulo = await Articulo.findByPk(item.idArticulo, { transaction });
-        articulo.stock += item.cantidad;
-        await articulo.save({ transaction });
+      const purchaseItems = await ItemCompra.findAll({ where: { idCompra }, transaction: t });
+      for (const it of purchaseItems) {
+        const art = await Articulo.findByPk(it.idArticulo, { transaction: t });
+        if (art) {
+          await art.update({ stock: art.stock + it.cantidad }, { transaction: t });
+        }
       }
-      
-      // Actualizar estado
-      purchase.estadoPago = estadoPago;
-      await purchase.save({ transaction });
-      
-      // Confirmar transacción
-      await transaction.commit();
-    } catch (error) {
-      // Revertir transacción en caso de error
-      await transaction.rollback();
-      throw error;
+      await purchase.update({ estadoPago }, { transaction: t });
+      await t.commit();
+    } catch (err) {
+      await t.rollback();
+      throw err;
     }
   } else {
-    // Actualizar estado normalmente
-    purchase.estadoPago = estadoPago;
-    await purchase.save();
+    await purchase.update({ estadoPago });
   }
-  
-  return purchase;
+
+  // devolver actualizada con include
+  return await getPurchaseByIdService(idCompra);
 };
 
 module.exports = {

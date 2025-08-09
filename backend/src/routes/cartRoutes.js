@@ -27,6 +27,7 @@ const { protect } = require('../middlewares/authMiddleware');
 const { validateAddItem, validateUpdateItem } = require('../validations/cartValidations');
 const { validateRequest } = require('../middlewares/validateRequest');
 
+// Rutas protegidas
 // Obtener el carrito del usuario actual
 router.get('/', protect, cartController.getCart);
 

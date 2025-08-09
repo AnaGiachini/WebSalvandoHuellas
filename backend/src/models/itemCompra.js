@@ -1,23 +1,19 @@
 /**
  * Modelo: ItemCompra
  * --------------------------------------------------------------------------
- * Representa un artículo específico incluido en una compra finalizada.
- *
+ * Define la estructura de los ítems que componen una compra.
+ * Representa cada artículo específico incluido en una compra finalizada.
+ * 
  *  • Campos principales
- *      idItemCompra   → clave primaria autoincremental
- *      idCompra       → clave foránea de la compra a la que pertenece
- *      idArticulo     → clave foránea del artículo comprado
- *      cantidad       → cantidad del artículo adquirido
- *      precioUnitario → precio unitario del artículo al momento de la compra
- *      subtotal       → precio total para este ítem (cantidad * precioUnitario)
+ *      - idItemCompra: Identificador único del ítem de compra
+ *      - idCompra: Referencia a la compra a la que pertenece
+ *      - idArticulo: Referencia al artículo comprado
+ *      - cantidad: Cantidad del artículo adquirida
+ *      - precioUnitario: Precio al momento de la compra (histórico)
+ *      - subtotal: Precio total para la cantidad de este artículo
  *
- *  • Relaciones
- *      ItemCompra N‐1 Compra (compra a la que pertenece)
- *      ItemCompra N‐1 Articulo (artículo comprado)
- *
- *  • Notas
- *      – Actúa como tabla intermedia en la relación muchos a muchos entre Compra y Articulo.
- *      – Almacena el precio al momento de la compra para mantener un historial exacto.
+ *  • Características
+ *      - Captura el precio histórico del artículo al momento de la compra
  *      – El subtotal se calcula automáticamente (cantidad * precioUnitario).
  */
 
@@ -32,4 +28,5 @@ const ItemCompra = sequelize.define("ItemCompra", {
   precioUnitario: { type: DataTypes.FLOAT, allowNull: false },
   subtotal: { type: DataTypes.FLOAT, allowNull: false }
 }, { tableName: 'items_compra', timestamps: false });
+
 module.exports = ItemCompra;

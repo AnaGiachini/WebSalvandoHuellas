@@ -43,12 +43,16 @@ const getCartByIdService = async (idCarrito) => {
   const cart = await Carrito.findByPk(idCarrito, {
     include: [{
       model: ItemCarrito,
-      include: [Articulo]
+      as: 'items',
+      include: [{
+        model: Articulo,
+        as: 'articulo'
+      }]
     }]
   });
   
   if (!cart) {
-    throw new AppError('Carrito no encontrado', 404);
+    throw new AppError(404, 'Carrito no encontrado');
   }
   
   return cart;
@@ -66,7 +70,11 @@ const getCurrentUserCartService = async (idUsuario) => {
     order: [['fecha', 'DESC']],
     include: [{
       model: ItemCarrito,
-      include: [Articulo]
+      as: 'items',
+      include: [{
+        model: Articulo,
+        as: 'articulo'
+      }]
     }]
   });
   
@@ -92,11 +100,11 @@ const addItemToCartService = async (idCarrito, idArticulo, cantidad) => {
   // Validar que el artículo exista y tenga suficiente stock
   const articulo = await Articulo.findByPk(idArticulo);
   if (!articulo) {
-    throw new AppError('Artículo no encontrado', 404);
+    throw new AppError(404, 'Artículo no encontrado');
   }
   
   if (articulo.stock < cantidad) {
-    throw new AppError('Stock insuficiente', 400);
+    throw new AppError(400, 'Stock insuficiente');
   }
   
   // Verificar si el artículo ya está en el carrito
@@ -110,7 +118,7 @@ const addItemToCartService = async (idCarrito, idArticulo, cantidad) => {
     
     // Validar stock nuevamente con la cantidad total
     if (articulo.stock < newQuantity) {
-      throw new AppError('Stock insuficiente para la cantidad total', 400);
+      throw new AppError(400, 'Stock insuficiente para la cantidad total');
     }
     
     cartItem.cantidad = newQuantity;
@@ -126,7 +134,10 @@ const addItemToCartService = async (idCarrito, idArticulo, cantidad) => {
   
   // Retornar el ítem con información del artículo
   return ItemCarrito.findByPk(cartItem.idItemCarrito, {
-    include: [Articulo]
+    include: [{
+      model: Articulo,
+      as: 'articulo'
+    }]
   });
 };
 
@@ -139,11 +150,14 @@ const addItemToCartService = async (idCarrito, idArticulo, cantidad) => {
  */
 const updateCartItemService = async (idItemCarrito, cantidad) => {
   const cartItem = await ItemCarrito.findByPk(idItemCarrito, {
-    include: [Articulo]
+    include: [{
+      model: Articulo,
+      as: 'articulo'
+    }]
   });
   
   if (!cartItem) {
-    throw new AppError('Ítem no encontrado en el carrito', 404);
+    throw new AppError(404, 'Ítem no encontrado en el carrito');
   }
   
   // Si cantidad es 0, eliminar ítem
@@ -153,8 +167,8 @@ const updateCartItemService = async (idItemCarrito, cantidad) => {
   }
   
   // Validar stock
-  if (cartItem.Articulo.stock < cantidad) {
-    throw new AppError('Stock insuficiente', 400);
+  if (cartItem.articulo.stock < cantidad) {
+    throw new AppError(400, 'Stock insuficiente');
   }
   
   // Actualizar cantidad
@@ -174,7 +188,7 @@ const removeCartItemService = async (idItemCarrito) => {
   const cartItem = await ItemCarrito.findByPk(idItemCarrito);
   
   if (!cartItem) {
-    throw new AppError('Ítem no encontrado en el carrito', 404);
+    throw new AppError(404, 'Ítem no encontrado en el carrito');
   }
   
   await cartItem.destroy();
@@ -191,7 +205,7 @@ const clearCartService = async (idCarrito) => {
   const cart = await Carrito.findByPk(idCarrito);
   
   if (!cart) {
-    throw new AppError('Carrito no encontrado', 404);
+    throw new AppError(404, 'Carrito no encontrado');
   }
   
   // Eliminar todos los ítems asociados
