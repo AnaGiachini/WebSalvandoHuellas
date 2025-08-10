@@ -1,0 +1,44 @@
+/**
+ * Validación: Usuario
+ * --------------------------------------------------------------------------
+ * Proporciona reglas de validación para operaciones relacionadas con usuarios.
+ *
+ *  • Campos validados
+ *      nombre      → entre 2-50 caracteres
+ *      apellido    → entre 2-50 caracteres
+ *      email       → formato válido, normalizado a minúsculas
+ *      contrasena  → mínimo 8 caracteres, incluye mayúscula, minúscula y número
+ *
+ *  • Conjuntos de reglas
+ *      register      → validaciones para registro de nuevos usuarios
+ *      updateProfile → validaciones para actualización de perfil (campos opcionales)
+ *
+ *  • Notas
+ *      – Se utiliza express-validator para definir las reglas
+ *      – La normalización garantiza consistencia en los datos almacenados
+ */
+
+const { body } = require('express-validator');
+const { validateRequest } = require('../middlewares/validateRequest');
+
+/* ─── Reglas de campos reutilizables ──────────────────────────────────── */
+const name = body('nombre').isString().isLength({ min: 2, max: 50 });
+const lastname = body('apellido').isString().isLength({ min: 2, max: 50 });
+const email = body('email')
+  .trim() // Eliminar espacios antes y después
+  .notEmpty()
+  .isEmail()
+  .normalizeEmail();
+const password = body('contrasena').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/);
+
+/* ─── Conjuntos de reglas exportados ─────────────────────────────────── */
+const registerValidation = [name, lastname, email, password, validateRequest];
+
+const updateProfileValidation = [
+  name.optional(),
+  lastname.optional(),
+  email.optional(),
+  validateRequest
+];
+
+module.exports = { registerValidation, updateProfileValidation };
