@@ -14,8 +14,8 @@ router.use("/auth", authRoutes); // Rutas de autenticación
 router.use("/users", userRoutes); // Rutas de usuarios
 router.use("/animals", animalRoutes); // Rutas de animales
 router.use("/adoptions", adoptionApplicationRoutes); // Rutas de solicitudes de adopción
-router.use("/cart", cartRoutes); // Rutas de carrito
-router.use("/purchase", purchaseRoutes); // Rutas de compra
+router.use("/carts", cartRoutes); // Rutas de carrito
+router.use("/purchases", purchaseRoutes); // Rutas de compra
 router.use("/articles", articleRoutes); // Rutas de artículos
 
 module.exports = router;
