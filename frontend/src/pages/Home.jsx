@@ -1,19 +1,17 @@
-// src/pages/Home.js
-import React from 'react';
-import { Link } from 'react-router-dom';
-// Importamos íconos desde react-icons (alternativa a lucide-react)
-import { FaHeart, FaCalendarAlt, FaShoppingBag, FaInfoCircle } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Heart, Calendar, ShoppingBag, Info } from "lucide-react";
+import FeaturedAnimals from "../components/FeaturedAnimals";
+import FeaturedProducts from "../components/FeaturedProducts";
+import UpcomingEvents from "../components/UpcomingEvents";
 
-// Estos componentes los crearemos después
-// import FeaturedAnimals from '../components/FeaturedAnimals';
-// import FeaturedProducts from '../components/FeaturedProducts';
-// import UpcomingEvents from '../components/UpcomingEvents';
-
-function Home() {
+export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-primary/10 to-white">
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-primary/10 to-background">
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
             <div className="flex flex-col justify-center space-y-4">
@@ -21,27 +19,33 @@ function Home() {
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-primary">
                   Salvando Huellas
                 </h1>
-                <p className="max-w-[600px] text-gray-500 md:text-xl">
-                  Protectora de animales dedicada al rescate, rehabilitación y adopción de animales abandonados en Jesús
-                  María, Córdoba.
+                <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                  Protectora de animales dedicada al rescate, rehabilitación y
+                  adopción de animales abandonados en Jesús María, Córdoba.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 <Link to="/adopcion">
-                  <button className="px-4 py-2 text-white bg-primary hover:bg-primary-dark rounded">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90">
                     Adoptar
-                  </button>
+                  </Button>
                 </Link>
                 <Link to="/donaciones">
-                  <button className="px-4 py-2 border border-primary text-primary hover:bg-primary/10 rounded">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
                     Donar
-                  </button>
+                  </Button>
                 </Link>
               </div>
             </div>
             <img
               src="/images/hero-image.jpg"
               alt="Perros y gatos rescatados"
+              width={550}
+              height={550}
               className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
             />
           </div>
@@ -49,67 +53,80 @@ function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-background">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-primary">
                 ¿Cómo puedes ayudar?
               </h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Hay muchas formas de contribuir a nuestra causa y ayudar a los animales necesitados.
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                Hay muchas formas de contribuir a nuestra causa y ayudar a los
+                animales necesitados.
               </p>
             </div>
           </div>
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-8">
-            <div className="border-2 border-primary/20 hover:border-primary/50 transition-colors rounded-lg">
-              <div className="p-6 flex flex-col items-center text-center space-y-4">
-                <FaHeart className="h-12 w-12 text-primary" />
+            {/* Adopta */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                <Heart className="h-12 w-12 text-primary" />
                 <h3 className="text-xl font-bold">Adopta</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Dale un hogar a un animal rescatado y cambia su vida para siempre.
                 </p>
-                <Link to="/adopcion" className="text-primary">
-                  Conoce más
+                <Link to="/adopcion">
+                  <Button variant="link" className="text-primary">
+                    Conoce más
+                  </Button>
                 </Link>
-              </div>
-            </div>
-            <div className="border-2 border-primary/20 hover:border-primary/50 transition-colors rounded-lg">
-              <div className="p-6 flex flex-col items-center text-center space-y-4">
-                <FaShoppingBag className="h-12 w-12 text-primary" />
+              </CardContent>
+            </Card>
+            {/* Compra */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                <ShoppingBag className="h-12 w-12 text-primary" />
                 <h3 className="text-xl font-bold">Compra</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Adquiere productos para tu mascota y apoya nuestra labor.
                 </p>
-                <Link to="/tienda" className="text-primary">
-                  Visitar tienda
+                <Link to="/tienda">
+                  <Button variant="link" className="text-primary">
+                    Visitar tienda
+                  </Button>
                 </Link>
-              </div>
-            </div>
-            <div className="border-2 border-primary/20 hover:border-primary/50 transition-colors rounded-lg">
-              <div className="p-6 flex flex-col items-center text-center space-y-4">
-                <FaCalendarAlt className="h-12 w-12 text-primary" />
+              </CardContent>
+            </Card>
+            {/* Participa */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                <Calendar className="h-12 w-12 text-primary" />
                 <h3 className="text-xl font-bold">Participa</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Asiste a nuestros eventos y actividades de recaudación de fondos.
                 </p>
-                <Link to="/eventos" className="text-primary">
-                  Ver eventos
+                <Link to="/eventos">
+                  <Button variant="link" className="text-primary">
+                    Ver eventos
+                  </Button>
                 </Link>
-              </div>
-            </div>
-            <div className="border-2 border-primary/20 hover:border-primary/50 transition-colors rounded-lg">
-              <div className="p-6 flex flex-col items-center text-center space-y-4">
-                <FaInfoCircle className="h-12 w-12 text-primary" />
+              </CardContent>
+            </Card>
+            {/* Infórmate */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                <Info className="h-12 w-12 text-primary" />
                 <h3 className="text-xl font-bold">Infórmate</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Conoce más sobre nuestra labor y cómo puedes ayudar.
                 </p>
-                <Link to="/informacion" className="text-primary">
-                  Leer más
+                <Link to="/informacion">
+                  <Button variant="link" className="text-primary">
+                    Leer más
+                  </Button>
                 </Link>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -122,41 +139,41 @@ function Home() {
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-primary">
                 Animales en Adopción
               </h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 Conoce a algunos de nuestros amigos que buscan un hogar permanente.
               </p>
             </div>
           </div>
-          {/* <FeaturedAnimals /> */}
+          <FeaturedAnimals />
           <div className="flex justify-center mt-8">
             <Link to="/adopcion">
-              <button className="px-4 py-2 text-white bg-primary hover:bg-primary-dark rounded">
+              <Button className="bg-primary hover:bg-primary/90">
                 Ver todos los animales
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
       </section>
 
       {/* Featured Products */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-background">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-primary">
                 Productos Destacados
               </h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 Descubre nuestra selección de productos para tus mascotas.
               </p>
             </div>
           </div>
-          {/* <FeaturedProducts /> */}
+          <FeaturedProducts />
           <div className="flex justify-center mt-8">
             <Link to="/tienda">
-              <button className="px-4 py-2 text-white bg-primary hover:bg-primary-dark rounded">
+              <Button className="bg-primary hover:bg-primary/90">
                 Visitar tienda
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
@@ -170,17 +187,17 @@ function Home() {
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight text-primary">
                 Próximos Eventos
               </h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 Participa en nuestras actividades y ayuda a recaudar fondos para nuestra causa.
               </p>
             </div>
           </div>
-          {/* <UpcomingEvents /> */}
+          <UpcomingEvents />
           <div className="flex justify-center mt-8">
             <Link to="/eventos">
-              <button className="px-4 py-2 text-white bg-primary hover:bg-primary-dark rounded">
+              <Button className="bg-primary hover:bg-primary/90">
                 Ver todos los eventos
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
@@ -189,4 +206,3 @@ function Home() {
   );
 }
 
-export default Home;
