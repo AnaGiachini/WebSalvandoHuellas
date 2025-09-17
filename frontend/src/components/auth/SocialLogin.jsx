@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "../ui/button";
+import { useToast } from "../../hooks/useToast";
 import { Facebook } from "lucide-react";
 
 export default function SocialLogin() {

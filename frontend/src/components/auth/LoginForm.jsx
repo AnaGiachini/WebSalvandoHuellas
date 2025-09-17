@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"; // Reemplazo de useRouter
 import { Button } from "../ui/button"; // Ajusta la ruta según tu estructura
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useToast } from "../../hooks/use-toast";
+import { useToast } from "../../hooks/useToast";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");

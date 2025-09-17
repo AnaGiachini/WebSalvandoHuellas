@@ -6,11 +6,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import LoginForm from "@/components/auth/LoginForm";
-import SocialLogin from "@/components/auth/SocialLogin";
-import GuestLogin from "@/components/auth/GuestLogin";
+} from "../components/ui/card";
+import { Separator } from "../components/ui/separator";
+import LoginForm from "../components/auth/LoginForm";
+import SocialLogin from "../components/auth/SocialLogin";
+import GuestLogin from "../components/auth/GuestLogin";
 
 export default function LoginPage() {
   return (

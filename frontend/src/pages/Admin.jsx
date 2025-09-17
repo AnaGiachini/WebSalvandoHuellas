@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
   Users,
   ShoppingBag,
@@ -12,10 +12,10 @@ import {
   LogOut,
 } from "lucide-react";
 
-import AdminAnimals from "@/components/admin/AdminAnimals";
-import AdminProducts from "@/components/admin/AdminProducts";
-import AdminOrders from "@/components/admin/AdminOrders";
-import AdminEvents from "@/components/admin/AdminEvents";
+import AdminAnimals from "../components/admin/AdminAnimals";
+import AdminProducts from "../components/admin/AdminProducts";
+import AdminOrders from "../components/admin/AdminOrders";
+import AdminEvents from "../components/admin/AdminEvents";
 
 export default function AdminPage() {
   return (
