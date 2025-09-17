@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../ui/button"; // Ajusta la ruta según tu estructura
-import { useToast } from "../../hooks/use-toast"; // Ajusta la ruta
+import { useToast } from "../../hooks/useToast"; // Ajusta la ruta
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // React Router para navegación
 
