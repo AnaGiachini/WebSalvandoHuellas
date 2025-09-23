@@ -60,6 +60,31 @@ const deleteUserService = async (id) => {
   await user.destroy();
 };
 
-module.exports = { getAllUsersService, getUserByIdService, updateUserService, deleteUserService };
+/**
+ * Obtiene los datos del usuario autenticado
+ * @param {Object} req - Request object
+ * @returns {Promise<Object>} Datos del usuario autenticado
+ */
+const getMeService = async (req) => req.user;
 
+/**
+ * Obtiene el perfil completo del usuario autenticado (desde DB)
+ * @param {number} idUsuario - ID del usuario autenticado
+ * @returns {Promise<Object>} Datos seguros del usuario
+ */
+const getMeFullService = async (idUsuario) => {
+  const user = await Usuario.findByPk(idUsuario, {
+    attributes: ['idUsuario', 'nombre', 'apellido', 'email', 'rol', 'direccion', 'telefono'],
+  });
+  if (!user) throw new AppError(404, 'User not found');
+  return user;
+};
 
+module.exports = {
+  getAllUsersService,
+  getUserByIdService,
+  updateUserService,
+  deleteUserService,
+  getMeService,
+  getMeFullService,
+};

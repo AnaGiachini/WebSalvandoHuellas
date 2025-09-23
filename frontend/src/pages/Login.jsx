@@ -9,7 +9,6 @@ import {
 } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import LoginForm from "../components/auth/LoginForm";
-import SocialLogin from "../components/auth/SocialLogin";
 import GuestLogin from "../components/auth/GuestLogin";
 
 export default function LoginPage() {
@@ -22,26 +21,12 @@ export default function LoginPage() {
               Iniciar Sesión
             </CardTitle>
             <CardDescription>
-              Ingresa con tu cuenta o utiliza una de las opciones de inicio de
-              sesión rápido
+              Ingresa con tu email y contraseña
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <LoginForm />
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  O continúa con
-                </span>
-              </div>
-            </div>
-
-            <SocialLogin />
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

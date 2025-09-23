@@ -71,7 +71,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running!' });
 });
 
-// Implementación de rutas (descomentá cuando implementes las rutas)
+// Implementación de rutas
 app.use('/api/v1', routes);
 
 // Middlewares para manejo de errores

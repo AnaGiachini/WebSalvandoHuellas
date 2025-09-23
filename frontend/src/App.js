@@ -12,12 +12,14 @@ import CartPage from "./pages/store/CartPage";
 import Events from "./pages/Events";
 import Information from "./pages/Information";
 import RegisterPage from "./pages/Register";
-import LoginPage from "./pages/Login"
+import LoginPage from "./pages/Login";
 import AdminAnimals from "./components/admin/AdminAnimals";
 import AdminProducts from "./components/admin/AdminProducts";
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminEvents from "./components/admin/AdminEvents";
-
+import Donaciones from "./pages/donations/Donaciones";
+import AdminAdoptions from "./components/admin/AdminAdoptions";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
           <Route path="/informacion" element={<Information />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/donaciones" element={<Donaciones />} />  
+          <Route path="/perfil" element={<Profile />} />         
           
           {/* Rutas Admin */}
           <Route path="/admin" element={<Admin />} />
@@ -41,10 +45,10 @@ function App() {
           <Route path="/admin/productos" element={<AdminProducts />} />  
           <Route path="/admin/ordenes" element={<AdminOrders />} />
           <Route path="/admin/eventos" element={<AdminEvents />} />
+          <Route path="/admin/adopciones" element={<AdminAdoptions />} />   
 
           <Route path="/checkout" element={<div>Checkout (en desarrollo)</div>} />
           <Route path="*" element={<div>Página no encontrada</div>} />
-          
         </Routes>
       </RootLayout>
     </Router>

@@ -24,7 +24,8 @@ const {
   getAllUsersService,
   getUserByIdService,
   updateUserService,
-  deleteUserService
+  deleteUserService,
+  getMeFullService
 } = require('../services/userService');
 
 /**
@@ -85,4 +86,14 @@ const deleteUser = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getAllUsers, getUserById, updateUser, deleteUser };
+/**
+ * Obtiene el perfil completo del usuario autenticado desde la BD
+ */
+const getMe = async (req, res, next) => {
+  try {
+    const me = await getMeFullService(req.user.idUsuario);
+    res.json(me);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAllUsers, getUserById, updateUser, deleteUser, getMe };

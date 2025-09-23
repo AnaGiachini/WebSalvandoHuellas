@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, User, LogIn, LogOut } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "../hooks/useToast";
 import { useMobile } from "../hooks/useMobile";
 import { useAuth } from "../components/auth/AuthProvider";
@@ -15,12 +15,35 @@ import {
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
   const isMobile = useMobile();
   const { toast } = useToast();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    function onDocumentClick(e) {
+      if (!userMenuRef.current) return;
+      if (userMenuRef.current.contains(e.target)) return;
+      setUserMenuOpen(false);
+    }
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", onDocumentClick);
+      document.addEventListener("touchstart", onDocumentClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", onDocumentClick);
+      document.removeEventListener("touchstart", onDocumentClick);
+    };
+  }, [userMenuOpen]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleUserMenu = () => {
+    setUserMenuOpen((prev) => !prev);
   };
 
   const handleAdminLogin = () => {
@@ -28,15 +51,27 @@ export default function Header() {
       title: "Acceso administrativo",
       description: "Redirigiendo al panel de administración...",
     });
+    setUserMenuOpen(false);
+    navigate("/admin");
   };
 
   const handleLogout = () => {
     logout();
+    setUserMenuOpen(false);
     toast({
       title: "Sesión cerrada",
       description: "Has cerrado sesión correctamente.",
     });
+    navigate("/");
+    // En algunos navegadores, forzar un re-render completo ayuda a limpiar UI en cache
+    setTimeout(() => window.location.reload(), 0);
   };
+
+  const displayName = user
+    ? user.name || [user.nombre, user.apellido].filter(Boolean).join(" ") || "Usuario"
+    : null;
+
+  const isAdmin = user?.rol === "admin";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -81,44 +116,44 @@ export default function Header() {
 
             {user ? (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <div className="px-2 py-1.5 text-sm font-medium">
-                    {user.isGuest ? "Invitado" : user.name}
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Link to="/perfil" className="flex w-full">
-                      Mi perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/mis-pedidos" className="flex w-full">
-                      Mis pedidos
-                    </Link>
-                  </DropdownMenuItem>
-                  {!user.isGuest && (
-                    <DropdownMenuItem>
-                      <Link to="/favoritos" className="flex w-full">
-                        Favoritos
-                      </Link>
-                    </DropdownMenuItem>
+                <div ref={userMenuRef} className="relative">
+                  <DropdownMenuTrigger onClick={toggleUserMenu}>
+                    <Button variant="ghost" size="icon">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {userMenuOpen && (
+                    <DropdownMenuContent>
+                      <div className="px-2 py-1.5 text-sm font-medium">
+                        {user.isGuest ? "Invitado" : displayName}
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/perfil"); }}>
+                        Mi perfil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/mis-pedidos"); }}>
+                        Mis pedidos
+                      </DropdownMenuItem>
+                      {!user.isGuest && (
+                        <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/favoritos"); }}>
+                          Favoritos
+                        </DropdownMenuItem>
+                      )}
+                      {isAdmin && (
+                        <DropdownMenuItem onClick={handleAdminLogin}>
+                          Panel de administración
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <div className="flex items-center">
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Cerrar sesión
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
                   )}
-                  {!user.isGuest && (
-                    <DropdownMenuItem onClick={handleAdminLogin}>
-                      Panel de administración
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Cerrar sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                </div>
               </DropdownMenu>
             ) : (
               <Link to="/login">
@@ -135,43 +170,43 @@ export default function Header() {
       {isMobile && isMenuOpen && (
         <div className="container py-4 bg-background border-b">
           <nav className="flex flex-col space-y-4">
-            <Link to="/" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link to="/" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Inicio
             </Link>
-            <Link to="/adopcion" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link to="/adopcion" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Adopción
             </Link>
-            <Link to="/tienda" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link to="/tienda" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Tienda
             </Link>
-            <Link to="/eventos" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link to="/eventos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Eventos
             </Link>
-            <Link to="/informacion" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link to="/informacion" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Información
             </Link>
 
             {user ? (
               <>
                 <div className="text-sm font-medium pt-2 border-t">
-                  {user.isGuest ? "Sesión de invitado" : `Hola, ${user.name}`}
+                  {user.isGuest ? "Sesión de invitado" : `Hola, ${displayName}`}
                 </div>
-                <Link to="/perfil" className="text-sm font-medium transition-colors hover:text-primary">
+                <Link to="/perfil" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Mi perfil
                 </Link>
-                <Link to="/mis-pedidos" className="text-sm font-medium transition-colors hover:text-primary">
+                <Link to="/mis-pedidos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Mis pedidos
                 </Link>
                 {!user.isGuest && (
-                  <Link to="/favoritos" className="text-sm font-medium transition-colors hover:text-primary">
+                  <Link to="/favoritos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                     Favoritos
                   </Link>
                 )}
-                {!user.isGuest && (
+                {isAdmin && (
                   <Button
                     variant="ghost"
                     className="justify-start px-0"
-                    onClick={handleAdminLogin}
+                    onClick={() => { setIsMenuOpen(false); handleAdminLogin(); }}
                   >
                     Panel de administración
                   </Button>
@@ -179,14 +214,14 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   className="justify-start px-0"
-                  onClick={handleLogout}
+                  onClick={() => { setIsMenuOpen(false); handleLogout(); }}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Cerrar sesión
                 </Button>
               </>
             ) : (
-              <Link to="/login" className="text-sm font-medium transition-colors hover:text-primary">
+              <Link to="/login" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                 <LogIn className="h-4 w-4 mr-2 inline-block" />
                 Iniciar sesión
               </Link>

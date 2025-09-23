@@ -4,6 +4,7 @@ import { Button } from "../ui/button"; // Ajusta la ruta según tu estructura
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useToast } from "../../hooks/useToast";
+import { useAuth } from "./AuthProvider";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -11,20 +12,32 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulación de inicio de sesión
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Normalización básica
+      const payload = {
+        email: email.trim().toLowerCase(),
+        password: password,
+      };
+
+      await login(payload.email, payload.password);
+
       toast({
         title: "Inicio de sesión exitoso",
         description: "Has iniciado sesión correctamente.",
       });
-      navigate("/"); // Reemplazo de router.push("/")
-    }, 1500);
+      navigate("/");
+    } catch (err) {
+      const description = err?.response?.data?.message || "Revisa tus credenciales e inténtalo nuevamente.";
+      toast({ title: "Error al iniciar sesión", description });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
