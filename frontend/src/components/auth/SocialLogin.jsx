@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useToast } from "../../hooks/useToast";
 import { Facebook } from "lucide-react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api/v1";
-const API_BASE = API_URL.replace(/\/api\/v1$/, "");
+// URL base del backend (sin /api), configurable por .env
+const BACK_URL = process.env.REACT_APP_BACK_URL || "http://localhost:4000";
 
 export default function SocialLogin() {
   const [isLoading, setIsLoading] = useState(null);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const { toast } = useToast();
 
   const go = (provider) => {
     setIsLoading(provider);
     try {
       const target = provider === "Google"
-        ? `${API_BASE}/api/v1/auth/google`
-        : `${API_BASE}/api/v1/auth/facebook`;
+        ? `${BACK_URL}/api/v1/auth/google`
+        : `${BACK_URL}/api/v1/auth/facebook`;
       window.location.href = target;
     } catch (err) {
       setIsLoading(null);
