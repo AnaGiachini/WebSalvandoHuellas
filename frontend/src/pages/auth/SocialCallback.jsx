@@ -1,0 +1,24 @@
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "../../hooks/useToast";
+
+export default function SocialCallback() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    if (!token) {
+      toast({ title: "Error", description: "No se recibió token. Intenta iniciar sesión nuevamente." });
+      navigate("/login");
+      return;
+    }
+    localStorage.setItem("authToken", token);
+    toast({ title: "Inicio de sesión exitoso", description: "Has iniciado sesión con tu cuenta social." });
+    navigate("/");
+  }, [location.search, navigate, toast]);
+
+  return null;
+}

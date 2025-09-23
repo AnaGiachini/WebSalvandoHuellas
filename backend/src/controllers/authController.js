@@ -18,6 +18,7 @@
  */
 
 const { registerService, loginService } = require('../services/authService');
+const jwtUtil = require('../utils/jwt');
 
 /**
  * Registra un nuevo usuario en el sistema
@@ -45,4 +46,26 @@ const login = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { register, login };
+/**
+ * Callback para OAuth (Google/Facebook)
+ * - Genera un JWT a partir del usuario autenticado por Passport
+ * - Redirige al FRONT_URL con el token como query param
+ */
+const socialCallback = async (req, res) => {
+  try {
+    const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+    const user = req.user;
+    if (!user) {
+      return res.redirect(302, `${FRONT_URL}/login?error=oauth`);
+    }
+
+    const token = jwtUtil.generate({ id: user.idUsuario, rol: user.rol });
+    const redirectUrl = `${FRONT_URL}/auth/callback?token=${encodeURIComponent(token)}`;
+    return res.redirect(302, redirectUrl);
+  } catch (err) {
+    const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+    return res.redirect(302, `${FRONT_URL}/login?error=oauth`);
+  }
+};
+
+module.exports = { register, login, socialCallback };

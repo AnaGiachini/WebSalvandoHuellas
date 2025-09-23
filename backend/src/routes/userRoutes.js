@@ -9,6 +9,10 @@ const { protect, restrictTo } = require('../middlewares/authMiddleware');
 const { updateProfileValidation } = require('../validations/userValidation');
 const { validateRequest } = require('../middlewares/validateRequest');
 
+
+// Obtener datos del usuario autenticado
+router.post("/me", protect, userController.getMe);
+
 // Rutas protegidas
 // Obtener todos los usuarios (solo admin)
 router.get('/', protect, restrictTo('admin'), validateRequest, userController.getAllUsers);

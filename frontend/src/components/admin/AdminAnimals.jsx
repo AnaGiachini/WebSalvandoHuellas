@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -24,71 +24,121 @@ import {
   Trash2,
   Eye,
 } from "lucide-react";
-
-// Datos de ejemplo para animales
-const animals = [
-  {
-    id: 1,
-    name: "Luna",
-    type: "Perro",
-    breed: "Mestizo",
-    age: "2 años",
-    gender: "Hembra",
-    status: "Disponible",
-    image: "/images/dog1.jpg",
-  },
-  {
-    id: 2,
-    name: "Simba",
-    type: "Gato",
-    breed: "Atigrado",
-    age: "1 año",
-    gender: "Macho",
-    status: "Disponible",
-    image: "/images/cat1.jpg",
-  },
-  {
-    id: 3,
-    name: "Rocky",
-    type: "Perro",
-    breed: "Labrador",
-    age: "3 años",
-    gender: "Macho",
-    status: "En proceso",
-    image: "/images/dog2.jpg",
-  },
-  {
-    id: 4,
-    name: "Mía",
-    type: "Gato",
-    breed: "Siamés",
-    age: "2 años",
-    gender: "Hembra",
-    status: "Disponible",
-    image: "/images/cat2.jpg",
-  },
-  {
-    id: 5,
-    name: "Max",
-    type: "Perro",
-    breed: "Golden Retriever",
-    age: "4 años",
-    gender: "Macho",
-    status: "Adoptado",
-    image: "/images/dog3.jpg",
-  },
-];
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Label } from "../ui/label";
+import animalsService from "../../services/animalsService";
+import { useToast } from "../../hooks/useToast";
 
 export default function AdminAnimals() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [animals, setAnimals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Filtrar animales según término de búsqueda
-  const filteredAnimals = animals.filter(
-    (animal) =>
-      animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      animal.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      animal.breed.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Modal/form state
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null); // objeto animal o null
+  const [form, setForm] = useState({
+    nombre: "",
+    sexo: "macho",
+    edad: "joven",
+    tamano: "mediano",
+    historia: "",
+    estadoAdopcion: "sin_hogar",
+    foto: "",
+  });
+
+  const loadAnimals = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await animalsService.list();
+      setAnimals(Array.isArray(data) ? data : data?.data || []);
+      setError(null);
+    } catch (err) {
+      setError("No pudimos cargar los animales");
+      toast({ title: "Error", description: err?.response?.data?.message || "Error al obtener animales" });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    loadAnimals();
+  }, [loadAnimals]);
+
+  const filteredAnimals = animals.filter((a) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      a.nombre?.toLowerCase().includes(term) ||
+      a.sexo?.toLowerCase().includes(term) ||
+      a.edad?.toLowerCase().includes(term) ||
+      a.tamano?.toLowerCase().includes(term) ||
+      a.estadoAdopcion?.toLowerCase().includes(term)
+    );
+  });
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ nombre: "", sexo: "macho", edad: "joven", tamano: "mediano", historia: "", estadoAdopcion: "sin_hogar", foto: "" });
+    setOpen(true);
+  };
+
+  const openEdit = (animal) => {
+    setEditing(animal);
+    setForm({
+      nombre: animal.nombre || "",
+      sexo: animal.sexo || "macho",
+      edad: animal.edad || "joven",
+      tamano: animal.tamano || "mediano",
+      historia: animal.historia || "",
+      estadoAdopcion: animal.estadoAdopcion || "sin_hogar",
+      foto: animal.foto || "",
+    });
+    setOpen(true);
+  };
+
+  const onDelete = async (idAnimal) => {
+    if (!window.confirm("¿Eliminar este animal?")) return;
+    try {
+      await animalsService.remove(idAnimal);
+      toast({ title: "Eliminado", description: "Animal eliminado correctamente" });
+      loadAnimals();
+    } catch (err) {
+      toast({ title: "Error al eliminar", description: err?.response?.data?.message || "No se pudo eliminar" });
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editing) {
+        await animalsService.update(editing.idAnimal, form);
+        toast({ title: "Actualizado", description: "Animal actualizado correctamente" });
+      } else {
+        await animalsService.create(form);
+        toast({ title: "Creado", description: "Animal creado correctamente" });
+      }
+      setOpen(false);
+      loadAnimals();
+    } catch (err) {
+      const backendErrors = err?.response?.data?.errors;
+      let description = err?.response?.data?.message || "No se pudo guardar el animal";
+      if (Array.isArray(backendErrors) && backendErrors.length) {
+        description = backendErrors.map((e) => (e?.msg ? `${e.path}: ${e.msg}` : null)).filter(Boolean).join(" | ");
+      }
+      toast({ title: "Error", description });
+    }
+  };
+
+  const statusBadge = (estado) => {
+    const map = {
+      sin_hogar: "bg-yellow-500",
+      en_proceso: "bg-blue-500",
+      adoptado: "bg-green-600",
+    };
+    return <Badge className={map[estado] || "bg-gray-500"}>{estado}</Badge>;
+  };
 
   return (
     <div>
@@ -104,60 +154,52 @@ export default function AdminAnimals() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button className="bg-primary hover:bg-primary/90" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
             Nuevo animal
           </Button>
         </div>
       </div>
 
+      {error && (
+        <div className="mb-4 text-sm text-red-600">{error}</div>
+      )}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Animal</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Raza</TableHead>
+              <TableHead>Sexo</TableHead>
               <TableHead>Edad</TableHead>
-              <TableHead>Género</TableHead>
+              <TableHead>Tamaño</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAnimals.length > 0 ? (
+            {loading ? (
+              <TableRow><TableCell colSpan={6}>Cargando...</TableCell></TableRow>
+            ) : filteredAnimals.length > 0 ? (
               filteredAnimals.map((animal) => (
-                <TableRow key={animal.id}>
+                <TableRow key={animal.idAnimal}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="relative w-10 h-10 rounded-md overflow-hidden">
                         <img
-                          src={animal.image || "/placeholder.svg"}
-                          alt={animal.name}
+                          src={animal.foto || "/placeholder.svg"}
+                          alt={animal.nombre}
                           className="absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
                         />
                       </div>
-                      <span className="font-medium">{animal.name}</span>
+                      <span className="font-medium">{animal.nombre}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{animal.type}</TableCell>
-                  <TableCell>{animal.breed}</TableCell>
-                  <TableCell>{animal.age}</TableCell>
-                  <TableCell>{animal.gender}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        animal.status === "Disponible"
-                          ? "bg-green-500"
-                          : animal.status === "En proceso"
-                          ? "bg-yellow-500"
-                          : "bg-blue-500"
-                      }
-                    >
-                      {animal.status}
-                    </Badge>
-                  </TableCell>
+                  <TableCell>{animal.sexo}</TableCell>
+                  <TableCell>{animal.edad}</TableCell>
+                  <TableCell>{animal.tamano}</TableCell>
+                  <TableCell>{statusBadge(animal.estadoAdopcion)}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -166,15 +208,17 @@ export default function AdminAnimals() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver detalles
+                        <DropdownMenuItem asChild>
+                          <a href={`/adopcion/${animal.idAnimal}`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver detalles
+                          </a>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEdit(animal)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(animal.idAnimal)}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Eliminar
                         </DropdownMenuItem>
@@ -185,7 +229,7 @@ export default function AdminAnimals() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell colSpan={6} className="text-center py-4">
                   No se encontraron resultados para "{searchTerm}"
                 </TableCell>
               </TableRow>
@@ -193,6 +237,66 @@ export default function AdminAnimals() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editing ? "Editar animal" : "Nuevo animal"}</DialogTitle>
+          </DialogHeader>
+          <form className="space-y-3" onSubmit={onSubmit}>
+            <div className="space-y-1">
+              <Label htmlFor="nombre">Nombre</Label>
+              <Input id="nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="sexo">Sexo</Label>
+                <select id="sexo" className="w-full h-10 rounded-md border px-3 text-sm" value={form.sexo} onChange={(e) => setForm({ ...form, sexo: e.target.value })}>
+                  <option value="macho">macho</option>
+                  <option value="hembra">hembra</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="edad">Edad</Label>
+                <select id="edad" className="w-full h-10 rounded-md border px-3 text-sm" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })}>
+                  <option value="cachorro">cachorro</option>
+                  <option value="joven">joven</option>
+                  <option value="adulto">adulto</option>
+                  <option value="adulto mayor">adulto mayor</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="tamano">Tamaño</Label>
+                <select id="tamano" className="w-full h-10 rounded-md border px-3 text-sm" value={form.tamano} onChange={(e) => setForm({ ...form, tamano: e.target.value })}>
+                  <option value="pequeño">pequeño</option>
+                  <option value="mediano">mediano</option>
+                  <option value="grande">grande</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="historia">Historia</Label>
+              <Input id="historia" value={form.historia} onChange={(e) => setForm({ ...form, historia: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="foto">Foto (URL)</Label>
+              <Input id="foto" value={form.foto} onChange={(e) => setForm({ ...form, foto: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="estadoAdopcion">Estado de adopción</Label>
+              <select id="estadoAdopcion" className="w-full h-10 rounded-md border px-3 text-sm" value={form.estadoAdopcion} onChange={(e) => setForm({ ...form, estadoAdopcion: e.target.value })}>
+                <option value="sin_hogar">sin_hogar</option>
+                <option value="en_proceso">en_proceso</option>
+                <option value="adoptado">adoptado</option>
+              </select>
+            </div>
+            <div className="pt-2 flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90">{editing ? "Guardar cambios" : "Crear"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

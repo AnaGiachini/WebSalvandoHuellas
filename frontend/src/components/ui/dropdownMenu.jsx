@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 export function DropdownMenu({ children }) {
   return <div className="relative inline-block">{children}</div>;
