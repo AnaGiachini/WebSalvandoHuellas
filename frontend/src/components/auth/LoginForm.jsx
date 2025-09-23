@@ -60,6 +60,7 @@ export default function LoginForm() {
             variant="link"
             className="p-0 h-auto text-xs text-primary"
             type="button"
+            onClick={() => navigate('/auth/forgot')}
           >
             ¿Olvidaste tu contraseña?
           </Button>

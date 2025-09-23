@@ -20,6 +20,9 @@ import AdminEvents from "./components/admin/AdminEvents";
 import Donaciones from "./pages/donations/Donaciones";
 import AdminAdoptions from "./components/admin/AdminAdoptions";
 import Profile from "./pages/Profile";
+import SocialCallback from "./pages/auth/SocialCallback";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/donaciones" element={<Donaciones />} />  
           <Route path="/perfil" element={<Profile />} />         
+          <Route path="/auth/callback" element={<SocialCallback />} />
+          <Route path="/auth/forgot" element={<ForgotPassword />} />
+          <Route path="/auth/reset" element={<ResetPassword />} />
           
           {/* Rutas Admin */}
           <Route path="/admin" element={<Admin />} />

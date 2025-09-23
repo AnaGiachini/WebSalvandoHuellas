@@ -31,6 +31,16 @@ export const authService = {
   async me() {
     const { data } = await api.get(`${base}/me`);
     return data;
+  },
+
+  async forgotPassword(email) {
+    const { data } = await api.post(`${base}/forgot-password`, { email });
+    return data; // { message, resetLink? }
+  },
+
+  async resetPassword({ token, nuevaContrasena }) {
+    const { data } = await api.post(`${base}/reset-password`, { token, nuevaContrasena });
+    return data; // { message }
   }
 };
 
