@@ -36,7 +36,10 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
   }, async (_accessToken, _refreshToken, profile, done) => {
     try {
       const email = profile.emails && profile.emails[0]?.value;
-      if (!email) return done(new Error('No pudimos obtener el email de Google'));
+      if (!email) {
+        console.error('[OAuth][Google] No email in profile', { profile: { id: profile.id, displayName: profile.displayName, emails: profile.emails } });
+        return done(new Error('No pudimos obtener el email de Google'));
+      }
 
       let user = await Usuario.findOne({ where: { email } });
       if (!user) {
@@ -44,7 +47,10 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
         user = await Usuario.create({ nombre, apellido, email, contrasena: 'oauth_google', rol: 'user' });
       }
       done(null, user);
-    } catch (err) { done(err); }
+    } catch (err) {
+      console.error('[OAuth][Google] Strategy error:', err);
+      done(err);
+    }
   }));
 } else {
   console.warn('[OAuth] Google deshabilitado: faltan GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET en .env');

@@ -19,6 +19,12 @@
 
 const { registerService, loginService } = require('../services/authService');
 const jwtUtil = require('../utils/jwt');
+const Usuario = require('../models/usuario');
+const bcrypt = require('bcrypt');
+const mailService = require('../services/mailService');
+
+// Tiempo de expiración del token de reseteo
+const RESET_TOKEN_TTL = process.env.RESET_TOKEN_TTL || '15m';
 
 /**
  * Registra un nuevo usuario en el sistema
@@ -68,4 +74,67 @@ const socialCallback = async (req, res) => {
   }
 };
 
-module.exports = { register, login, socialCallback };
+/**
+ * Inicia el flujo de "Olvidaste tu contraseña"
+ * - Recibe email, genera un token de un solo uso (JWT corto) y envía un enlace por email
+ * - En development, si no hay SMTP configurado, también devolvemos el link para pruebas
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+
+    const user = await Usuario.findOne({ where: { email } });
+    // Por seguridad, respondemos 200 aunque el email no exista
+    if (!user) {
+      return res.json({ message: 'Si el email existe, se envió un enlace para restablecer la contraseña.' });
+    }
+
+    const token = jwtUtil.generateWithExpiry({ id: user.idUsuario, rol: user.rol, purpose: 'reset' }, RESET_TOKEN_TTL);
+    const resetLink = `${FRONT_URL}/auth/reset?token=${encodeURIComponent(token)}`;
+
+    // Enviar correo
+    const { SMTP_HOST, SMTP_USER, SMTP_PASS } = process.env;
+    if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
+      await mailService.sendPasswordReset(email, resetLink);
+      return res.json({ message: 'Si el email existe, se envió un enlace para restablecer la contraseña.' });
+    }
+
+    // Fallback en dev: log y devolver link para pruebas manuales
+    console.log(`[Password Reset][DEV] Enviar a ${email}: ${resetLink}`);
+    return res.json({ message: 'Enlace de restablecimiento generado (modo desarrollo).', resetLink });
+  } catch (err) { next(err); }
+};
+
+/**
+ * Completa el reseteo de contraseña
+ * - Recibe token y nueva contraseña
+ * - Verifica token y actualiza el hash de la contraseña
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, nuevaContrasena } = req.body;
+    if (!token || !nuevaContrasena) {
+      return res.status(400).json({ message: 'Datos incompletos' });
+    }
+
+    const decoded = jwtUtil.verify(token);
+    if (!decoded || decoded.purpose !== 'reset') {
+      return res.status(400).json({ message: 'Token inválido' });
+    }
+
+    const user = await Usuario.findByPk(decoded.id);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    const hash = await bcrypt.hash(nuevaContrasena, 10);
+    user.contrasena = hash;
+    await user.save();
+
+    return res.json({ message: 'Contraseña actualizada exitosamente' });
+  } catch (err) {
+    // Si el token expiró o es inválido, caerá aquí
+    return res.status(400).json({ message: 'Token inválido o expirado' });
+  }
+};
+
+module.exports = { register, login, socialCallback, forgotPassword, resetPassword };

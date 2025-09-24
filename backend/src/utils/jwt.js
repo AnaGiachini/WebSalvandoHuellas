@@ -33,6 +33,16 @@ const generate = payload => {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
+// Generar token con expiración custom (e.g., "15m")
+const generateWithExpiry = (payload, expiresIn) => {
+  if (typeof payload === 'number') {
+    payload = { id: payload, rol: 'user' };
+  } else if (payload && typeof payload === 'object' && !payload.rol) {
+    payload.rol = 'user';
+  }
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+};
+
 const verify = token => {
   // Verifica el token y devuelve el payload decodificado
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -43,4 +53,4 @@ const verify = token => {
   return decoded;
 };
 
-module.exports = { generate, verify };
+module.exports = { generate, generateWithExpiry, verify };
