@@ -23,6 +23,7 @@ import Profile from "./pages/Profile";
 import SocialCallback from "./pages/auth/SocialCallback";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import MyAdoptions from "./pages/adoption/MyAdoptions";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/adopcion" element={<AdoptionPage />} />
           <Route path="/adopcion/:id" element={<AnimalDetail />} />
+          <Route path="/mis-solicitudes" element={<MyAdoptions />} />
           <Route path="/tienda" element={<StorePage />} />
           <Route path="/tienda/:id" element={<ProductDetail />} />
           <Route path="/carrito" element={<CartPage />} />

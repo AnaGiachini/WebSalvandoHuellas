@@ -31,6 +31,14 @@ const email = body('email')
   .normalizeEmail();
 const password = body('contrasena').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/);
 
+// Nuevos campos: direccion y telefono (opcionales en update)
+const direccion = body('direccion').optional().trim().isLength({ min: 5 }).withMessage('Dirección muy corta');
+const telefono = body('telefono')
+  .optional()
+  .trim()
+  .matches(/^[+\d][\d\s-]{6,}$/)
+  .withMessage('Teléfono inválido');
+
 /* ─── Conjuntos de reglas exportados ─────────────────────────────────── */
 const registerValidation = [name, lastname, email, password, validateRequest];
 
@@ -38,6 +46,8 @@ const updateProfileValidation = [
   name.optional(),
   lastname.optional(),
   email.optional(),
+  direccion,
+  telefono,
   validateRequest
 ];
 

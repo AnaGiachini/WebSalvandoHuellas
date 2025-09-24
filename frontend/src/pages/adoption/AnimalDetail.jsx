@@ -8,6 +8,20 @@ import AdoptionForm from "../../components/AdoptionForm";
 import animalsService from "../../services/animalsService";
 import { useToast } from "../../hooks/useToast";
 
+// Etiquetas amigables de estado de adopción
+const mapEstado = (estado) => {
+  switch (estado) {
+    case "sin_hogar":
+      return "Disponible";
+    case "en_proceso":
+      return "En proceso";
+    case "adoptado":
+      return "Adoptado";
+    default:
+      return estado || "";
+  }
+};
+
 /* -------------------- Tabs mínimos (sin dependencias) -------------------- */
 function Tabs({ defaultValue, children }) {
   const [value, setValue] = useState(defaultValue);
@@ -51,22 +65,23 @@ export default function AnimalDetalle() {
   const [animal, setAnimal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const formAnchorId = "adoption-form-anchor";
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        const data = await animalsService.getById(id);
-        setAnimal(data);
-      } catch (err) {
-        setError("No pudimos cargar el animal");
-        toast({ title: "Error", description: err?.response?.data?.message || "Error al obtener el animal" });
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [id, toast]);
+  const refetch = async () => {
+    try {
+      if (!id) return;
+      setLoading(true);
+      const data = await animalsService.getById(id);
+      setAnimal(data);
+    } catch (err) {
+      setError("No pudimos cargar el animal");
+      toast({ title: "Error", description: err?.response?.data?.message || "Error al obtener el animal" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { refetch(); }, [id]);
 
   if (loading) {
     return (
@@ -92,6 +107,9 @@ export default function AnimalDetalle() {
   const fotos = Array.isArray(animal.fotos) ? animal.fotos : [];
   const personalidad = Array.isArray(animal.personalidad) ? animal.personalidad : [];
   const requisitos = Array.isArray(animal.requisitos) ? animal.requisitos : [];
+
+  const estadoAmigable = mapEstado(animal.estadoAdopcion);
+  const noDisponible = animal.estadoAdopcion !== 'sin_hogar';
 
   return (
     <div className="container py-8 md:py-12">
@@ -154,7 +172,7 @@ export default function AnimalDetalle() {
                 </div>
                 <div className="flex items-center">
                   <Badge variant="outline" className="mr-2">Estado</Badge>
-                  <span>{animal.estadoAdopcion}</span>
+                  <span>{estadoAmigable}</span>
                 </div>
               </div>
               {animal.historia && (
@@ -237,11 +255,25 @@ export default function AnimalDetalle() {
                 </div>
               </div>
 
-              <div className="flex gap-4 mt-6">
-                <Button className="flex-1 bg-primary hover:bg-primary/90" disabled={animal.estadoAdopcion !== 'sin_hogar'}>
+              <div className="flex flex-col gap-2 mt-6">
+                <Button
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  disabled={noDisponible}
+                  title={noDisponible ? `Este animal está ${estadoAmigable.toLowerCase()}` : "Enviar solicitud de adopción"}
+                  onClick={() => {
+                    const el = document.getElementById(formAnchorId);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                >
                   <Heart className="h-4 w-4 mr-2" />
-                  {animal.estadoAdopcion === 'sin_hogar' ? 'Solicitar adopción' : 'No disponible'}
+                  {noDisponible ? 'No disponible' : 'Solicitar adopción'}
                 </Button>
+                {noDisponible && (
+                  <p className="text-xs text-muted-foreground">
+                    Este animal no está disponible actualmente ({estadoAmigable}). Puedes explorar otras opciones en la página de
+                    <Link to="/adopcion" className="text-primary underline"> adopción</Link>.
+                  </p>
+                )}
                 <Button variant="outline" className="flex-1 border-primary text-primary hover:bg-primary/10">
                   <Calendar className="h-4 w-4 mr-2" />
                   Agendar visita
@@ -251,12 +283,17 @@ export default function AnimalDetalle() {
           </Card>
 
           {/* Formulario */}
-          <div className="bg-primary/5 rounded-lg p-6">
+          <div className="bg-primary/5 rounded-lg p-6" id={formAnchorId}>
             <h2 className="text-xl font-bold text-primary mb-4">Solicitud de Adopción</h2>
             <p className="text-sm text-muted-foreground mb-6">
               Completa el siguiente formulario para iniciar el proceso de adopción de {animal.nombre}.
             </p>
-            <AdoptionForm animalId={animal.idAnimal} animalName={animal.nombre} disabled={animal.estadoAdopcion !== 'sin_hogar'} />
+            <AdoptionForm
+              animalId={animal.idAnimal}
+              animalName={animal.nombre}
+              disabled={noDisponible}
+              onSubmitted={refetch}
+            />
           </div>
         </div>
       </div>
