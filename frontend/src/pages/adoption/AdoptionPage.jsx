@@ -7,6 +7,20 @@ import { Badge } from "../../components/ui/badge";
 import { useToast } from "../../hooks/useToast";
 import animalsService from "../../services/animalsService";
 
+// Mapear estados técnicos a etiquetas amigables
+const mapEstado = (estado) => {
+  switch (estado) {
+    case "sin_hogar":
+      return "Disponible";
+    case "en_proceso":
+      return "En proceso";
+    case "adoptado":
+      return "Adoptado";
+    default:
+      return estado || "";
+  }
+};
+
 export default function AdopcionIndex() {
   const { toast } = useToast();
   const [animals, setAnimals] = useState([]);
@@ -150,7 +164,7 @@ export default function AdopcionIndex() {
                 <div className="flex flex-wrap gap-2 mt-2">
                   <Badge variant="outline">{animal.edad}</Badge>
                   <Badge variant="outline">{animal.tamano}</Badge>
-                  <Badge variant="outline">{animal.estadoAdopcion}</Badge>
+                  <Badge variant="outline">{mapEstado(animal.estadoAdopcion)}</Badge>
                 </div>
                 {animal.historia && (
                   <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{animal.historia}</p>
@@ -168,7 +182,7 @@ export default function AdopcionIndex() {
         </div>
       )}
 
-      {/* Información sobre adopción (igual que antes) */}
+      {/* Información sobre adopción */}
       <div className="mt-12 bg-primary/5 rounded-lg p-6">
         <h2 className="text-2xl font-bold text-primary mb-4">Proceso de Adopción</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -131,6 +131,9 @@ export default function Header() {
                       <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/perfil"); }}>
                         Mi perfil
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/mis-solicitudes"); }}>
+                        Mis solicitudes
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/mis-pedidos"); }}>
                         Mis pedidos
                       </DropdownMenuItem>
@@ -193,6 +196,9 @@ export default function Header() {
                 </div>
                 <Link to="/perfil" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Mi perfil
+                </Link>
+                <Link to="/mis-solicitudes" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+                  Mis solicitudes
                 </Link>
                 <Link to="/mis-pedidos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Mis pedidos
