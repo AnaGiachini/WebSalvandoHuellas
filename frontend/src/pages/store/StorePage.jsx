@@ -1,16 +1,52 @@
 // src/pages/StorePage.jsx
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Filter, ShoppingCart } from "lucide-react";
-
-// Datos de ejemplo
-const products = [
-  { id: 1, name: "Alimento Premium para Perros", category: "Alimentos", price: 2500, image: "/images/product1.jpg", description: "Alimento balanceado de alta calidad para perros adultos." },
-  { id: 2, name: "Cama para Gatos", category: "Accesorios", price: 1800, image: "/images/product2.jpg", description: "Cama suave y cómoda para gatos de todos los tamaños." },
-  { id: 3, name: "Juguete Interactivo", category: "Juguetes", price: 950, image: "/images/product3.jpg", description: "Juguete interactivo para mantener a tu mascota entretenida." },
-  // ... resto de productos
-];
+import cartService from "../../services/cartService";
+import articlesService from "../../services/articlesService";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../components/auth/AuthProvider";
 
 export default function StorePage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await articlesService.getAll();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setError(e?.response?.data?.message || e.message || "Error al cargar productos");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const addToCart = async (idArticulo) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    try {
+      await cartService.addItem({ idArticulo, cantidad: 1 });
+      alert("Producto agregado al carrito");
+    } catch (e) {
+      alert(e?.response?.data?.message || e.message || "No se pudo agregar al carrito");
+    }
+  };
+  if (loading) {
+    return <div className="container py-8 md:py-12">Cargando productos...</div>;
+  }
+
+  if (error) {
+    return <div className="container py-8 md:py-12 text-destructive">{error}</div>;
+  }
+
   return (
     <div className="container py-8 md:py-12">
       <div className="flex flex-col items-center text-center mb-8">
@@ -62,25 +98,22 @@ export default function StorePage() {
       {/* Lista de productos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <div key={product.id} className="border rounded-lg overflow-hidden shadow-sm">
+          <div key={product.idArticulo} className="border rounded-lg overflow-hidden shadow-sm">
             <div className="relative aspect-square">
-              <img src={product.image || "/placeholder.svg"} alt={product.name} className="object-cover w-full h-full" />
-              <span className="absolute top-2 right-2 bg-primary text-white px-2 py-1 text-xs rounded">
-                {product.category}
-              </span>
+              <img src={product.foto || "/placeholder.svg"} alt={product.nombre} className="object-cover w-full h-full" />
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-bold">{product.name}</h3>
-              <p className="text-sm text-gray-500 mt-1">{product.description}</p>
-              <p className="mt-2 font-bold text-primary">${product.price.toLocaleString()}</p>
+              <h3 className="text-lg font-bold">{product.nombre}</h3>
+              <p className="text-sm text-gray-500 mt-1">{product.descripcion}</p>
+              <p className="mt-2 font-bold text-primary">${Number(product.precio || 0).toLocaleString()}</p>
             </div>
             <div className="p-4 pt-0 flex gap-2">
-              <Link to={`/tienda/${product.id}`} className="flex-1">
+              <Link to={`/tienda/${product.idArticulo}`} className="flex-1">
                 <button className="border border-primary text-primary rounded w-full py-2 hover:bg-primary hover:text-white transition">
                   Ver detalles
                 </button>
               </Link>
-              <button className="bg-primary text-white rounded p-2 hover:bg-primary/90">
+              <button className="bg-primary text-white rounded p-2 hover:bg-primary/90" onClick={() => addToCart(product.idArticulo)}>
                 <ShoppingCart className="h-4 w-4" />
               </button>
             </div>

@@ -24,6 +24,7 @@ import SocialCallback from "./pages/auth/SocialCallback";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import MyAdoptions from "./pages/adoption/MyAdoptions";
+import CheckoutPage from "./pages/store/CheckoutPage";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
           <Route path="/auth/callback" element={<SocialCallback />} />
           <Route path="/auth/forgot" element={<ForgotPassword />} />
           <Route path="/auth/reset" element={<ResetPassword />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           
           {/* Rutas Admin */}
           <Route path="/admin" element={<Admin />} />
@@ -55,7 +57,6 @@ function App() {
           <Route path="/admin/eventos" element={<AdminEvents />} />
           <Route path="/admin/adopciones" element={<AdminAdoptions />} />   
 
-          <Route path="/checkout" element={<div>Checkout (en desarrollo)</div>} />
           <Route path="*" element={<div>Página no encontrada</div>} />
         </Routes>
       </RootLayout>

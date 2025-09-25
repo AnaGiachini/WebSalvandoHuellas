@@ -21,18 +21,18 @@ const {
 } = require('../validations/articleValidations');
 const { validateRequest } = require('../middlewares/validateRequest');
 
-// Rutas protegidas
-// Obtener todos los artículos
-router.get('/', protect, validateRequest, articleController.getAllArticles);
-// Obtener un artículo específico
-router.get('/:id', protect, validateArticleId, validateRequest, articleController.getArticleById);
+// Rutas públicas para visualizar la tienda
+// Obtener todos los artículos (público)
+router.get('/', articleController.getAllArticles);
+// Obtener un artículo específico (público)
+router.get('/:id', validateArticleId, validateRequest, articleController.getArticleById);
 // Crear un artículo (solo admin)
 router.post('/', protect, restrictTo('admin'), validateCreateArticle, validateRequest, articleController.createArticle);
 // Actualizar un artículo (solo admin)
 router.put('/:id', protect, restrictTo('admin'), validateUpdateArticle, validateRequest, articleController.updateArticle);
 // Eliminar un artículo (solo admin)
 router.delete('/:id', protect, restrictTo('admin'), validateArticleId, validateRequest, articleController.deleteArticle);
-// Buscar artículos por nombre o descripción
-router.get('/search', protect, validateSearchQuery, validateRequest, articleController.searchArticles);
+// Buscar artículos por nombre o descripción (público)
+router.get('/search', validateSearchQuery, validateRequest, articleController.searchArticles);
 
 module.exports = router;

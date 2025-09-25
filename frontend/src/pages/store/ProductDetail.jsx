@@ -18,6 +18,7 @@ import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { Input } from "../../components/ui/input";
 import RelatedProducts from "../../components/RelatedProducts";
+import cartService from "../../services/cartService";
 
 /* -------------------- Tabs mínimos (sin dependencias) -------------------- */
 function Tabs({ defaultValue, children }) {
@@ -120,6 +121,16 @@ export default function ProductDetail() {
     } catch {}
   };
 
+  const addToCart = async () => {
+    try {
+      const idArticulo = Number(id) || 1; // con datos reales, usa el id correcto
+      await cartService.addItem({ idArticulo, cantidad: qty });
+      alert("Producto agregado al carrito");
+    } catch (e) {
+      alert(e?.response?.data?.message || e.message || "No se pudo agregar al carrito");
+    }
+  };
+
   return (
     <div className="container py-8 md:py-12">
       <Link to="/tienda" className="flex items-center text-primary hover:underline mb-6">
@@ -217,7 +228,7 @@ export default function ProductDetail() {
               </div>
 
               <div className="flex gap-4 mt-6">
-                <Button className="flex-1 bg-primary hover:bg-primary/90">
+                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={addToCart}>
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Agregar al carrito
                 </Button>

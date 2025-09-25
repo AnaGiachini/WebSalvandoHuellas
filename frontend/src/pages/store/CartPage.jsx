@@ -1,9 +1,4 @@
-import { Link } from "react-router-dom";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardFooter } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Separator } from "../../components/ui/separator";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Minus,
   Plus,
@@ -13,35 +8,85 @@ import {
   ShieldCheck,
   ShoppingCart,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import cartService from "../../services/cartService";
+import { useAuth } from "../../components/auth/AuthProvider";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardFooter } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Separator } from "../../components/ui/separator";
 
-// Datos de ejemplo para el carrito
-const cartItems = [
-  {
-    id: 1,
-    name: "Alimento Premium para Perros",
-    price: 2500,
-    quantity: 1,
-    image: "/images/product1.jpg",
-  },
-  {
-    id: 3,
-    name: "Juguete Interactivo",
-    price: 950,
-    quantity: 2,
-    image: "/images/product3.jpg",
-  },
-];
 
 export default function CartPage() {
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await cartService.getMyCart();
+        setCart(data);
+      } catch (e) {
+        setError(e?.response?.data?.message || e.message || "Error al cargar el carrito");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const cartItems = (cart?.items || []).map((it) => ({
+    id: it.idItemCarrito,
+    name: it.articulo?.nombre ?? `Artículo ${it.idArticulo}`,
+    price: it.articulo?.precio ?? 0,
+    quantity: it.cantidad ?? 0,
+    image: it.articulo?.foto ?? "/placeholder.svg",
+    _raw: it,
+  }));
+
+  const refreshCart = async () => {
+    try {
+      const data = await cartService.getMyCart();
+      setCart(data);
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || "Error al actualizar el carrito");
+    }
+  };
+
+  const handleUpdateQty = async (idItemCarrito, newQty) => {
+    try {
+      if (newQty <= 0) {
+        // si llega 0, eliminamos el ítem
+        await cartService.removeItem(idItemCarrito);
+      } else {
+        await cartService.updateItem(idItemCarrito, newQty);
+      }
+      await refreshCart();
+    } catch (e) {
+      alert(e?.response?.data?.message || e.message || 'No se pudo actualizar la cantidad');
+    }
+  };
+
+  const handleRemove = async (idItemCarrito) => {
+    try {
+      await cartService.removeItem(idItemCarrito);
+      await refreshCart();
+    } catch (e) {
+      alert(e?.response?.data?.message || e.message || 'No se pudo eliminar el ítem');
+    }
+  };
+
+  if (loading) return <div className="container py-8">Cargando...</div>;
+  if (error) return <div className="container py-8 text-destructive">{error}</div>;
+
   // Calcular subtotal
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-
+  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   // Calcular envío (gratis si el subtotal es mayor a 5000)
-  const shipping = subtotal > 5000 ? 0 : 500;
-
+  const shipping = subtotal > 5000 ? 0 : (cartItems.length ? 500 : 0);
   // Calcular total
   const total = subtotal + shipping;
 
@@ -95,6 +140,7 @@ export default function CartPage() {
                           variant="ghost"
                           size="icon"
                           className="text-destructive"
+                          onClick={() => handleRemove(item.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -105,6 +151,7 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 rounded-r-none"
+                            onClick={() => handleUpdateQty(item.id, item.quantity - 1)}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -119,12 +166,13 @@ export default function CartPage() {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 rounded-l-none"
+                            onClick={() => handleUpdateQty(item.id, item.quantity + 1)}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                         <p className="font-medium text-primary">
-                          ${(item.price * item.quantity).toLocaleString()}
+                          {(item.price * item.quantity).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -165,7 +213,7 @@ export default function CartPage() {
                       placeholder="Ingresa tu código"
                       className="rounded-r-none"
                     />
-                    <Button className="rounded-l-none bg-primary hover:bg-primary/90">
+                    <Button className="rounded-l-none bg-primary hover:bg-primary/90" onClick={() => navigate("/checkout")}>
                       Aplicar
                     </Button>
                   </div>
@@ -173,7 +221,13 @@ export default function CartPage() {
               </CardContent>
               <CardFooter className="p-6 pt-0">
                 <div className="w-full space-y-4">
-                  <Button className="w-full bg-primary hover:bg-primary/90">
+                  <Button
+                    className="w-full bg-primary hover:bg-primary/90"
+                    onClick={() => {
+                      if (!user) return navigate('/login');
+                      navigate("/checkout");
+                    }}
+                  >
                     <CreditCard className="h-4 w-4 mr-2" />
                     Proceder al pago
                   </Button>
@@ -231,4 +285,4 @@ export default function CartPage() {
       )}
     </div>
   );
-}
+} 

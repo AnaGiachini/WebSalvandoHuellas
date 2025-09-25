@@ -16,6 +16,7 @@ const associations = require('../configs/associations');
 const Usuario = require('../models/usuario');
 const Animal = require('../models/animal');
 const SolicitudAdopcion = require('../models/solicitudAdopcion');
+const Articulo = require('../models/articulo');
 
 (async () => {
   try {
@@ -32,7 +33,7 @@ const SolicitudAdopcion = require('../models/solicitudAdopcion');
     const admin = await Usuario.create({
       nombre: 'Admin',
       apellido: 'Sistema',
-      email: 'admin@salvandohuellas.org',
+      email: 'admin@admin.com',
       contrasena: passwordAdmin,
       rol: 'admin',
     });
@@ -40,7 +41,7 @@ const SolicitudAdopcion = require('../models/solicitudAdopcion');
     const user = await Usuario.create({
       nombre: 'Ana',
       apellido: 'Gonzalez',
-      email: 'ana@example.com',
+      email: 'ana@gmail.com',
       contrasena: passwordUser,
       rol: 'user',
     });
@@ -65,6 +66,46 @@ const SolicitudAdopcion = require('../models/solicitudAdopcion');
     ];
 
     const animales = await Animal.bulkCreate(animalesData, { returning: true });
+
+    console.log('> Creando artículos (productos) para la tienda...');
+    const articulosData = [
+      {
+        nombre: 'Alimento Premium para Perros',
+        descripcion: 'Alimento balanceado de alta calidad para perros adultos. Ingredientes naturales y sin conservantes.',
+        precio: 2500,
+        stock: 50,
+        foto: 'https://images.unsplash.com/photo-1610085833750-cf59bb6b2c83?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        nombre: 'Cama para Gatos',
+        descripcion: 'Cama suave y cómoda para gatos de todos los tamaños.',
+        precio: 1800,
+        stock: 30,
+        foto: 'https://images.unsplash.com/photo-1568640381651-9273950f7f21?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        nombre: 'Juguete Interactivo',
+        descripcion: 'Juguete interactivo para mantener a tu mascota entretenida.',
+        precio: 950,
+        stock: 100,
+        foto: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        nombre: 'Shampoo Hipoalergénico',
+        descripcion: 'Shampoo suave para pieles sensibles, apto para perros y gatos.',
+        precio: 1200,
+        stock: 40,
+        foto: 'https://images.unsplash.com/photo-1598550874175-2b1f30586b43?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        nombre: 'Correa Reforzada',
+        descripcion: 'Correa de nylon reforzado, ideal para paseos seguros.',
+        precio: 1400,
+        stock: 60,
+        foto: 'https://images.unsplash.com/photo-1612538494402-6fdb9fee9601?q=80&w=1200&auto=format&fit=crop'
+      }
+    ];
+    const articulos = await Articulo.bulkCreate(articulosData, { returning: true });
 
     // Creamos algunas solicitudes para probar estados y la lógica exclusiva
     console.log('> Creando solicitudes de adopción de ejemplo...');
@@ -100,6 +141,7 @@ const SolicitudAdopcion = require('../models/solicitudAdopcion');
     console.log('Resumen:');
     console.log(`  Usuarios: admin=${admin.email} (Admin1234), user=${user.email} (User1234)`);
     console.log(`  Animales creados: ${animales.length}`);
+    console.log(`  Artículos creados: ${articulos.length}`);
     console.log('  Solicitudes:');
     console.log(`   - Pendiente #${solPendiente.idSolicitud} → Animal ${animalPendiente.nombre} en_proceso`);
     console.log(`   - Aprobada  #${solAprobada.idSolicitud} → Animal ${animalAprobada.nombre} adoptado`);
