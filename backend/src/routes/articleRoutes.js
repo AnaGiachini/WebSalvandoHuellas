@@ -24,6 +24,8 @@ const { validateRequest } = require('../middlewares/validateRequest');
 // Rutas públicas para visualizar la tienda
 // Obtener todos los artículos (público)
 router.get('/', articleController.getAllArticles);
+// Buscar artículos por nombre o descripción (público)
+router.get('/search', validateSearchQuery, validateRequest, articleController.searchArticles);
 // Obtener un artículo específico (público)
 router.get('/:id', validateArticleId, validateRequest, articleController.getArticleById);
 // Crear un artículo (solo admin)
@@ -32,7 +34,6 @@ router.post('/', protect, restrictTo('admin'), validateCreateArticle, validateRe
 router.put('/:id', protect, restrictTo('admin'), validateUpdateArticle, validateRequest, articleController.updateArticle);
 // Eliminar un artículo (solo admin)
 router.delete('/:id', protect, restrictTo('admin'), validateArticleId, validateRequest, articleController.deleteArticle);
-// Buscar artículos por nombre o descripción (público)
-router.get('/search', validateSearchQuery, validateRequest, articleController.searchArticles);
+// (nota) La ruta de búsqueda debe declararse antes de ":id" para evitar colisiones
 
 module.exports = router;

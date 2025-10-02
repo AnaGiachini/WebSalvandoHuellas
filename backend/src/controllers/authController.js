@@ -65,7 +65,7 @@ const socialCallback = async (req, res) => {
       return res.redirect(302, `${FRONT_URL}/login?error=oauth`);
     }
 
-    const token = jwtUtil.generate({ id: user.idUsuario, rol: user.rol });
+    const token = jwtUtil.generate({ idUsuario: user.idUsuario, rol: user.rol });
     const redirectUrl = `${FRONT_URL}/auth/callback?token=${encodeURIComponent(token)}`;
     return res.redirect(302, redirectUrl);
   } catch (err) {
@@ -76,34 +76,44 @@ const socialCallback = async (req, res) => {
 
 /**
  * Inicia el flujo de "Olvidaste tu contraseña"
- * - Recibe email, genera un token de un solo uso (JWT corto) y envía un enlace por email
- * - En development, si no hay SMTP configurado, también devolvemos el link para pruebas
+ * Refactor: estructura con early-returns y ramas explícitas para SMTP/no SMTP.
+ * - Justificación: reduce nesting, facilita lectura y pruebas guiadas por los tests de integración.
  */
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
     const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
 
+    // Buscamos usuario; respuesta es la misma exista o no para no filtrar información
     const user = await Usuario.findOne({ where: { email } });
-    // Por seguridad, respondemos 200 aunque el email no exista
     if (!user) {
+      // Seguridad: mismo mensaje para evitar enumeración de usuarios
       return res.json({ message: 'Si el email existe, se envió un enlace para restablecer la contraseña.' });
     }
 
-    const token = jwtUtil.generateWithExpiry({ id: user.idUsuario, rol: user.rol, purpose: 'reset' }, RESET_TOKEN_TTL);
+    // Generamos token corto y link de reseteo
+    const token = jwtUtil.generateWithExpiry(
+      { idUsuario: user.idUsuario, rol: user.rol, purpose: 'reset' },
+      RESET_TOKEN_TTL
+    );
     const resetLink = `${FRONT_URL}/auth/reset?token=${encodeURIComponent(token)}`;
 
-    // Enviar correo
     const { SMTP_HOST, SMTP_USER, SMTP_PASS } = process.env;
-    if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
+    const smtpEnabled = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
+
+    if (smtpEnabled) {
+      // Camino principal en prod: enviamos email y no devolvemos el link
       await mailService.sendPasswordReset(email, resetLink);
       return res.json({ message: 'Si el email existe, se envió un enlace para restablecer la contraseña.' });
     }
 
-    // Fallback en dev: log y devolver link para pruebas manuales
+    // Camino de desarrollo: devolvemos el link para facilitar pruebas E2E
     console.log(`[Password Reset][DEV] Enviar a ${email}: ${resetLink}`);
     return res.json({ message: 'Enlace de restablecimiento generado (modo desarrollo).', resetLink });
-  } catch (err) { next(err); }
+  } catch (err) {
+    // Delegamos manejo a middleware centralizado
+    return next(err);
+  }
 };
 
 /**
@@ -123,7 +133,7 @@ const resetPassword = async (req, res, next) => {
       return res.status(400).json({ message: 'Token inválido' });
     }
 
-    const user = await Usuario.findByPk(decoded.id);
+    const user = await Usuario.findByPk(decoded.idUsuario);
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
     const hash = await bcrypt.hash(nuevaContrasena, 10);

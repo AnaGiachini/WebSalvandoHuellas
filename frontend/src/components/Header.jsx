@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useToast } from "../hooks/useToast";
 import { useMobile } from "../hooks/useMobile";
 import { useAuth } from "../components/auth/AuthProvider";
+import cartService from "../services/cartService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,7 @@ export default function Header() {
   const { toast } = useToast();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     function onDocumentClick(e) {
@@ -67,6 +69,26 @@ export default function Header() {
     setTimeout(() => window.location.reload(), 0);
   };
 
+  // Cargar y mantener actualizado el contador del carrito
+  useEffect(() => {
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        if (!user) { if (mounted) setCartCount(0); return; }
+        const cart = await cartService.getMyCart();
+        if (!mounted) return;
+        const count = Array.isArray(cart?.items) ? cart.items.reduce((sum, it) => sum + (it.cantidad || 0), 0) : 0;
+        setCartCount(count);
+      } catch {
+        if (mounted) setCartCount(0);
+      }
+    };
+    refresh();
+    const onUpdated = () => refresh();
+    window.addEventListener('cart:updated', onUpdated);
+    return () => { mounted = false; window.removeEventListener('cart:updated', onUpdated); };
+  }, [user]);
+
   const displayName = user
     ? user.name || [user.nombre, user.apellido].filter(Boolean).join(" ") || "Usuario"
     : null;
@@ -83,8 +105,13 @@ export default function Header() {
         {isMobile ? (
           <div className="flex items-center gap-4">
             <Link to="/carrito">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-[10px] leading-4 text-white text-center">
+                    {cartCount}
+                  </span>
+                )}
               </Button>
             </Link>
             <Button variant="ghost" size="icon" onClick={toggleMenu}>

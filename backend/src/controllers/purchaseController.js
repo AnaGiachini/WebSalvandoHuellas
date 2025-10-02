@@ -35,8 +35,8 @@ const {
  */
 const createPurchase = async (req, res, next) => {
   try {
-    const { idCarrito } = req.body;
-    const purchase = await createPurchaseService(idCarrito, req.user.idUsuario);
+    const { idCarrito, metodoPago } = req.body;
+    const purchase = await createPurchaseService(idCarrito, req.user.idUsuario, { metodoPago });
     res.status(201).json(purchase);
   } catch (err) { next(err); }
 };

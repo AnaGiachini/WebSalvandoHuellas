@@ -31,7 +31,7 @@ const ItemCarrito = require('../models/itemCarrito');
  * @param {number} idUsuario
  * @returns {Promise<Object>} Compra creada con sus ítems
  */
-const createPurchaseService = async (idCarrito, idUsuario) => {
+const createPurchaseService = async (idCarrito, idUsuario, { metodoPago } = {}) => {
   const t = await sequelize.transaction();
   try {
     // Traer carrito + items + artículo (con alias correctos)
@@ -61,11 +61,11 @@ const createPurchaseService = async (idCarrito, idUsuario) => {
 
     // Crear compra en estado pendiente
     const purchase = await Compra.create(
-      { idUsuario, total, estadoPago: 'pendiente' },
+      { idUsuario, total, estadoPago: 'pendiente', metodoPago: metodoPago || null },
       { transaction: t }
     );
 
-    // Crear ítems de compra y descontar stock
+    // Crear ítems de compra (siempre). El descuento de stock depende del método.
     for (const it of cart.items) {
       await ItemCompra.create(
         {
@@ -78,16 +78,18 @@ const createPurchaseService = async (idCarrito, idUsuario) => {
         },
         { transaction: t }
       );
-
-      // Descontar stock
-      await Articulo.update(
-        { stock: it.articulo.stock - it.cantidad },
-        { where: { idArticulo: it.idArticulo }, transaction: t }
-      );
     }
 
-    // Vaciar carrito
-    await ItemCarrito.destroy({ where: { idCarrito }, transaction: t });
+    // Si NO se especificó metodoPago, asumimos compra inmediata y descontamos stock + vaciamos carrito
+    if (!metodoPago) {
+      for (const it of cart.items) {
+        await Articulo.update(
+          { stock: it.articulo.stock - it.cantidad },
+          { where: { idArticulo: it.idArticulo }, transaction: t }
+        );
+      }
+      await ItemCarrito.destroy({ where: { idCarrito }, transaction: t });
+    }
 
     await t.commit();
 
@@ -176,7 +178,36 @@ const updatePurchaseStatusService = async (idCompra, estadoPago) => {
       throw err;
     }
   } else {
-    await purchase.update({ estadoPago });
+    // Si se aprueba una compra pendiente con metodoPago diferido, descontar stock ahora y limpiar carrito
+    if (purchase.estadoPago === 'pendiente' && estadoPago === 'pagado' && purchase.metodoPago) {
+      const t = await sequelize.transaction();
+      try {
+        const items = await ItemCompra.findAll({ where: { idCompra }, transaction: t });
+        for (const it of items) {
+          const art = await Articulo.findByPk(it.idArticulo, { transaction: t });
+          if (!art) continue;
+          if (art.stock < it.cantidad) {
+            throw new AppError(400, `Stock insuficiente para completar la compra del artículo ${it.idArticulo}`);
+          }
+          await art.update({ stock: art.stock - it.cantidad }, { transaction: t });
+        }
+
+        await purchase.update({ estadoPago }, { transaction: t });
+
+        // Limpiar carrito más reciente del usuario (si existe)
+        const latestCart = await Carrito.findOne({ where: { idUsuario: purchase.idUsuario }, order: [['fecha', 'DESC']], transaction: t });
+        if (latestCart) {
+          await ItemCarrito.destroy({ where: { idCarrito: latestCart.idCarrito }, transaction: t });
+        }
+
+        await t.commit();
+      } catch (err) {
+        await t.rollback();
+        throw err;
+      }
+    } else {
+      await purchase.update({ estadoPago });
+    }
   }
 
   // devolver actualizada con include

@@ -14,7 +14,6 @@ import { useAuth } from "../../components/auth/AuthProvider";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardFooter } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
 import { Separator } from "../../components/ui/separator";
 
 
@@ -205,19 +204,6 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="mt-6">
-                  <Label htmlFor="coupon">Código de descuento</Label>
-                  <div className="flex mt-1">
-                    <Input
-                      id="coupon"
-                      placeholder="Ingresa tu código"
-                      className="rounded-r-none"
-                    />
-                    <Button className="rounded-l-none bg-primary hover:bg-primary/90" onClick={() => navigate("/checkout")}>
-                      Aplicar
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
               <CardFooter className="p-6 pt-0">
                 <div className="w-full space-y-4">
@@ -238,34 +224,6 @@ export default function CartPage() {
                 </div>
               </CardFooter>
             </Card>
-
-            <div className="mt-6 bg-primary/5 rounded-lg p-4">
-              <h3 className="font-medium mb-2">Métodos de pago aceptados</h3>
-              <div className="flex gap-2">
-                <div className="bg-background rounded p-2">
-                  <img src="/images/visa.png" alt="Visa" width={40} height={25} />
-                </div>
-                <div className="bg-background rounded p-2">
-                  <img
-                    src="/images/mastercard.png"
-                    alt="Mastercard"
-                    width={40}
-                    height={25}
-                  />
-                </div>
-                <div className="bg-background rounded p-2">
-                  <img src="/images/amex.png" alt="American Express" width={40} height={25} />
-                </div>
-                <div className="bg-background rounded p-2">
-                  <img
-                    src="/images/mercadopago.png"
-                    alt="Mercado Pago"
-                    width={40}
-                    height={25}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       ) : (

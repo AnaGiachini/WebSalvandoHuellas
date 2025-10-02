@@ -1,3 +1,9 @@
+/**
+ * Componente AdminEvents
+ * -------------------------
+ * Muestra una lista de eventos
+ * con opciones para crear, editar y eliminar.
+ */
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

@@ -1,3 +1,9 @@
+/*
+ * Componente AdminProducts
+ * -------------------------
+ * Muestra una lista de productos
+ * con opciones para crear, editar y eliminar.
+ */
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

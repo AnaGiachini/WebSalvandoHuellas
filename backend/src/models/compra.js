@@ -29,6 +29,11 @@ const Compra = sequelize.define("Compra", {
   idUsuario: { type: DataTypes.INTEGER, allowNull: false },
   fechaCompra: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
   estadoPago: { type: DataTypes.ENUM('pendiente', 'pagado', 'cancelado'), defaultValue: 'pendiente' },
-  total: { type: DataTypes.FLOAT, allowNull: false }
+  total: { type: DataTypes.FLOAT, allowNull: false },
+  // Método de pago elegido por el usuario
+  metodoPago: { type: DataTypes.ENUM('mercado_pago', 'transferencia'), allowNull: true },
+  // Referencias opcionales para integraciones con Mercado Pago
+  mp_preference_id: { type: DataTypes.STRING, allowNull: true },
+  mp_payment_id: { type: DataTypes.STRING, allowNull: true }
 }, { tableName: 'compras', timestamps: false });
 module.exports = Compra;
