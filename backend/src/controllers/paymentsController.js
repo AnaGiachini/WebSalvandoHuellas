@@ -6,7 +6,9 @@
 
 const AppError = require('../utils/AppError');
 const { createPurchaseService, getPurchaseByIdService, updatePurchaseStatusService } = require('../services/purchaseService');
+const { createDonationService, getDonationByIdService, updateDonationStatusService } = require('../services/donationService');
 const Compra = require('../models/compra');
+const Donacion = require('../models/donacion');
 
 // SDK de Mercado Pago
 let mp;
@@ -74,6 +76,46 @@ const createMpPreference = async (req, res, next) => {
 };
 
 /**
+ * Crea preferencia de Mercado Pago para una donación (monto único)
+ * Body: { monto }
+ * Respuesta: { init_point, preference_id, donacion }
+ */
+const createMpDonationPreference = async (req, res, next) => {
+  try {
+    const { monto } = req.body;
+    const idUsuario = req.user.idUsuario;
+    if (!mp) throw new AppError(500, 'SDK de Mercado Pago no disponible. Instalar paquete "mercadopago" y configurar MP_ACCESS_TOKEN.');
+    if (!monto || Number(monto) <= 0) throw new AppError(400, 'Monto inválido');
+
+    // Crear donación pendiente
+    const donation = await createDonationService(idUsuario, Number(monto), { metodoPago: 'mercado_pago' });
+
+    const BACK_URL = process.env.BACK_URL || 'http://localhost:4000';
+    const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+
+    const prefBody = {
+      items: [{ id: `donation-${donation.idDonacion}`, title: 'Donación Salvando Huellas', quantity: 1, currency_id: 'ARS', unit_price: Number(monto) }],
+      external_reference: `donation:${donation.idDonacion}`,
+      back_urls: {
+        success: `${FRONT_URL}/donaciones/gracias`,
+        pending: `${FRONT_URL}/donaciones/gracias`,
+        failure: `${FRONT_URL}/donaciones/gracias`,
+      },
+      auto_return: 'approved',
+      notification_url: `${BACK_URL}/api/v1/payments/mp/webhook`,
+    };
+
+    const prefRes = await mp.Preference.create({ body: prefBody });
+    const init_point = prefRes?.init_point || prefRes?.sandbox_init_point;
+    const preference_id = prefRes?.id;
+
+    await Donacion.update({ mp_preference_id: preference_id }, { where: { idDonacion: donation.idDonacion } });
+
+    res.status(201).json({ init_point, preference_id, donacion: donation });
+  } catch (err) { next(err); }
+};
+
+/**
  * Webhook de Mercado Pago: consulta el pago y actualiza la compra.
  * MP envía normalmente: type=payment & data.id=<payment_id>
  */
@@ -98,14 +140,23 @@ const mpWebhook = async (req, res, next) => {
       return res.sendStatus(200);
     }
 
-    const idCompra = Number(external_reference);
-    if (!idCompra) return res.sendStatus(200);
-
-    // Guardar mp_payment_id en la compra
-    await Compra.update({ mp_payment_id: String(paymentId) }, { where: { idCompra } });
-
-    if (status === 'approved') {
-      await updatePurchaseStatusService(idCompra, 'pagado');
+    // Soportar compras y donaciones según external_reference
+    if (String(external_reference).startsWith('donation:')) {
+      const idDonacion = Number(String(external_reference).split(':')[1]);
+      if (idDonacion) {
+        await Donacion.update({ mp_payment_id: String(paymentId) }, { where: { idDonacion } });
+        if (status === 'approved') {
+          await updateDonationStatusService(idDonacion, 'pagado', { mp_payment_id: String(paymentId) });
+        }
+      }
+    } else {
+      const idCompra = Number(external_reference);
+      if (idCompra) {
+        await Compra.update({ mp_payment_id: String(paymentId) }, { where: { idCompra } });
+        if (status === 'approved') {
+          await updatePurchaseStatusService(idCompra, 'pagado');
+        }
+      }
     }
 
     res.sendStatus(200);
@@ -115,4 +166,5 @@ const mpWebhook = async (req, res, next) => {
 module.exports = {
   createMpPreference,
   mpWebhook,
+  createMpDonationPreference,
 };
