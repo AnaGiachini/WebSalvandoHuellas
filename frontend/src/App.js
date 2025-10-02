@@ -20,6 +20,9 @@ import AdminEvents from "./components/admin/AdminEvents";
 import Donaciones from "./pages/donations/Donaciones";
 import AdminAdoptions from "./components/admin/AdminAdoptions";
 import Profile from "./pages/Profile";
+import OrdersList from "./pages/orders/OrdersList";
+import OrdersDetail from "./pages/orders/OrdersDetail";
+import ThankYou from "./pages/orders/ThankYou";
 import SocialCallback from "./pages/auth/SocialCallback";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
@@ -44,6 +47,9 @@ function App() {
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/donaciones" element={<Donaciones />} />  
           <Route path="/perfil" element={<Profile />} />         
+          <Route path="/mis-pedidos" element={<OrdersList />} />
+          <Route path="/mis-pedidos/:id" element={<OrdersDetail />} />
+          <Route path="/gracias" element={<ThankYou />} />
           <Route path="/auth/callback" element={<SocialCallback />} />
           <Route path="/auth/forgot" element={<ForgotPassword />} />
           <Route path="/auth/reset" element={<ResetPassword />} />

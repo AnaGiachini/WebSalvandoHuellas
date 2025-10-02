@@ -1,3 +1,9 @@
+/** 
+ * Componente AdminAnimals
+ * -------------------------
+ * Muestra una lista de animales
+ * con opciones para crear, editar y eliminar.
+ */
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

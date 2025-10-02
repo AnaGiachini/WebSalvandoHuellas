@@ -20,7 +20,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('../utils/jwt');
 const Usuario = require('../models/usuario');
-const AppError = require('../utils/AppError');
+// Refactor: corregimos el path por case-sensitive FS (utils/appError.js)
+const AppError = require('../utils/appError');
 
 /**
  * Genera un hash seguro de la contraseña
@@ -55,14 +56,21 @@ const registerService = async ({ nombre, apellido, email, contrasena, direccion 
     email: email ? email.trim().toLowerCase() : email,
     direccion: direccion ? direccion.trim() : direccion,
   };
-  
-  const hash = await hashPassword(contrasena);
-  const user = await Usuario.create({ 
-    ...datosNormalizados,
-    contrasena: hash 
-  });
-  
-  return jwt.generate({ id: user.idUsuario, rol: user.rol });
+
+  try {
+    const hash = await hashPassword(contrasena);
+    const user = await Usuario.create({
+      ...datosNormalizados,
+      contrasena: hash,
+    });
+    return jwt.generate({ idUsuario: user.idUsuario, rol: user.rol });
+  } catch (err) {
+    // Refactor: centralizamos error de duplicado a 409 para consistencia con ADR
+    if (err && (err.name === 'SequelizeUniqueConstraintError' || /unique|duplic/i.test(String(err.message)))) {
+      throw new AppError(409, 'Email ya registrado');
+    }
+    throw err;
+  }
 };
 
 /**
@@ -74,11 +82,13 @@ const registerService = async ({ nombre, apellido, email, contrasena, direccion 
  * @throws {AppError} Error 401 si las credenciales son inválidas
  */
 const loginService = async ({ email, contrasena }) => {
+  // Aseguramos email normalizado por seguridad adicional (además de la validación)
+  email = email?.trim().toLowerCase();
   const user = await Usuario.findOne({ where: { email } });
   if (!user || !(await comparePassword(contrasena, user.contrasena)))
     throw new AppError(401, 'Credenciales inválidas');
 
-  return jwt.generate({ id: user.idUsuario, rol: user.rol });
+  return jwt.generate({ idUsuario: user.idUsuario, rol: user.rol });
 };
 
 module.exports = { registerService, loginService };

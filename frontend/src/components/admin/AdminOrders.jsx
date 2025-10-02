@@ -1,3 +1,9 @@
+/**
+ * Componente AdminOrders
+ * -------------------------
+ * Muestra una lista de pedidos
+ * con opciones para crear, editar y eliminar.
+ */
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

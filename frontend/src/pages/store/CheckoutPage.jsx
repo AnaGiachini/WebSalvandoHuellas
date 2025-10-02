@@ -1,24 +1,50 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import cartService from "../../services/cartService";
 import purchaseService from "../../services/purchaseService";
+import paymentService from "../../services/paymentService";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardFooter } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Separator } from "../../components/ui/separator";
+import userService from "../../services/userService";
+import { useAuth } from "../../components/auth/AuthProvider";
+import cartService from "../../services/cartService";
 
 export default function CheckoutPage() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState(null);
   const [error, setError] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('mercado_pago');
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerLast, setBuyerLast] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
+  // Dirección no se usa en checkout según requerimiento
   const navigate = useNavigate();
 
   useEffect(() => {
     const load = async () => {
       try {
+        // Guardar de sesión: si no hay usuario, ir a login
+        if (!user) {
+          navigate('/login');
+          return;
+        }
         const data = await cartService.getMyCart();
         setCart(data);
+        // Si el carrito no tiene items, redirigir a carrito
+        if (!data?.items || data.items.length === 0) {
+          navigate('/carrito');
+          return;
+        }
+        // Prefill datos del comprador desde el perfil
+        try {
+          const me = await userService.me();
+          setBuyerName(me?.nombre || "");
+          setBuyerLast(me?.apellido || "");
+          setBuyerEmail(me?.email || "");
+        } catch {}
       } catch (e) {
         setError(e?.response?.data?.message || e.message || "Error al cargar el carrito");
       } finally {
@@ -26,20 +52,31 @@ export default function CheckoutPage() {
       }
     };
     load();
-  }, []);
+  }, [user, navigate]);
 
   const items = cart?.items || [];
   const subtotal = items.reduce((acc, it) => acc + (it.cantidad || 0) * (it.articulo?.precio || 0), 0);
-  const shipping = subtotal > 5000 ? 0 : (items.length ? 500 : 0);
-  const total = subtotal + shipping;
+  const total = subtotal; // Sin flete ni descuentos
 
   const onConfirm = async () => {
     if (!cart?.idCarrito) return;
     try {
       setLoading(true);
-      await purchaseService.createFromCart(cart.idCarrito);
-      alert("¡Compra realizada con éxito! Puedes ver el detalle en tu perfil.");
-      navigate("/perfil");
+      if (paymentMethod === 'mercado_pago') {
+        const { init_point } = await paymentService.createPreference({ idCarrito: cart.idCarrito });
+        if (init_point) {
+          window.location.href = init_point;
+          return;
+        }
+      } else if (paymentMethod === 'transferencia') {
+        await purchaseService.createFromCart({ idCarrito: cart.idCarrito, metodoPago: 'transferencia' });
+        alert("Compra generada en estado pendiente. Por favor, realiza la transferencia bancaria.\nAlias: salvandohuellas.jm\nCVU: 0000003100064017923408\nNombre: Mara Emma Giachini\nEnviar comprobante por el canal indicado.");
+        // Vaciar carrito inmediatamente para una mejor UX en el caso de transferencia
+        try { await cartService.clearCart(); } catch {}
+        navigate("/gracias");
+        return;
+      }
+      alert('No se pudo iniciar el proceso de pago');
     } catch (e) {
       alert(e?.response?.data?.message || e.message || "No se pudo completar la compra");
     } finally {
@@ -72,20 +109,19 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="nombre">Nombre</Label>
-                  <Input id="nombre" placeholder="Tu nombre" />
+                  <Input id="nombre" value={buyerName} readOnly disabled placeholder="Tu nombre" />
                 </div>
                 <div>
                   <Label htmlFor="apellido">Apellido</Label>
-                  <Input id="apellido" placeholder="Tu apellido" />
+                  <Input id="apellido" value={buyerLast} readOnly disabled placeholder="Tu apellido" />
                 </div>
                 <div className="md:col-span-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="tu@email.com" />
+                  <Input id="email" type="email" value={buyerEmail} readOnly disabled placeholder="tu@email.com" />
                 </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="direccion">Dirección</Label>
-                  <Input id="direccion" placeholder="Calle 123, Ciudad" />
-                </div>
+              </div>
+              <div className="rounded-md border p-4 bg-primary/5 text-sm text-muted-foreground">
+                Al completar tu compra te enviaremos por correo electrónico o mensaje los puntos de retiro disponibles y las instrucciones para coordinar la entrega.
               </div>
             </CardContent>
           </Card>
@@ -106,6 +142,46 @@ export default function CheckoutPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <h2 className="text-xl font-bold">Método de pago</h2>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="metodoPago"
+                    value="mercado_pago"
+                    checked={paymentMethod === 'mercado_pago'}
+                    onChange={() => setPaymentMethod('mercado_pago')}
+                  />
+                  <span>Mercado Pago</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="metodoPago"
+                    value="transferencia"
+                    checked={paymentMethod === 'transferencia'}
+                    onChange={() => setPaymentMethod('transferencia')}
+                  />
+                  <span>Transferencia bancaria</span>
+                </label>
+              </div>
+
+              {paymentMethod === 'transferencia' && (
+                <div className="mt-4 rounded-md border p-4 bg-primary/5">
+                  <p className="font-medium mb-2">Datos para la transferencia</p>
+                  <ul className="text-sm space-y-1">
+                    <li><span className="font-medium">Alias:</span> salvandohuellas.jm</li>
+                    <li><span className="font-medium">CVU:</span> 0000003100064017923408</li>
+                    <li><span className="font-medium">Nombre:</span> Mara Emma Giachini</li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground mt-3">Una vez realizada la transferencia, por favor envíanos el comprobante. Al acreditarse, se confirmará tu compra.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Columna derecha: Resumen */}
@@ -116,10 +192,6 @@ export default function CheckoutPage() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>${subtotal.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Envío</span>
-                <span>{shipping ? `$${shipping.toLocaleString()}` : "Gratis"}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-bold">

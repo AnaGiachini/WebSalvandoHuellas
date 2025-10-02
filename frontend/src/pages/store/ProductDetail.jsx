@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Share2,
@@ -12,13 +12,13 @@ import {
   Plus,
 } from "lucide-react";
 
-// Si ya tienes estos componentes en src/components/ui, usa estos imports.
-// Si no, puedes reemplazar por <button>, <input>, etc. con clases Tailwind.
+
 import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
 import { Input } from "../../components/ui/input";
 import RelatedProducts from "../../components/RelatedProducts";
 import cartService from "../../services/cartService";
+import articlesService from "../../services/articlesService";
+import { useAuth } from "../../components/auth/AuthProvider";
 
 /* -------------------- Tabs mínimos (sin dependencias) -------------------- */
 function Tabs({ defaultValue, children }) {
@@ -57,58 +57,40 @@ function TabsContent({ value, __tabs, className = "", children }) {
 }
 /* ------------------------------------------------------------------------ */
 
-// Mock de productos (puedes reemplazarlo por fetch según :id)
-const productsById = {
-  1: {
-    id: 1,
-    name: "Alimento Premium para Perros",
-    category: "Alimentos",
-    price: 2500,
-    stock: 15,
-    rating: 4.5,
-    reviews: 28,
-    petType: "Perros",
-    brand: "NutriPet",
-    weight: "3 kg",
-    images: ["/images/product1.jpg", "/images/product1-2.jpg", "/images/product1-3.jpg"],
-    description:
-      "Alimento balanceado de alta calidad para perros adultos. Formulado con ingredientes naturales y sin conservantes artificiales. Proporciona todos los nutrientes necesarios para mantener a tu mascota saludable y activa.",
-    features: [
-      "Ingredientes naturales",
-      "Sin conservantes artificiales",
-      "Rico en proteínas",
-      "Con vitaminas y minerales esenciales",
-      "Mejora el pelaje y la salud digestiva",
-    ],
-    specifications: {
-      Tipo: "Alimento seco",
-      "Edad recomendada": "Adulto",
-      "Tamaño de raza": "Todas",
-      "Ingredientes principales": "Pollo, arroz, vegetales",
-      "Contenido proteico": "25%",
-      "Contenido graso": "15%",
-      Fibra: "3%",
-      Conservación: "Lugar fresco y seco",
-    },
-  },
-  // Puedes añadir más IDs aquí si lo necesitas
-};
-
 export default function ProductDetail() {
   const { id } = useParams();
-  const product = productsById[id] ?? productsById[1]; // fallback simple
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
 
-  const mainImage = product.images?.[0] ?? "/placeholder.svg";
-  const gallery = product.images?.length ? product.images : ["/placeholder.svg"];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await articlesService.getById(id);
+        setProduct(data);
+      } catch (e) {
+        setError(e?.response?.data?.message || e.message || "Error al cargar el producto");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
+
+  const mainImage = product?.foto || "/placeholder.svg";
+  const gallery = [product?.foto || "/placeholder.svg"];
 
   const dec = () => setQty((q) => Math.max(1, q - 1));
   const inc = () => setQty((q) => Math.min(product.stock, q + 1));
 
   const handleShare = async () => {
     const shareData = {
-      title: product.name,
-      text: `Mira este producto: ${product.name}`,
+      title: product?.nombre || "Producto",
+      text: `Mira este producto: ${product?.nombre || "Producto"}`,
       url: window.location.href,
     };
     try {
@@ -123,13 +105,29 @@ export default function ProductDetail() {
 
   const addToCart = async () => {
     try {
-      const idArticulo = Number(id) || 1; // con datos reales, usa el id correcto
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+      const idArticulo = product?.idArticulo || Number(id);
       await cartService.addItem({ idArticulo, cantidad: qty });
       alert("Producto agregado al carrito");
     } catch (e) {
       alert(e?.response?.data?.message || e.message || "No se pudo agregar al carrito");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container py-8 md:py-12">Cargando producto...</div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="container py-8 md:py-12 text-destructive">{error || 'Producto no encontrado'}</div>
+    );
+  }
 
   return (
     <div className="container py-8 md:py-12">
@@ -145,7 +143,7 @@ export default function ProductDetail() {
           <div className="relative aspect-square rounded-lg overflow-hidden mb-4 border">
             <img
               src={mainImage}
-              alt={product.name}
+              alt={product?.nombre || 'Producto'}
               className="absolute inset-0 object-cover w-full h-full"
               loading="lazy"
             />
@@ -157,7 +155,7 @@ export default function ProductDetail() {
               <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
                 <img
                   src={image}
-                  alt={`${product.name} - Imagen ${index + 1}`}
+                  alt={`${product?.nombre || 'Producto'} - Imagen ${index + 1}`}
                   className="absolute inset-0 object-cover w-full h-full"
                   loading="lazy"
                 />
@@ -171,10 +169,10 @@ export default function ProductDetail() {
           <div className="mb-6">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-3xl font-bold text-primary">{product.name}</h1>
+                <h1 className="text-3xl font-bold text-primary">{product?.nombre}</h1>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="secondary">{product.category}</Badge>
-                  <Badge variant="outline">{product.petType}</Badge>
+                  {/* Etiquetas opcionales si en el futuro hay categorías o tipo */}
+                  {/* <Badge variant="secondary">{product.categoria}</Badge> */}
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={handleShare}>
@@ -188,19 +186,20 @@ export default function ProductDetail() {
                   {[...Array(5)].map((_, i) => (
                     <span
                       key={i}
-                      className={`text-lg ${i < Math.floor(product.rating) ? "text-yellow-500" : "text-gray-300"}`}
+                      className={`text-lg ${i < Math.floor(product?.rating || 0) ? "text-yellow-500" : "text-gray-300"}`}
                     >
                       ★
                     </span>
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">({product.reviews} reseñas)</span>
+                {/* Placeholder de reseñas deshabilitado por ahora */}
+                {/* <span className="text-sm text-muted-foreground">({product.reviews} reseñas)</span> */}
               </div>
             </div>
 
             <div className="mt-6">
-              <p className="text-3xl font-bold text-primary">${product.price.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground mt-1">Stock disponible: {product.stock} unidades</p>
+              <p className="text-3xl font-bold text-primary">${Number(product?.precio || 0).toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Stock disponible: {product?.stock} unidades</p>
             </div>
 
             <div className="mt-6 space-y-4">
@@ -213,11 +212,11 @@ export default function ProductDetail() {
                   <Input
                     type="number"
                     min="1"
-                    max={product.stock}
+                    max={product?.stock || 1}
                     value={qty}
                     onChange={(e) => {
                       const v = Number(e.target.value || 1);
-                      if (!Number.isNaN(v)) setQty(Math.min(product.stock, Math.max(1, v)));
+                      if (!Number.isNaN(v)) setQty(Math.min(product?.stock || 1, Math.max(1, v)));
                     }}
                     className="w-16 text-center rounded-none"
                   />
@@ -242,15 +241,15 @@ export default function ProductDetail() {
               <div className="flex items-center">
                 <Truck className="h-5 w-5 text-primary mr-3" />
                 <div>
-                  <p className="font-medium">Envío gratis</p>
-                  <p className="text-sm text-muted-foreground">En compras superiores a $5000</p>
+                  <p className="font-medium">Formas de entrega</p>
+                  <p className="text-sm text-muted-foreground">Retiro o coordinación con la protectora</p>
                 </div>
               </div>
               <div className="flex items-center">
                 <CreditCard className="h-5 w-5 text-primary mr-3" />
                 <div>
                   <p className="font-medium">Métodos de pago</p>
-                  <p className="text-sm text-muted-foreground">Tarjetas de crédito, débito y transferencia</p>
+                  <p className="text-sm text-muted-foreground">Mercado Pago y Transferencia bancaria</p>
                 </div>
               </div>
               <div className="flex items-center">
@@ -303,7 +302,7 @@ export default function ProductDetail() {
       {/* Productos relacionados */}
       <div className="mt-16">
         <h2 className="text-2xl font-bold text-primary mb-6">Productos relacionados</h2>
-        <RelatedProducts category={product.category} currentProductId={product.id} />
+        <RelatedProducts category={undefined} currentProductId={product?.idArticulo} />
       </div>
     </div>
   );

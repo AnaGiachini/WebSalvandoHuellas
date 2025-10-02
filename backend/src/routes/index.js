@@ -8,6 +8,7 @@ const adoptionApplicationRoutes = require("./adoptionApplicationRoutes");
 const cartRoutes = require("./cartRoutes");
 const purchaseRoutes = require("./purchaseRoutes");
 const articleRoutes = require("./articleRoutes");
+const paymentsRoutes = require("./paymentsRoutes");
 
 
 router.use("/auth", authRoutes); // Rutas de autenticación
@@ -17,5 +18,6 @@ router.use("/adoptions", adoptionApplicationRoutes); // Rutas de solicitudes de 
 router.use("/carts", cartRoutes); // Rutas de carrito
 router.use("/purchases", purchaseRoutes); // Rutas de compra
 router.use("/articles", articleRoutes); // Rutas de artículos
+router.use("/payments", paymentsRoutes); // Rutas de pagos (mercadopago)
 
 module.exports = router;

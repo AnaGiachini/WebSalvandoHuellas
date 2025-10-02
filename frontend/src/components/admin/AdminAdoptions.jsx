@@ -1,3 +1,9 @@
+/**
+ * Componente AdminAdoptions
+ * -------------------------
+ * Muestra una lista de solicitudes de adopción
+ * con opciones para aprobar, rechazar y eliminar.
+ */
 import { useEffect, useState, useCallback } from "react"
 import {
   Search, MoreHorizontal, Eye, Check, X, Mail, Calendar, User, Heart,
