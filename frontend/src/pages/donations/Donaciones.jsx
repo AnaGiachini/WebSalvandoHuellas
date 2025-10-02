@@ -1,11 +1,24 @@
 import { Heart, Users, TrendingUp, Shield } from "lucide-react"
 import { Badge } from "../../components/ui/badge"
 import { DonationForm } from "../../components/donation/DonationForm"
-import { RecurringDonation } from "../../components/donation/RecurringDonation"
+//import { RecurringDonation } from "../../components/donation/RecurringDonation"
 import { DonationProgress } from "../../components/donation/DonationProgress"
 import { DonationFAQ } from "../../components/donation/DonationFAQ"
+import { useAuth } from "../../components/auth/AuthProvider"
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 export default function DonacionesPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  // Precondición UC06: el usuario debe estar autenticado
+  useEffect(() => {
+    if (!user) {
+      navigate('/login?next=/donaciones', { replace: true })
+    }
+  }, [user, navigate])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
       {/* Hero Section */}
@@ -80,7 +93,7 @@ export default function DonacionesPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             <DonationForm />
-            <RecurringDonation />
+            {/*<RecurringDonation />*/}
           </div>
         </div>
       </section>

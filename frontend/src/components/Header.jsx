@@ -74,7 +74,8 @@ export default function Header() {
     let mounted = true;
     const refresh = async () => {
       try {
-        if (!user) { if (mounted) setCartCount(0); return; }
+        const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('authToken');
+        if (!user || !hasToken) { if (mounted) setCartCount(0); return; }
         const cart = await cartService.getMyCart();
         if (!mounted) return;
         const count = Array.isArray(cart?.items) ? cart.items.reduce((sum, it) => sum + (it.cantidad || 0), 0) : 0;
@@ -164,6 +165,9 @@ export default function Header() {
                       <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/mis-pedidos"); }}>
                         Mis pedidos
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/mis-donaciones"); }}>
+                        Mis donaciones
+                      </DropdownMenuItem>
                       {!user.isGuest && (
                         <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/favoritos"); }}>
                           Favoritos
@@ -229,6 +233,9 @@ export default function Header() {
                 </Link>
                 <Link to="/mis-pedidos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Mis pedidos
+                </Link>
+                <Link to="/mis-donaciones" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+                  Mis donaciones
                 </Link>
                 {!user.isGuest && (
                   <Link to="/favoritos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>

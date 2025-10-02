@@ -24,6 +24,10 @@ const Donacion = sequelize.define("Donacion", {
   idDonacion: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   idUsuario: { type: DataTypes.INTEGER, allowNull: false },
   monto: { type: DataTypes.FLOAT, allowNull: false },
-  fechaDonacion: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+  fechaDonacion: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  estadoPago: { type: DataTypes.ENUM('pendiente', 'pagado', 'cancelado'), defaultValue: 'pendiente' },
+  metodoPago: { type: DataTypes.ENUM('mercado_pago', 'transferencia'), allowNull: true },
+  mp_preference_id: { type: DataTypes.STRING, allowNull: true },
+  mp_payment_id: { type: DataTypes.STRING, allowNull: true }
 }, { tableName: 'donaciones', timestamps: false });
 module.exports = Donacion;
