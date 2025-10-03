@@ -82,10 +82,15 @@ export default function ProductDetail() {
   }, [id]);
 
   const mainImage = product?.foto || "/placeholder.svg";
-  const gallery = [product?.foto || "/placeholder.svg"];
+  const gallery = [product?.foto || "/placeholder.svg"].filter(Boolean);
+  const description = product?.description || product?.descripcion || "Sin descripción disponible.";
+  const features = Array.isArray(product?.features) ? product.features : [];
+  const specifications = product?.specifications && typeof product.specifications === 'object' ? product.specifications : {};
+  const price = Number(product?.precio ?? 0);
+  const stockSafe = Math.max(1, Number(product?.stock ?? 1));
 
   const dec = () => setQty((q) => Math.max(1, q - 1));
-  const inc = () => setQty((q) => Math.min(product.stock, q + 1));
+  const inc = () => setQty((q) => Math.min(stockSafe, q + 1));
 
   const handleShare = async () => {
     const shareData = {
@@ -198,8 +203,8 @@ export default function ProductDetail() {
             </div>
 
             <div className="mt-6">
-              <p className="text-3xl font-bold text-primary">${Number(product?.precio || 0).toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground mt-1">Stock disponible: {product?.stock} unidades</p>
+              <p className="text-3xl font-bold text-primary">${price.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Stock disponible: {stockSafe} {stockSafe === 1 ? 'unidad' : 'unidades'}</p>
             </div>
 
             <div className="mt-6 space-y-4">
@@ -212,11 +217,11 @@ export default function ProductDetail() {
                   <Input
                     type="number"
                     min="1"
-                    max={product?.stock || 1}
+                    max={stockSafe}
                     value={qty}
                     onChange={(e) => {
                       const v = Number(e.target.value || 1);
-                      if (!Number.isNaN(v)) setQty(Math.min(product?.stock || 1, Math.max(1, v)));
+                      if (!Number.isNaN(v)) setQty(Math.min(stockSafe, Math.max(1, v)));
                     }}
                     className="w-16 text-center rounded-none"
                   />
@@ -271,12 +276,12 @@ export default function ProductDetail() {
             </TabsList>
 
             <TabsContent value="description" className="p-4 bg-primary/5 rounded-lg mt-2">
-              <p className="text-muted-foreground">{product.description}</p>
+              <p className="text-muted-foreground">{description}</p>
             </TabsContent>
 
             <TabsContent value="features" className="p-4 bg-primary/5 rounded-lg mt-2">
               <ul className="space-y-2">
-                {product.features.map((feature, index) => (
+                {features.map((feature, index) => (
                   <li key={index} className="flex items-start">
                     <span className="text-primary mr-2">•</span>
                     <span className="text-muted-foreground">{feature}</span>
@@ -287,7 +292,7 @@ export default function ProductDetail() {
 
             <TabsContent value="specifications" className="p-4 bg-primary/5 rounded-lg mt-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(product.specifications).map(([key, value], index) => (
+                {Object.entries(specifications).map(([key, value], index) => (
                   <div key={index} className="flex flex-col">
                     <p className="text-sm font-medium">{key}</p>
                     <p className="text-sm text-muted-foreground">{value}</p>
