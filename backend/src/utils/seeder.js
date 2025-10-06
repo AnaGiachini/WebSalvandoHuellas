@@ -17,6 +17,7 @@ const Usuario = require('../models/usuario');
 const Animal = require('../models/animal');
 const SolicitudAdopcion = require('../models/solicitudAdopcion');
 const Articulo = require('../models/articulo');
+const Evento = require('../models/evento');
 
 (async () => {
   try {
@@ -107,6 +108,47 @@ const Articulo = require('../models/articulo');
     ];
     const articulos = await Articulo.bulkCreate(articulosData, { returning: true });
 
+    console.log('> Creando eventos...');
+    const now = new Date();
+    const atHour = (base, daysOffset, hour = 10, minute = 0) => {
+      const d = new Date(base);
+      d.setDate(d.getDate() + daysOffset);
+      d.setHours(hour, minute, 0, 0);
+      return d;
+    };
+    const eventosData = [
+      {
+        titulo: 'Jornada de Adopción',
+        descripcion: 'Conoce a nuestros peludos y encuentra a tu compañero ideal.',
+        fecha: atHour(now, 7, 10, 0), // próximo en 7 días
+        lugar: 'Plaza Central',
+        foto: 'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        titulo: 'Campaña de Vacunación',
+        descripcion: 'Vacunación y desparasitación a bajo costo.',
+        fecha: atHour(now, 14, 9, 0), // próximo en 14 días
+        lugar: 'Sede Salvando Huellas',
+        foto: 'https://images.unsplash.com/photo-1559223607-b61fe8f4b2f2?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        titulo: 'Taller de Tenencia Responsable',
+        descripcion: 'Aprende cuidados esenciales para tu mascota.',
+        fecha: atHour(now, -10, 18, 0), // pasado hace 10 días
+        lugar: 'Biblioteca Municipal',
+        foto: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=1200&auto=format&fit=crop'
+      },
+      {
+        titulo: 'Caminata Solidaria',
+        descripcion: 'Actividad familiar para recaudar fondos.',
+        fecha: atHour(now, -25, 9, 0), // pasado hace 25 días
+        lugar: 'Parque Central',
+        foto: 'https://images.unsplash.com/photo-1507149833265-60c372daea22?q=80&w=1200&auto=format&fit=crop'
+      },
+    ];
+
+    const eventos = await Evento.bulkCreate(eventosData, { returning: true });
+
     // Creamos algunas solicitudes para probar estados y la lógica exclusiva
     console.log('> Creando solicitudes de adopción de ejemplo...');
 
@@ -142,6 +184,7 @@ const Articulo = require('../models/articulo');
     console.log(`  Usuarios: admin=${admin.email} (Admin1234), user=${user.email} (User1234)`);
     console.log(`  Animales creados: ${animales.length}`);
     console.log(`  Artículos creados: ${articulos.length}`);
+    console.log(`  Eventos creados: ${eventos.length}`);
     console.log('  Solicitudes:');
     console.log(`   - Pendiente #${solPendiente.idSolicitud} → Animal ${animalPendiente.nombre} en_proceso`);
     console.log(`   - Aprobada  #${solAprobada.idSolicitud} → Animal ${animalAprobada.nombre} adoptado`);

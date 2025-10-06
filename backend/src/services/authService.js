@@ -21,7 +21,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('../utils/jwt');
 const Usuario = require('../models/usuario');
 // Refactor: corregimos el path por case-sensitive FS (utils/appError.js)
-const AppError = require('../utils/appError/appError');
+const AppError = require('../utils/AppError');
 
 /**
  * Genera un hash seguro de la contraseña

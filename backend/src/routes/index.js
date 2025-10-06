@@ -10,6 +10,7 @@ const purchaseRoutes = require("./purchaseRoutes");
 const articleRoutes = require("./articleRoutes");
 const paymentsRoutes = require("./paymentsRoutes");
 const donationRoutes = require("./donationRoutes");;
+const eventRoutes = require("./eventRoutes");
 
 
 router.use("/auth", authRoutes); // Rutas de autenticación
@@ -21,5 +22,6 @@ router.use("/purchases", purchaseRoutes); // Rutas de compra
 router.use("/articles", articleRoutes); // Rutas de artículos
 router.use("/payments", paymentsRoutes); // Rutas de pagos (mercadopago)
 router.use("/donations", donationRoutes); // Rutas de donaciones
+router.use("/events", eventRoutes); // Rutas de eventos (UC04)
 
 module.exports = router;
