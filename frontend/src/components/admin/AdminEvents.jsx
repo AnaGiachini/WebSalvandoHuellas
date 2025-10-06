@@ -4,7 +4,7 @@
  * Muestra una lista de eventos
  * con opciones para crear, editar y eliminar.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdownMenu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import {
   Search,
   Plus,
@@ -31,58 +32,42 @@ import {
   Eye,
   Calendar,
 } from "lucide-react";
-
-// Datos de ejemplo para eventos
-const events = [
-  {
-    id: 1,
-    title: "Jornada de Adopción",
-    date: "2023-06-15",
-    time: "10:00 - 18:00",
-    location: "Plaza Central, Jesús María",
-    status: "Próximo",
-    image: "/images/event1.jpg",
-  },
-  {
-    id: 2,
-    title: "Campaña de Vacunación",
-    date: "2023-06-22",
-    time: "09:00 - 14:00",
-    location: "Sede Salvando Huellas",
-    status: "Próximo",
-    image: "/images/event2.jpg",
-  },
-  {
-    id: 3,
-    title: "Taller de Adiestramiento",
-    date: "2023-06-29",
-    time: "16:00 - 18:00",
-    location: "Parque Municipal",
-    status: "Próximo",
-    image: "/images/event3.jpg",
-  },
-  {
-    id: 4,
-    title: "Feria de Adopción",
-    date: "2023-05-10",
-    time: "11:00 - 19:00",
-    location: "Centro Comercial",
-    status: "Finalizado",
-    image: "/images/event4.jpg",
-  },
-  {
-    id: 5,
-    title: "Charla sobre Tenencia Responsable",
-    date: "2023-05-05",
-    time: "18:00 - 20:00",
-    location: "Biblioteca Municipal",
-    status: "Finalizado",
-    image: "/images/event5.jpg",
-  },
-];
+import Loading from "../ui/Loading";
+import { createEvent, getEvents, updateEvent as updateEventApi, deleteEvent as deleteEventApi } from "../../services/eventsService";
 
 export default function AdminEvents() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Cargar eventos desde backend
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await getEvents();
+        const mapped = (list || []).map((e) => ({
+          id: e.idEvento,
+          title: e.titulo,
+          date: e.fecha,
+          time: "",
+          location: e.lugar,
+          status: new Date(e.fecha) >= new Date() ? "Próximo" : "Finalizado",
+          image: e.foto,
+          description: e.descripcion,
+        }));
+        setEvents(mapped);
+      } catch (e) {
+        setError("No se pudieron cargar los eventos");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   // Filtrar eventos según término de búsqueda
   const filteredEvents = events.filter(
@@ -99,6 +84,10 @@ export default function AdminEvents() {
 
   return (
     <div>
+      {loading && <Loading />}
+      {!!error && (
+        <p className="mb-2 text-sm text-red-500" role="alert">{error}</p>
+      )}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-2xl font-bold">Gestión de Eventos</h2>
         <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-4">
@@ -111,10 +100,60 @@ export default function AdminEvents() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo evento
-          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-primary/90">
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo evento
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Crear evento</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-3">
+                <Input placeholder="Título" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
+                <Input placeholder="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
+                <Input type="datetime-local" placeholder="Fecha" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} />
+                <Input placeholder="Lugar" value={form.lugar} onChange={(e) => setForm({ ...form, lugar: e.target.value })} />
+                <Input placeholder="URL de foto" value={form.foto} onChange={(e) => setForm({ ...form, foto: e.target.value })} />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                  <Button disabled={submitting} onClick={async () => {
+                    setSubmitting(true);
+                    setError("");
+                    try {
+                      const payload = { ...form };
+                      // Asegurar ISO si viene de input datetime-local
+                      if (payload.fecha && !payload.fecha.endsWith('Z')) {
+                        payload.fecha = new Date(payload.fecha).toISOString();
+                      }
+                      const created = await createEvent(payload);
+                      setEvents((prev) => [
+                        ...prev,
+                        {
+                          id: created.idEvento,
+                          title: created.titulo,
+                          date: created.fecha,
+                          time: "",
+                          location: created.lugar,
+                          status: new Date(created.fecha) >= new Date() ? "Próximo" : "Finalizado",
+                          image: created.foto,
+                          description: created.descripcion,
+                        },
+                      ]);
+                      setOpen(false);
+                      setForm({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
+                    } catch (e) {
+                      setError("No se pudo crear el evento");
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}>Crear</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -163,19 +202,53 @@ export default function AdminEvents() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver detalles
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const nuevoTitulo = window.prompt('Nuevo título', event.title);
+                          if (nuevoTitulo && nuevoTitulo !== event.title) {
+                            try {
+                              const payload = { titulo: nuevoTitulo };
+                              const updated = await updateEventApi(event.id, payload);
+                              setEvents((prev) => prev.map((e) => e.id === event.id ? {
+                                ...e,
+                                title: updated.titulo,
+                                date: updated.fecha,
+                                location: updated.lugar,
+                                image: updated.foto,
+                                description: updated.descripcion,
+                              } : e));
+                            } catch (e) {
+                              setError('No se pudo actualizar el evento');
+                            }
+                          }
+                        }}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                          const nuevaFecha = window.prompt('Nueva fecha (YYYY-MM-DD HH:mm)', '');
+                          if (nuevaFecha) {
+                            try {
+                              const iso = new Date(nuevaFecha).toISOString();
+                              const updated = await updateEventApi(event.id, { fecha: iso });
+                              setEvents((prev) => prev.map((e) => e.id === event.id ? { ...e, date: updated.fecha } : e));
+                            } catch (e) {
+                              setError('No se pudo reprogramar el evento');
+                            }
+                          }
+                        }}>
                           <Calendar className="h-4 w-4 mr-2" />
                           Reprogramar
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={async () => {
+                          if (window.confirm(`¿Eliminar "${event.title}"?`)) {
+                            try {
+                              await deleteEventApi(event.id);
+                              setEvents((prev) => prev.filter((e) => e.id !== event.id));
+                            } catch (e) {
+                              setError('No se pudo eliminar el evento');
+                            }
+                          }
+                        }}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Eliminar
                         </DropdownMenuItem>

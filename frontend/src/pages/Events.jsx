@@ -1,73 +1,40 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter } from "../components/ui/card";
 import { Calendar, Clock, MapPin } from "lucide-react";
-
-// Datos de ejemplo para eventos
-const events = [
-  {
-    id: 1,
-    title: "Jornada de Adopción",
-    date: "2023-06-15",
-    time: "10:00 - 18:00",
-    location: "Plaza Central, Jesús María",
-    image: "/images/event1.jpg",
-    description:
-      "Ven a conocer a nuestros animales en adopción y encuentra a tu compañero ideal. Tendremos perros y gatos de todas las edades buscando un hogar.",
-  },
-  {
-    id: 2,
-    title: "Campaña de Vacunación",
-    date: "2023-06-22",
-    time: "09:00 - 14:00",
-    location: "Sede Salvando Huellas",
-    image: "/images/event2.jpg",
-    description:
-      "Vacunación gratuita para perros y gatos. Trae a tu mascota y mantén sus vacunas al día. Servicio de desparasitación también disponible.",
-  },
-  {
-    id: 3,
-    title: "Taller de Adiestramiento",
-    date: "2023-06-29",
-    time: "16:00 - 18:00",
-    location: "Parque Municipal",
-    image: "/images/event3.jpg",
-    description:
-      "Aprende técnicas básicas de adiestramiento para mejorar la convivencia con tu mascota. Impartido por adiestradores profesionales.",
-  },
-  {
-    id: 4,
-    title: "Feria de Adopción",
-    date: "2023-07-10",
-    time: "11:00 - 19:00",
-    location: "Centro Comercial",
-    image: "/images/event4.jpg",
-    description:
-      "Gran feria de adopción con actividades para toda la familia. Habrá stands informativos, juegos, y por supuesto, muchos animales esperando ser adoptados.",
-  },
-  {
-    id: 5,
-    title: "Charla sobre Tenencia Responsable",
-    date: "2023-07-15",
-    time: "18:00 - 20:00",
-    location: "Biblioteca Municipal",
-    image: "/images/event5.jpg",
-    description:
-      "Charla educativa sobre la tenencia responsable de mascotas. Aprende sobre cuidados básicos, alimentación, y responsabilidades como dueño de una mascota.",
-  },
-  {
-    id: 6,
-    title: "Caminata Solidaria",
-    date: "2023-07-22",
-    time: "09:00 - 12:00",
-    location: "Parque Central",
-    image: "/images/event6.jpg",
-    description:
-      "Caminata solidaria con tu mascota para recaudar fondos para nuestra protectora. Inscripción previa requerida. Habrá premios y sorpresas.",
-  },
-];
+import { getEvents } from "../services/eventsService";
+import Loading from "../components/ui/Loading";
 
 export default function EventsPage() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await getEvents();
+        // Mapear campos del backend → frontend
+        const mapped = (list || []).map((e) => ({
+          id: e.idEvento,
+          title: e.titulo,
+          date: e.fecha,
+          time: "",
+          location: e.lugar,
+          image: e.foto,
+          description: e.descripcion,
+        }));
+        setEvents(mapped);
+      } catch (err) {
+        setError("No se pudieron cargar los eventos");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   // Formatear fecha
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -75,18 +42,20 @@ export default function EventsPage() {
   };
 
   // Separar eventos próximos y pasados (comparación por día)
-  const today = new Date();
-  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const upcomingEvents = events.filter(
-    (event) => new Date(event.date) >= todayMidnight
-  );
-  const pastEvents = events.filter(
-    (event) => new Date(event.date) < todayMidnight
-  );
+  const { upcomingEvents, pastEvents } = useMemo(() => {
+    const today = new Date();
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const upcoming = events.filter((event) => new Date(event.date) >= todayMidnight);
+    const past = events.filter((event) => new Date(event.date) < todayMidnight);
+    return { upcomingEvents: upcoming, pastEvents: past };
+  }, [events]);
 
   return (
     <div className="container py-8 md:py-12">
+      {loading && <Loading />}
+      {!!error && (
+        <p className="mb-4 text-sm text-red-500" role="alert">{error}</p>
+      )}
       <div className="flex flex-col items-center text-center mb-8">
         <h1 className="text-3xl font-bold text-primary mb-4">Eventos y Actividades</h1>
         <p className="text-muted-foreground max-w-3xl">
@@ -116,10 +85,12 @@ export default function EventsPage() {
                     <Calendar className="h-4 w-4 mr-2 text-primary" />
                     {formatDate(event.date)}
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-2 text-primary" />
-                    {event.time}
-                  </div>
+                  {event.time ? (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2 text-primary" />
+                      {event.time}
+                    </div>
+                  ) : null}
                   <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-2 text-primary" />
                     {event.location}
@@ -163,10 +134,12 @@ export default function EventsPage() {
                     <Calendar className="h-4 w-4 mr-2 text-primary" />
                     {formatDate(event.date)}
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-2 text-primary" />
-                    {event.time}
-                  </div>
+                  {event.time ? (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2 text-primary" />
+                      {event.time}
+                    </div>
+                  ) : null}
                   <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-2 text-primary" />
                     {event.location}
