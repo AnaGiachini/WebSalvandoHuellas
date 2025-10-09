@@ -20,6 +20,7 @@
 
 const Usuario = require('../models/usuario');
 const AppError = require('../utils/AppError');
+const bcrypt = require('bcrypt');
 
 /**
  * Obtiene la lista completa de usuarios
@@ -81,10 +82,40 @@ const getMeFullService = async (idUsuario) => {
 };
 
 module.exports = {
+  /** Admin: crea usuario manualmente */
+  adminCreateUserService: async ({ nombre, apellido, email, contrasena, direccion, telefono, rol = 'user' }) => {
+    // Normalización (siguiendo memoria previa)
+    const normalized = {
+      nombre: nombre ? nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase() : nombre,
+      apellido: apellido ? apellido.charAt(0).toUpperCase() + apellido.slice(1).toLowerCase() : apellido,
+      email: email ? email.trim().toLowerCase() : email,
+      direccion: direccion ? direccion.trim() : direccion,
+      telefono,
+      rol,
+    };
+    try {
+      const hash = await bcrypt.hash(contrasena, 10);
+      const created = await Usuario.create({ ...normalized, contrasena: hash });
+      // Retornar datos seguros
+      const { contrasena: _p, ...safe } = created.toJSON();
+      return safe;
+    } catch (err) {
+      if (err && (err.name === 'SequelizeUniqueConstraintError' || /unique|duplic/i.test(String(err.message)))) {
+        throw new AppError(409, 'Email ya registrado');
+      }
+      throw err;
+    }
+  },
   getAllUsersService,
   getUserByIdService,
   updateUserService,
   deleteUserService,
   getMeService,
   getMeFullService,
+  /** Admin: cambiar rol */
+  changeUserRoleService: async (id, rol) => {
+    const user = await getUserByIdService(id);
+    await user.update({ rol });
+    return user;
+  }
 };

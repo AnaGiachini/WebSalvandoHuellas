@@ -25,7 +25,9 @@ const {
   getUserByIdService,
   updateUserService,
   deleteUserService,
-  getMeFullService
+  getMeFullService,
+  adminCreateUserService,
+  changeUserRoleService,
 } = require('../services/userService');
 
 /**
@@ -97,3 +99,26 @@ const getMe = async (req, res, next) => {
 };
 
 module.exports = { getAllUsers, getUserById, updateUser, deleteUser, getMe };
+/**
+ * Crea un usuario manualmente (solo admin)
+ */
+const adminCreateUser = async (req, res, next) => {
+  try {
+    const created = await adminCreateUserService(req.body);
+    res.status(201).json(created);
+  } catch (err) { next(err); }
+};
+
+/**
+ * Cambia el rol de un usuario (solo admin)
+ */
+const changeUserRole = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rol } = req.body;
+    const updated = await changeUserRoleService(id, rol);
+    res.json(updated);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAllUsers, getUserById, updateUser, deleteUser, getMe, adminCreateUser, changeUserRole };

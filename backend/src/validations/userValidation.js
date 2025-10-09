@@ -18,7 +18,7 @@
  *      – La normalización garantiza consistencia en los datos almacenados
  */
 
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 const { validateRequest } = require('../middlewares/validateRequest');
 
 /* ─── Reglas de campos reutilizables ──────────────────────────────────── */
@@ -51,4 +51,23 @@ const updateProfileValidation = [
   validateRequest
 ];
 
-module.exports = { registerValidation, updateProfileValidation };
+// Admin: crear usuario manualmente
+const adminCreateUserValidation = [
+  name,
+  lastname,
+  email,
+  password,
+  direccion.optional(),
+  telefono,
+  body('rol').optional().isIn(['user', 'admin']).withMessage('Rol inválido'),
+  validateRequest,
+];
+
+// Admin: cambiar rol
+const changeRoleValidation = [
+  param('id').isInt({ min: 1 }),
+  body('rol').notEmpty().isIn(['user', 'admin']).withMessage('Rol inválido'),
+  validateRequest,
+];
+
+module.exports = { registerValidation, updateProfileValidation, adminCreateUserValidation, changeRoleValidation };

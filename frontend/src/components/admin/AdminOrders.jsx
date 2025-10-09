@@ -1,10 +1,9 @@
 /**
  * Componente AdminOrders
  * -------------------------
- * Muestra una lista de pedidos
- * con opciones para crear, editar y eliminar.
+ * Gestión de pedidos conectada al backend: listar, ver y actualizar estado/cancelar.
  */
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -23,66 +22,48 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdownMenu";
 import { Search, MoreHorizontal, Eye, Truck, Ban } from "lucide-react";
-
-// Datos de ejemplo para pedidos
-const orders = [
-  {
-    id: "ORD-001",
-    customer: "María López",
-    email: "maria@example.com",
-    date: "2023-05-10",
-    total: 3450,
-    status: "Completado",
-    items: 2,
-  },
-  {
-    id: "ORD-002",
-    customer: "Juan Pérez",
-    email: "juan@example.com",
-    date: "2023-05-12",
-    total: 1800,
-    status: "Enviado",
-    items: 1,
-  },
-  {
-    id: "ORD-003",
-    customer: "Ana García",
-    email: "ana@example.com",
-    date: "2023-05-15",
-    total: 5200,
-    status: "Pendiente",
-    items: 3,
-  },
-  {
-    id: "ORD-004",
-    customer: "Carlos Rodríguez",
-    email: "carlos@example.com",
-    date: "2023-05-18",
-    total: 950,
-    status: "Procesando",
-    items: 1,
-  },
-  {
-    id: "ORD-005",
-    customer: "Laura Martínez",
-    email: "laura@example.com",
-    date: "2023-05-20",
-    total: 2700,
-    status: "Cancelado",
-    items: 2,
-  },
-];
+import ordersService from "../../services/ordersService";
+import Loading from "../ui/Loading";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await ordersService.listAll();
+        // Map a estructura de tabla
+        const mapped = (list || []).map((o) => ({
+          id: o.idCompra,
+          customer: o.idUsuario ? `Usuario #${o.idUsuario}` : 'N/A',
+          email: '',
+          date: o.fechaCompra,
+          total: o.total,
+          status: o.estadoPago,
+          items: Array.isArray(o.items) ? o.items.length : 0,
+          raw: o,
+        }));
+        setOrders(mapped);
+      } catch (e) {
+        setError('No se pudieron cargar los pedidos');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   // Filtrar pedidos según término de búsqueda
-  const filteredOrders = orders.filter(
+  const filteredOrders = useMemo(() => orders.filter(
     (order) =>
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      String(order.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+  ), [orders, searchTerm]);
 
   // Formatear fecha (JS)
   const formatDate = (dateString) => {
@@ -122,31 +103,23 @@ export default function AdminOrders() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders.length > 0 ? (
+            {loading ? (
+              <TableRow><TableCell colSpan={7}>Cargando...</TableCell></TableRow>
+            ) : filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>
                     <div>
                       <p>{order.customer}</p>
-                      <p className="text-sm text-muted-foreground">{order.email}</p>
+                      {order.email ? <p className="text-sm text-muted-foreground">{order.email}</p> : null}
                     </div>
                   </TableCell>
                   <TableCell>{formatDate(order.date)}</TableCell>
                   <TableCell>${order.total.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge
-                      className={
-                        order.status === "Completado"
-                          ? "bg-green-500"
-                          : order.status === "Enviado"
-                          ? "bg-blue-500"
-                          : order.status === "Pendiente"
-                          ? "bg-yellow-500"
-                          : order.status === "Procesando"
-                          ? "bg-purple-500"
-                          : "bg-red-500"
-                      }
+                      className={order.status === "pagado" ? "bg-green-600" : order.status === "pendiente" ? "bg-yellow-500" : "bg-red-600"}
                     >
                       {order.status}
                     </Badge>
@@ -160,15 +133,44 @@ export default function AdminOrders() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.alert(`Compra #${order.id}`)}>
                           <Eye className="h-4 w-4 mr-2" />
                           Ver detalles
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          const next = order.status === 'pendiente' ? 'pagado' : 'pendiente';
+                          setConfirm({
+                            open: true,
+                            title: "Actualizar estado",
+                            description: `Cambiar estado de ${order.status} a ${next}?`,
+                            onConfirm: async () => {
+                              try {
+                                const updated = await ordersService.updateStatus(order.id, next);
+                                setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: updated.estadoPago } : o));
+                              } catch (e) {
+                                // noop simple
+                              }
+                            }
+                          });
+                        }}>
                           <Truck className="h-4 w-4 mr-2" />
                           Actualizar estado
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => {
+                          setConfirm({
+                            open: true,
+                            title: "Cancelar pedido",
+                            description: `Cancelar compra #${order.id}?`,
+                            onConfirm: async () => {
+                              try {
+                                const updated = await ordersService.updateStatus(order.id, 'cancelado');
+                                setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: updated.estadoPago } : o));
+                              } catch (e) {
+                                // noop simple
+                              }
+                            }
+                          });
+                        }}>
                           <Ban className="h-4 w-4 mr-2" />
                           Cancelar pedido
                         </DropdownMenuItem>
@@ -187,6 +189,15 @@ export default function AdminOrders() {
           </TableBody>
         </Table>
       </div>
+      <ConfirmDialog
+        open={confirm.open}
+        onOpenChange={(v) => setConfirm((c) => ({ ...c, open: v }))}
+        title={confirm.title}
+        description={confirm.description}
+        onConfirm={confirm.onConfirm}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

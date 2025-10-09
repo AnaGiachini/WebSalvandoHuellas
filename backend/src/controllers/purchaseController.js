@@ -24,7 +24,8 @@ const {
   createPurchaseService,
   getPurchaseByIdService,
   getUserPurchasesService,
-  updatePurchaseStatusService
+  updatePurchaseStatusService,
+  getAllPurchasesService,
 } = require('../services/purchaseService');
 
 /**
@@ -71,6 +72,11 @@ const getPurchaseById = async (req, res, next) => {
  */
 const getUserPurchases = async (req, res, next) => {
   try {
+    // Si el usuario es admin y pasa ?all=1, listar todas las compras
+    if (req.user?.rol === 'admin' && String(req.query.all) === '1') {
+      const all = await getAllPurchasesService();
+      return res.json(all);
+    }
     const purchases = await getUserPurchasesService(req.user.idUsuario);
     res.json(purchases);
   } catch (err) { next(err); }

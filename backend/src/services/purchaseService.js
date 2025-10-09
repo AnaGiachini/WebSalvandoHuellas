@@ -145,6 +145,26 @@ const getUserPurchasesService = async (idUsuario) => {
 };
 
 /**
+ * Obtiene todas las compras (solo para uso admin)
+ */
+const getAllPurchasesService = async () => {
+  const purchases = await Compra.findAll({
+    include: [
+      {
+        model: ItemCompra,
+        as: 'items',
+        attributes: ['idItemCompra', 'idArticulo', 'cantidad', 'precioUnitario', 'subtotal'],
+        include: [
+          { model: Articulo, as: 'articulo', attributes: ['idArticulo', 'nombre', 'precio'] }
+        ]
+      }
+    ],
+    order: [['fechaCompra', 'DESC']]
+  });
+  return purchases;
+};
+
+/**
  * Actualiza el estado de pago de una compra
  * @param {number} idCompra
  * @param {('pendiente'|'pagado'|'cancelado')} estadoPago
@@ -218,5 +238,6 @@ module.exports = {
   createPurchaseService,
   getPurchaseByIdService,
   getUserPurchasesService,
-  updatePurchaseStatusService
+  updatePurchaseStatusService,
+  getAllPurchasesService
 };
