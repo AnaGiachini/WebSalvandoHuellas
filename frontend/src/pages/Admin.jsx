@@ -1,6 +1,7 @@
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { useState } from "react";
 import {
   Users,
   ShoppingBag,
@@ -16,8 +17,10 @@ import AdminAnimals from "../components/admin/AdminAnimals";
 import AdminProducts from "../components/admin/AdminProducts";
 import AdminOrders from "../components/admin/AdminOrders";
 import AdminEvents from "../components/admin/AdminEvents";
+import AdminUsers from "../components/admin/AdminUsers";
 
 export default function AdminPage() {
+  const [tab, setTab] = useState("users");
   return (
     <div className="container py-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -107,23 +110,28 @@ export default function AdminPage() {
             <Button className="w-full bg-primary hover:bg-primary/90">Menú</Button>
           </div>
           <div className="hidden lg:block space-y-1">
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("users")}>
+              <Users className="h-5 w-5 mr-2" />
+              Usuarios
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("dashboard")}
+            >
               <PieChart className="h-5 w-5 mr-2" />
               Dashboard
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("animals")}>
               <Users className="h-5 w-5 mr-2" />
               Animales
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("products")}>
               <Package className="h-5 w-5 mr-2" />
               Productos
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("orders")}>
               <ShoppingBag className="h-5 w-5 mr-2" />
               Pedidos
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("events")}>
               <Calendar className="h-5 w-5 mr-2" />
               Eventos
             </Button>
@@ -136,13 +144,17 @@ export default function AdminPage() {
 
         {/* Contenido principal */}
         <div>
-          <Tabs defaultValue="animals">
-            <TabsList className="grid grid-cols-4 mb-8">
+          <Tabs value={tab} onValueChange={setTab}>
+            <TabsList className="grid grid-cols-5 mb-8">
+              <TabsTrigger value="users">Usuarios</TabsTrigger>
               <TabsTrigger value="animals">Animales</TabsTrigger>
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="orders">Pedidos</TabsTrigger>
               <TabsTrigger value="events">Eventos</TabsTrigger>
             </TabsList>
+            <TabsContent value="users">
+              <AdminUsers />
+            </TabsContent>
             <TabsContent value="animals">
               <AdminAnimals />
             </TabsContent>

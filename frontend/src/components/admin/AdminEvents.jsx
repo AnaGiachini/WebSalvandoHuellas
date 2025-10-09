@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import Loading from "../ui/Loading";
 import { createEvent, getEvents, updateEvent as updateEventApi, deleteEvent as deleteEventApi } from "../../services/eventsService";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 export default function AdminEvents() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,6 +44,7 @@ export default function AdminEvents() {
   const [form, setForm] = useState({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
 
   // Cargar eventos desde backend
   useEffect(() => {
@@ -239,15 +241,20 @@ export default function AdminEvents() {
                           <Calendar className="h-4 w-4 mr-2" />
                           Reprogramar
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={async () => {
-                          if (window.confirm(`¿Eliminar "${event.title}"?`)) {
-                            try {
-                              await deleteEventApi(event.id);
-                              setEvents((prev) => prev.filter((e) => e.id !== event.id));
-                            } catch (e) {
-                              setError('No se pudo eliminar el evento');
+                        <DropdownMenuItem className="text-destructive" onClick={() => {
+                          setConfirm({
+                            open: true,
+                            title: "Eliminar evento",
+                            description: `¿Eliminar "${event.title}"?`,
+                            onConfirm: async () => {
+                              try {
+                                await deleteEventApi(event.id);
+                                setEvents((prev) => prev.filter((e) => e.id !== event.id));
+                              } catch (e) {
+                                setError('No se pudo eliminar el evento');
+                              }
                             }
-                          }
+                          });
                         }}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Eliminar
@@ -267,6 +274,15 @@ export default function AdminEvents() {
           </TableBody>
         </Table>
       </div>
+      <ConfirmDialog
+        open={confirm.open}
+        onOpenChange={(v) => setConfirm((c) => ({ ...c, open: v }))}
+        title={confirm.title}
+        description={confirm.description}
+        onConfirm={confirm.onConfirm}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import RootLayout from "./layouts/RootLayout";
+import RequireAdmin from "./components/auth/RequireAdmin";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import AdoptionPage from "./pages/adoption/AdoptionPage";
@@ -58,13 +59,13 @@ function App() {
           <Route path="/auth/reset" element={<ResetPassword />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           
-          {/* Rutas Admin */}
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/animales" element={<AdminAnimals />} />
-          <Route path="/admin/productos" element={<AdminProducts />} />  
-          <Route path="/admin/ordenes" element={<AdminOrders />} />
-          <Route path="/admin/eventos" element={<AdminEvents />} />
-          <Route path="/admin/adopciones" element={<AdminAdoptions />} />   
+          {/* Rutas Admin (protegidas) */}
+          <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+          <Route path="/admin/animales" element={<RequireAdmin><AdminAnimals /></RequireAdmin>} />
+          <Route path="/admin/productos" element={<RequireAdmin><AdminProducts /></RequireAdmin>} />  
+          <Route path="/admin/ordenes" element={<RequireAdmin><AdminOrders /></RequireAdmin>} />
+          <Route path="/admin/eventos" element={<RequireAdmin><AdminEvents /></RequireAdmin>} />
+          <Route path="/admin/adopciones" element={<RequireAdmin><AdminAdoptions /></RequireAdmin>} />   
 
           <Route path="*" element={<div>Página no encontrada</div>} />
         </Routes>

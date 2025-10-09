@@ -1,10 +1,9 @@
 /*
  * Componente AdminProducts
  * -------------------------
- * Muestra una lista de productos
- * con opciones para crear, editar y eliminar.
+ * Gestión de productos conectada al backend (artículos): listar, crear, editar, eliminar.
  */
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -23,63 +22,63 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdownMenu";
 import { Search, Plus, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
-
-// Datos de ejemplo para productos
-const products = [
-  {
-    id: 1,
-    name: "Alimento Premium para Perros",
-    category: "Alimentos",
-    price: 2500,
-    stock: 15,
-    image: "/images/product1.jpg",
-  },
-  {
-    id: 2,
-    name: "Cama para Gatos",
-    category: "Accesorios",
-    price: 1800,
-    stock: 8,
-    image: "/images/product2.jpg",
-  },
-  {
-    id: 3,
-    name: "Juguete Interactivo",
-    category: "Juguetes",
-    price: 950,
-    stock: 20,
-    image: "/images/product3.jpg",
-  },
-  {
-    id: 4,
-    name: "Collar Personalizado",
-    category: "Accesorios",
-    price: 750,
-    stock: 12,
-    image: "/images/product4.jpg",
-  },
-  {
-    id: 5,
-    name: "Alimento Húmedo para Gatos",
-    category: "Alimentos",
-    price: 1200,
-    stock: 18,
-    image: "/images/product5.jpg",
-  },
-];
+import articlesService from "../../services/articlesService";
+import Loading from "../ui/Loading";
+import ConfirmDialog from "../ui/ConfirmDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useToast } from "../../hooks/useToast";
 
 export default function AdminProducts() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(null); // { id, name, price, stock, image, raw }
+  const [form, setForm] = useState({ nombre: "", precio: "", stock: "", descripcion: "", foto: "" });
 
-  // Filtrar productos según término de búsqueda
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await articlesService.getAll();
+        // Backend devuelve array de articulos con campos: idArticulo, nombre, descripcion, precio, stock, foto
+        const mapped = (list || []).map((a) => ({
+          id: a.idArticulo,
+          name: a.nombre,
+          category: a.descripcion ? "-" : "-", // no hay categoría en modelo; placeholder
+          price: a.precio,
+          stock: a.stock,
+          image: a.foto,
+          raw: a,
+        }));
+        setProducts(mapped);
+      } catch (e) {
+        setError("No se pudieron cargar los productos");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(product.price).includes(searchTerm) ||
+        String(product.stock).includes(searchTerm)
+    );
+  }, [products, searchTerm]);
 
   return (
     <div>
+      {loading && <Loading />}
+      {!!error && (
+        <p className="mb-2 text-sm text-red-500" role="alert">{error}</p>
+      )}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-2xl font-bold">Gestión de Productos</h2>
         <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-4">
@@ -92,7 +91,11 @@ export default function AdminProducts() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button className="bg-primary hover:bg-primary/90" onClick={() => {
+            setEditing(null);
+            setForm({ nombre: "", precio: "", stock: "", descripcion: "", foto: "" });
+            setOpen(true);
+          }}>
             <Plus className="h-4 w-4 mr-2" />
             Nuevo producto
           </Button>
@@ -152,15 +155,39 @@ export default function AdminProducts() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.alert('Próximamente: detalle de producto')}>
                           <Eye className="h-4 w-4 mr-2" />
                           Ver detalles
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          setEditing(product);
+                          setForm({
+                            nombre: product.name || "",
+                            precio: product.price ?? "",
+                            stock: product.stock ?? "",
+                            descripcion: product.raw?.descripcion || "",
+                            foto: product.image || "",
+                          });
+                          setOpen(true);
+                        }}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => {
+                          setConfirm({
+                            open: true,
+                            title: "Eliminar producto",
+                            description: `¿Eliminar "${product.name}"?`,
+                            onConfirm: async () => {
+                              try {
+                                await articlesService.remove(product.id);
+                                setProducts((prev) => prev.filter((p) => p.id !== product.id));
+                              } catch (e) {
+                                setError('No se pudo eliminar el producto');
+                              }
+                            }
+                          });
+                        }}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Eliminar
                         </DropdownMenuItem>
@@ -179,6 +206,80 @@ export default function AdminProducts() {
           </TableBody>
         </Table>
       </div>
+      {/* Modal crear/editar producto */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editing ? "Editar producto" : "Nuevo producto"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <Input placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input type="number" step="0.01" placeholder="Precio" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} />
+              <Input type="number" placeholder="Stock" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+              <Input placeholder="URL imagen" value={form.foto} onChange={(e) => setForm({ ...form, foto: e.target.value })} />
+            </div>
+            <Input placeholder="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button disabled={submitting} onClick={async () => {
+                setSubmitting(true);
+                setError("");
+                try {
+                  const payload = {
+                    nombre: String(form.nombre || "").trim(),
+                    precio: Number(form.precio),
+                    stock: Number(form.stock),
+                    descripcion: form.descripcion || "",
+                    foto: form.foto || "",
+                  };
+                  if (editing) {
+                    const updated = await articlesService.update(editing.id, payload);
+                    setProducts((prev) => prev.map((p) => p.id === editing.id ? {
+                      ...p,
+                      name: updated.nombre,
+                      price: updated.precio,
+                      stock: updated.stock,
+                      image: updated.foto,
+                      raw: updated,
+                    } : p));
+                    toast({ title: "Producto actualizado", description: payload.nombre });
+                  } else {
+                    const created = await articlesService.create(payload);
+                    const item = {
+                      id: created.idArticulo,
+                      name: created.nombre,
+                      category: created.descripcion ? '-' : '-',
+                      price: created.precio,
+                      stock: created.stock,
+                      image: created.foto,
+                      raw: created,
+                    };
+                    setProducts((prev) => [item, ...prev]);
+                    toast({ title: "Producto creado", description: payload.nombre });
+                  }
+                  setOpen(false);
+                  setEditing(null);
+                  setForm({ nombre: "", precio: "", stock: "", descripcion: "", foto: "" });
+                } catch (e) {
+                  setError(editing ? 'No se pudo actualizar el producto' : 'No se pudo crear el producto');
+                } finally {
+                  setSubmitting(false);
+                }
+              }}>{editing ? "Guardar cambios" : "Crear"}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <ConfirmDialog
+        open={confirm.open}
+        onOpenChange={(v) => setConfirm((c) => ({ ...c, open: v }))}
+        title={confirm.title}
+        description={confirm.description}
+        onConfirm={confirm.onConfirm}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

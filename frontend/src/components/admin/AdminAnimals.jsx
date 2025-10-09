@@ -34,6 +34,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import animalsService from "../../services/animalsService";
 import { useToast } from "../../hooks/useToast";
+import ConfirmDialog from "../ui/ConfirmDialog";
 
 export default function AdminAnimals() {
   const { toast } = useToast();
@@ -54,6 +55,7 @@ export default function AdminAnimals() {
     estadoAdopcion: "sin_hogar",
     foto: "",
   });
+  const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
 
   const loadAnimals = useCallback(async () => {
     try {
@@ -104,15 +106,21 @@ export default function AdminAnimals() {
     setOpen(true);
   };
 
-  const onDelete = async (idAnimal) => {
-    if (!window.confirm("¿Eliminar este animal?")) return;
-    try {
-      await animalsService.remove(idAnimal);
-      toast({ title: "Eliminado", description: "Animal eliminado correctamente" });
-      loadAnimals();
-    } catch (err) {
-      toast({ title: "Error al eliminar", description: err?.response?.data?.message || "No se pudo eliminar" });
-    }
+  const onDelete = (idAnimal) => {
+    setConfirm({
+      open: true,
+      title: "Eliminar animal",
+      description: "¿Eliminar este animal?",
+      onConfirm: async () => {
+        try {
+          await animalsService.remove(idAnimal);
+          toast({ title: "Eliminado", description: "Animal eliminado correctamente" });
+          loadAnimals();
+        } catch (err) {
+          toast({ title: "Error al eliminar", description: err?.response?.data?.message || "No se pudo eliminar" });
+        }
+      }
+    });
   };
 
   const onSubmit = async (e) => {
@@ -303,6 +311,15 @@ export default function AdminAnimals() {
           </form>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={confirm.open}
+        onOpenChange={(v) => setConfirm((c) => ({ ...c, open: v }))}
+        title={confirm.title}
+        description={confirm.description}
+        onConfirm={confirm.onConfirm}
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }
