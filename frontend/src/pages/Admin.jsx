@@ -1,26 +1,90 @@
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users,
   ShoppingBag,
   Calendar,
   DollarSign,
   Package,
-  PieChart,
   Settings,
-  LogOut,
+  PawPrint,
+  Heart,
 } from "lucide-react";
 
 import AdminAnimals from "../components/admin/AdminAnimals";
 import AdminProducts from "../components/admin/AdminProducts";
 import AdminOrders from "../components/admin/AdminOrders";
+import AdminAdoptions from "../components/admin/AdminAdoptions";
 import AdminEvents from "../components/admin/AdminEvents";
 import AdminUsers from "../components/admin/AdminUsers";
 
+// Services para métricas
+import animalsService from "../services/animalsService";
+import articlesService from "../services/articlesService";
+import { getEvents } from "../services/eventsService";
+import adoptionApplicationsService from "../services/adoptionApplicationsService";
+import purchaseService from "../services/purchaseService";
+
 export default function AdminPage() {
   const [tab, setTab] = useState("users");
+  const [metrics, setMetrics] = useState({
+    animals: 0,
+    products: 0,
+    eventsUpcoming: 0,
+    adoptionsApproved: 0,
+    salesAmount: 0,
+    salesCount: 0,
+  });
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        setLoadingMetrics(true);
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0,0,0,0);
+        const endOfMonth = new Date(startOfMonth);
+        endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+        endOfMonth.setMilliseconds(-1);
+
+        const [animals, products, events, adoptions, sales] = await Promise.all([
+          animalsService.list().catch(() => []),
+          articlesService.getAll().catch(() => []),
+          getEvents().catch(() => []),
+          adoptionApplicationsService.getAll().catch(() => []), // requiere admin
+          purchaseService.getMetrics({ from: startOfMonth.toISOString(), to: endOfMonth.toISOString() }).catch(() => ({ totalAmount: 0, count: 0, byStatus: {} })),
+        ]);
+
+        // Próximos eventos: fecha >= hoy
+        const now = new Date();
+        const upcoming = Array.isArray(events)
+          ? events.filter((e) => (e.fecha ? new Date(e.fecha) : null) && new Date(e.fecha) >= now).length
+          : 0;
+        const approved = Array.isArray(adoptions)
+          ? adoptions.filter((a) => a.estado === "aprobada").length
+          : 0;
+
+        if (!mounted) return;
+        setMetrics({
+          animals: Array.isArray(animals) ? animals.length : 0,
+          products: Array.isArray(products) ? products.length : 0,
+          eventsUpcoming: upcoming,
+          adoptionsApproved: approved,
+          salesAmount: Number(sales?.totalAmount || 0),
+          salesCount: Number(sales?.count || 0),
+        });
+      } finally {
+        if (mounted) setLoadingMetrics(false);
+      }
+    };
+    load();
+    return () => { mounted = false };
+  }, []);
+  const formatCurrency = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n || 0);
   return (
     <div className="container py-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -28,39 +92,19 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold text-primary">Panel de Administración</h1>
           <p className="text-muted-foreground">Gestiona animales, productos, eventos y más.</p>
         </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-4">
-          <div className="flex items-center">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
-              {/* Sustituye next/image por img */}
-              <img
-                src="/images/admin-avatar.jpg"
-                alt="Admin"
-                className="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <div>
-              <p className="font-medium">Admin</p>
-              <p className="text-xs text-muted-foreground">Administrador</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon">
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </div>
       </div>
 
       {/* Dashboard resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Animales</p>
-              <p className="text-2xl font-bold">24</p>
-              <p className="text-xs text-muted-foreground mt-1">12 perros, 12 gatos</p>
+              <p className="text-2xl font-bold">{loadingMetrics ? "-" : metrics.animals}</p>
+              <p className="text-xs text-muted-foreground mt-1">Total registrados</p>
             </div>
             <div className="bg-primary/10 p-3 rounded-full">
-              <Users className="h-6 w-6 text-primary" />
+              <PawPrint className="h-6 w-6 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -68,8 +112,8 @@ export default function AdminPage() {
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Productos</p>
-              <p className="text-2xl font-bold">48</p>
-              <p className="text-xs text-muted-foreground mt-1">5 categorías</p>
+              <p className="text-2xl font-bold">{loadingMetrics ? "-" : metrics.products}</p>
+              <p className="text-xs text-muted-foreground mt-1">En tienda</p>
             </div>
             <div className="bg-primary/10 p-3 rounded-full">
               <Package className="h-6 w-6 text-primary" />
@@ -79,12 +123,12 @@ export default function AdminPage() {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Ventas</p>
-              <p className="text-2xl font-bold">$45,600</p>
-              <p className="text-xs text-green-500 mt-1">+12% este mes</p>
+              <p className="text-sm font-medium text-muted-foreground">Adopciones</p>
+              <p className="text-2xl font-bold">{loadingMetrics ? "-" : metrics.adoptionsApproved}</p>
+              <p className="text-xs text-muted-foreground mt-1">Exitosas</p>
             </div>
             <div className="bg-primary/10 p-3 rounded-full">
-              <DollarSign className="h-6 w-6 text-primary" />
+              <Heart className="h-6 w-6 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -92,11 +136,23 @@ export default function AdminPage() {
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Eventos</p>
-              <p className="text-2xl font-bold">8</p>
-              <p className="text-xs text-muted-foreground mt-1">3 próximos</p>
+              <p className="text-2xl font-bold">{loadingMetrics ? "-" : metrics.eventsUpcoming}</p>
+              <p className="text-xs text-muted-foreground mt-1">Próximos</p>
             </div>
             <div className="bg-primary/10 p-3 rounded-full">
               <Calendar className="h-6 w-6 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Ventas (mes actual)</p>
+              <p className="text-2xl font-bold">{loadingMetrics ? "-" : formatCurrency(metrics.salesAmount)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{loadingMetrics ? "" : `${metrics.salesCount} órdenes`}</p>
+            </div>
+            <div className="bg-primary/10 p-3 rounded-full">
+              <DollarSign className="h-6 w-6 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -114,13 +170,12 @@ export default function AdminPage() {
               <Users className="h-5 w-5 mr-2" />
               Usuarios
             </Button>
-            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("dashboard")}
-            >
-              <PieChart className="h-5 w-5 mr-2" />
-              Dashboard
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("adoptions")}>
+              <Heart className="h-5 w-5 mr-2" />
+              Adopciones
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("animals")}>
-              <Users className="h-5 w-5 mr-2" />
+              <PawPrint className="h-5 w-5 mr-2" />
               Animales
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("products")}>
@@ -145,8 +200,9 @@ export default function AdminPage() {
         {/* Contenido principal */}
         <div>
           <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="grid grid-cols-5 mb-8">
+            <TabsList className="grid grid-cols-6 mb-8">
               <TabsTrigger value="users">Usuarios</TabsTrigger>
+              <TabsTrigger value="adoptions">Adopciones</TabsTrigger>
               <TabsTrigger value="animals">Animales</TabsTrigger>
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="orders">Pedidos</TabsTrigger>
@@ -154,6 +210,9 @@ export default function AdminPage() {
             </TabsList>
             <TabsContent value="users">
               <AdminUsers />
+            </TabsContent>
+            <TabsContent value="adoptions">
+              <AdminAdoptions />
             </TabsContent>
             <TabsContent value="animals">
               <AdminAnimals />

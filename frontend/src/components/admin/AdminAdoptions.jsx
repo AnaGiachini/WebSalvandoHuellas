@@ -80,7 +80,7 @@ export default function AdminAdoptions() {
   const onReject = async (req) => {
     try {
       await adoptionApplicationsService.updateStatus(req.idSolicitud, "rechazada")
-      toast({ title: "Rechazada", description: `Solicitud #${req.idSolicitud} rechazada. El animal vuelve a 'sin_hogar'.` })
+      toast({ title: "Rechazada", description: `Solicitud #${req.idSolicitud} rechazada. El animal vuelve a 'disponible'.` })
       load()
     } catch (err) {
       toast({ title: "Error al rechazar", description: err?.response?.data?.message || "No se pudo rechazar" })

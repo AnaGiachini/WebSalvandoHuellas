@@ -38,7 +38,7 @@ export default function AdminProducts() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editing, setEditing] = useState(null); // { id, name, price, stock, image, raw }
-  const [form, setForm] = useState({ nombre: "", precio: "", stock: "", descripcion: "", foto: "" });
+  const [form, setForm] = useState({ nombre: "", precio: "", stock: "", descripcion: "", foto: "", categoria: "", descuento: "", variantes: "", activo: true });
 
   useEffect(() => {
     const load = async () => {
@@ -48,7 +48,7 @@ export default function AdminProducts() {
         const mapped = (list || []).map((a) => ({
           id: a.idArticulo,
           name: a.nombre,
-          category: a.descripcion ? "-" : "-", // no hay categoría en modelo; placeholder
+          category: a.categoria || "-",
           price: a.precio,
           stock: a.stock,
           image: a.foto,
@@ -133,7 +133,21 @@ export default function AdminProducts() {
                   <TableCell>
                     <Badge variant="outline">{product.category}</Badge>
                   </TableCell>
-                  <TableCell>${product.price.toLocaleString()}</TableCell>
+                  <TableCell>
+                    {(() => {
+                      const d = Number(product.raw?.descuento || 0);
+                      const hasDiscount = !isNaN(d) && d > 0;
+                      const finalPrice = hasDiscount ? product.price * (1 - d/100) : product.price;
+                      return (
+                        <div className="flex flex-col">
+                          <span className="font-medium">${finalPrice.toLocaleString()}</span>
+                          {hasDiscount && (
+                            <span className="text-xs text-muted-foreground line-through">${product.price.toLocaleString()} ({d}% off)</span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       className={
@@ -167,6 +181,10 @@ export default function AdminProducts() {
                             stock: product.stock ?? "",
                             descripcion: product.raw?.descripcion || "",
                             foto: product.image || "",
+                            categoria: product.raw?.categoria || "",
+                            descuento: product.raw?.descuento ?? "",
+                            variantes: product.raw?.variantes || "",
+                            activo: product.raw?.activo !== undefined ? !!product.raw.activo : true,
                           });
                           setOpen(true);
                         }}>
@@ -219,7 +237,16 @@ export default function AdminProducts() {
               <Input type="number" placeholder="Stock" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
               <Input placeholder="URL imagen" value={form.foto} onChange={(e) => setForm({ ...form, foto: e.target.value })} />
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input placeholder="Categoría" value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
+              <Input type="number" step="1" min="0" max="100" placeholder="Descuento %" value={form.descuento} onChange={(e) => setForm({ ...form, descuento: e.target.value })} />
+              <div className="flex items-center gap-2">
+                <input id="activo" type="checkbox" checked={!!form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} />
+                <label htmlFor="activo" className="text-sm">Activo</label>
+              </div>
+            </div>
             <Input placeholder="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
+            <Input placeholder="Variantes (JSON)" value={form.variantes} onChange={(e) => setForm({ ...form, variantes: e.target.value })} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
               <Button disabled={submitting} onClick={async () => {
@@ -232,6 +259,10 @@ export default function AdminProducts() {
                     stock: Number(form.stock),
                     descripcion: form.descripcion || "",
                     foto: form.foto || "",
+                    categoria: form.categoria || "",
+                    descuento: form.descuento === "" ? undefined : Number(form.descuento),
+                    variantes: form.variantes || "",
+                    activo: !!form.activo,
                   };
                   if (editing) {
                     const updated = await articlesService.update(editing.id, payload);
@@ -241,6 +272,7 @@ export default function AdminProducts() {
                       price: updated.precio,
                       stock: updated.stock,
                       image: updated.foto,
+                      category: updated.categoria || "-",
                       raw: updated,
                     } : p));
                     toast({ title: "Producto actualizado", description: payload.nombre });
@@ -249,7 +281,7 @@ export default function AdminProducts() {
                     const item = {
                       id: created.idArticulo,
                       name: created.nombre,
-                      category: created.descripcion ? '-' : '-',
+                      category: created.categoria || '-',
                       price: created.precio,
                       stock: created.stock,
                       image: created.foto,
@@ -260,7 +292,7 @@ export default function AdminProducts() {
                   }
                   setOpen(false);
                   setEditing(null);
-                  setForm({ nombre: "", precio: "", stock: "", descripcion: "", foto: "" });
+                  setForm({ nombre: "", precio: "", stock: "", descripcion: "", foto: "", categoria: "", descuento: "", variantes: "", activo: true });
                 } catch (e) {
                   setError(editing ? 'No se pudo actualizar el producto' : 'No se pudo crear el producto');
                 } finally {

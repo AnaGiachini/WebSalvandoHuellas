@@ -17,6 +17,7 @@
  */
 
 const sequelize = require('../configs/db');
+const { Op } = require('sequelize');
 const AppError = require('../utils/AppError');
 
 const Compra = require('../models/compra');
@@ -239,5 +240,32 @@ module.exports = {
   getPurchaseByIdService,
   getUserPurchasesService,
   updatePurchaseStatusService,
-  getAllPurchasesService
+  getAllPurchasesService,
+  /**
+   * Métricas de Ventas por rango de fechas (solo admin)
+   * @param {{ from?: Date|string, to?: Date|string }} params
+   * @returns {Promise<{ totalAmount: number, count: number, byStatus: Record<string, number> }>}
+   */
+  async getSalesMetricsService({ from, to } = {}) {
+    const Compra = require('../models/compra');
+    const where = {};
+    if (from || to) {
+      where.fechaCompra = {
+        ...(from ? { [Op.gte]: new Date(from) } : {}),
+        ...(to ? { [Op.lte]: new Date(to) } : {}),
+      };
+    }
+
+    const rows = await Compra.findAll({ where, attributes: ['estadoPago', 'total'] });
+    let totalAmount = 0;
+    let count = 0;
+    const byStatus = { pendiente: 0, pagado: 0, cancelado: 0 };
+    for (const r of rows) {
+      const estado = r.estadoPago || 'pendiente';
+      byStatus[estado] = (byStatus[estado] || 0) + 1;
+      totalAmount += Number(r.total || 0);
+      count += 1;
+    }
+    return { totalAmount, count, byStatus };
+  }
 };

@@ -26,22 +26,24 @@ const name = body('nombre').isString().isLength({ min: 2, max: 50 });
 const lastname = body('apellido').isString().isLength({ min: 2, max: 50 });
 const email = body('email')
   .trim() // Eliminar espacios antes y después
-  .notEmpty()
   .isEmail()
   .normalizeEmail();
 const password = body('contrasena').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/);
 
 // Nuevos campos: direccion y telefono (opcionales en update)
-const direccion = body('direccion').optional().trim().isLength({ min: 5 }).withMessage('Dirección muy corta');
-const telefono = body('telefono')
-  .optional()
+const direccion = body('direccion')
   .trim()
+  .optional({ checkFalsy: true, nullable: true })
+  .isLength({ min: 5 })
+  .withMessage('Dirección muy corta');
+const telefono = body('telefono')
+  .trim()
+  .optional({ checkFalsy: true, nullable: true })
   .matches(/^[+\d][\d\s-]{6,}$/)
   .withMessage('Teléfono inválido');
 
 /* ─── Conjuntos de reglas exportados ─────────────────────────────────── */
 const registerValidation = [name, lastname, email, password, validateRequest];
-
 const updateProfileValidation = [
   name.optional(),
   lastname.optional(),

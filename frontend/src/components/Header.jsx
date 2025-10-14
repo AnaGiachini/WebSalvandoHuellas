@@ -151,7 +151,7 @@ export default function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   {userMenuOpen && (
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end">
                       <div className="px-2 py-1.5 text-sm font-medium">
                         {user.isGuest ? "Invitado" : displayName}
                       </div>
