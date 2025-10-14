@@ -20,6 +20,15 @@ const purchaseService = {
   async updateStatus(idCompra, estadoPago) {
     const { data } = await api.put(`/purchases/${idCompra}/status`, { estadoPago });
     return data;
+  },
+
+  // Admin only
+  async getMetrics({ from, to } = {}) {
+    const params = {};
+    if (from) params.from = from;
+    if (to) params.to = to;
+    const { data } = await api.get('/purchases/metrics', { params });
+    return data; // { totalAmount, count, byStatus }
   }
 };
 

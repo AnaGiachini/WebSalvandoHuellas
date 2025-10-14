@@ -20,7 +20,7 @@ const router = express.Router();
 
 // Controlador
 const purchaseController = require('../controllers/purchaseController');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, restrictTo } = require('../middlewares/authMiddleware');
 
 // Validaciones
 const { validateCreatePurchase, validateUpdateStatus } = require('../validations/purchaseValidations');
@@ -34,6 +34,9 @@ router.get('/:idCompra', protect, validateRequest, purchaseController.getPurchas
 // Listar todas las compras del usuario actual
 router.get('/', protect, validateRequest, purchaseController.getUserPurchases);
 // Actualizar el estado de pago (solo admin)
-router.put('/:idCompra/status', protect, validateUpdateStatus, validateRequest, purchaseController.updatePurchaseStatus);
+router.put('/:idCompra/status', protect, restrictTo('admin'), validateUpdateStatus, validateRequest, purchaseController.updatePurchaseStatus);
+// Métricas de ventas (solo admin)
+router.get('/metrics', protect, restrictTo('admin'), purchaseController.getSalesMetrics);
 
 module.exports = router;
+

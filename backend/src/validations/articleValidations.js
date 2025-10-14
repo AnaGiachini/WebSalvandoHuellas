@@ -32,6 +32,19 @@ const validateCreateArticle = [
   body('foto')
     .optional()
     .isString().withMessage('La URL de la foto debe ser texto'),
+  body('categoria')
+    .optional()
+    .isString().withMessage('La categoría debe ser texto')
+    .isLength({ max: 50 }).withMessage('La categoría debe tener hasta 50 caracteres'),
+  body('descuento')
+    .optional()
+    .isFloat({ min: 0, max: 100 }).withMessage('El descuento debe estar entre 0 y 100'),
+  body('variantes')
+    .optional()
+    .isString().withMessage('Las variantes deben venir como JSON string'),
+  body('activo')
+    .optional()
+    .isBoolean().withMessage('Activo debe ser booleano'),
   
   validateRequest
 ];
@@ -65,12 +78,29 @@ const validateUpdateArticle = [
     .optional()
     .isString().withMessage('La URL de la foto debe ser texto'),
   
+  body('categoria')
+    .optional()
+    .isString().withMessage('La categoría debe ser texto')
+    .isLength({ max: 50 }).withMessage('La categoría debe tener hasta 50 caracteres'),
+  
+  body('descuento')
+    .optional()
+    .isFloat({ min: 0, max: 100 }).withMessage('El descuento debe estar entre 0 y 100'),
+  
+  body('variantes')
+    .optional()
+    .isString().withMessage('Las variantes deben venir como JSON string'),
+  
+  body('activo')
+    .optional()
+    .isBoolean().withMessage('Activo debe ser booleano'),
+  
   validateRequest
 ];
 
 /**
  * Valida el ID al buscar o eliminar un artículo
- */
+{{ ... }}
 const validateArticleId = [
   param('id')
     .notEmpty().withMessage('El ID del artículo es obligatorio')

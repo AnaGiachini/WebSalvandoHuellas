@@ -26,6 +26,7 @@ const {
   getUserPurchasesService,
   updatePurchaseStatusService,
   getAllPurchasesService,
+  getSalesMetricsService,
 } = require('../services/purchaseService');
 
 /**
@@ -109,5 +110,16 @@ module.exports = {
   createPurchase,
   getPurchaseById,
   getUserPurchases,
-  updatePurchaseStatus
+  updatePurchaseStatus,
+  /**
+   * Métricas de ventas (solo admin)
+   * Query: from, to (ISO o fecha parseable)
+   */
+  async getSalesMetrics(req, res, next) {
+    try {
+      const { from, to } = req.query;
+      const metrics = await getSalesMetricsService({ from, to });
+      res.json(metrics);
+    } catch (err) { next(err); }
+  }
 };

@@ -49,8 +49,20 @@ const getArticleByIdService = async (idArticulo) => {
  * @param {Object} articleData - Datos del artículo a crear
  * @returns {Promise<Object>} Artículo creado
  */
+const normalizePayload = (data = {}) => {
+  const out = { ...data };
+  if (out.descuento != null) {
+    const d = Number(out.descuento);
+    out.descuento = isNaN(d) ? 0 : Math.max(0, Math.min(100, d));
+  }
+  if (out.variantes != null && typeof out.variantes !== 'string') {
+    try { out.variantes = JSON.stringify(out.variantes); } catch { out.variantes = null; }
+  }
+  return out;
+};
+
 const createArticleService = async (articleData) => {
-  const article = await Articulo.create(articleData);
+  const article = await Articulo.create(normalizePayload(articleData));
   return article;
 };
 
@@ -68,7 +80,7 @@ const updateArticleService = async (idArticulo, articleData) => {
     throw new AppError('Artículo no encontrado', 404);
   }
   
-  await article.update(articleData);
+  await article.update(normalizePayload(articleData));
   return article;
 };
 

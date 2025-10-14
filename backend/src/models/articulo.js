@@ -30,6 +30,11 @@ const Articulo = sequelize.define("Articulo", {
   descripcion: { type: DataTypes.TEXT },
   precio: { type: DataTypes.FLOAT, allowNull: false },
   stock: { type: DataTypes.INTEGER, allowNull: false },
-  foto: { type: DataTypes.STRING }
+  foto: { type: DataTypes.STRING },
+  // Nueva metadata para gestión en admin
+  categoria: { type: DataTypes.STRING(50), allowNull: true },
+  descuento: { type: DataTypes.FLOAT, allowNull: true, defaultValue: 0 }, // porcentaje 0-100
+  variantes: { type: DataTypes.TEXT, allowNull: true }, // JSON string: [{nombre, precioExtra, stock}]
+  activo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 }, { tableName: 'articulos', timestamps: false });
 module.exports = Articulo;
