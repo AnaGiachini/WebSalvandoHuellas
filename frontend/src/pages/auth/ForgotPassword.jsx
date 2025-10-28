@@ -13,14 +13,39 @@ export default function ForgotPassword() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    // Validaciones frontend
+    if (!email.trim()) {
+      toast({ 
+        title: "Email requerido", 
+        description: "Por favor ingresa tu correo electrónico.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validación básica de formato email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast({ 
+        title: "Email inválido", 
+        description: "Por favor ingresa un correo electrónico válido.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { message, resetLink } = await authService.forgotPassword(email.trim().toLowerCase());
-      toast({ title: "Listo", description: message });
+      toast({ 
+        title: "Correo enviado", 
+        description: message || "Revisa tu bandeja de entrada para restablecer tu contraseña."
+      });
       if (resetLink) setDevLink(resetLink);
     } catch (err) {
-      const description = err?.response?.data?.message || "Ocurrió un error.";
-      toast({ title: "Error", description });
+      const description = err?.response?.data?.message || "Ocurrió un error al enviar el correo.";
+      toast({ title: "Error", description, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

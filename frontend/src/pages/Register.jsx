@@ -26,15 +26,30 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const normalizeName = (str) =>
-    (str || "")
-      .trim()
-      .split(/\s+/)
-      .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
-      .join(" ");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validaciones de frontend
+    if (!firstName.trim()) {
+      toast({ title: "Nombre requerido", description: "Por favor ingresa tu nombre." });
+      return;
+    }
+
+    if (!lastName.trim()) {
+      toast({ title: "Apellido requerido", description: "Por favor ingresa tu apellido." });
+      return;
+    }
+
+    // Validación de longitud mínima (sincronizada con backend)
+    if (firstName.trim().length < 2) {
+      toast({ title: "Nombre muy corto", description: "El nombre debe tener al menos 2 caracteres." });
+      return;
+    }
+
+    if (lastName.trim().length < 2) {
+      toast({ title: "Apellido muy corto", description: "El apellido debe tener al menos 2 caracteres." });
+      return;
+    }
 
     // Reglas exactas del backend: mín. 8, al menos una minúscula, una mayúscula y un número
     const hasMinLength = password.length >= 8;
@@ -56,17 +71,13 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!lastName.trim()) {
-      toast({ title: "Apellido requerido", description: "Por favor ingresa tu apellido." });
-      return;
-    }
-
     setIsLoading(true);
     try {
+      // Enviar datos sin normalizar - el backend los normalizará
       const payload = {
-        name: normalizeName(firstName),
-        lastName: normalizeName(lastName),
-        email: (email || "").trim().toLowerCase(),
+        name: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim().toLowerCase(),
         password,
       };
 
@@ -77,16 +88,28 @@ export default function RegisterPage() {
     } catch (err) {
       const backendErrors = err?.response?.data?.errors;
       const message = err?.response?.data?.message;
-      let description = message || "No pudimos crear tu cuenta. Intenta nuevamente.";
+      let title = "Error al registrarse";
+      let description = "No pudimos crear tu cuenta. Intenta nuevamente.";
 
-      if (Array.isArray(backendErrors) && backendErrors.length > 0) {
-        description = backendErrors
-          .map((e) => (e?.msg ? `${e.path}: ${e.msg}` : null))
-          .filter(Boolean)
-          .join(" | ");
+      // Manejo específico de errores comunes
+      if (message) {
+        if (message.includes("Email ya registrado")) {
+          title = "Email ya registrado";
+          description = "Este correo electrónico ya está en uso. ¿Deseas iniciar sesión?";
+        } else {
+          description = message;
+        }
       }
 
-      toast({ title: "Error al registrarse", description });
+      // Errores de validación del backend
+      if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+        description = backendErrors
+          .map((e) => e?.msg || e?.message)
+          .filter(Boolean)
+          .join(". ");
+      }
+
+      toast({ title, description, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

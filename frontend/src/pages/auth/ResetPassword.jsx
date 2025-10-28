@@ -22,22 +22,70 @@ export default function ResetPassword() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    // Validaciones frontend
     if (!token) {
-      toast({ title: "Token faltante", description: "Abre el enlace recibido o pega el token." });
+      toast({ 
+        title: "Token faltante", 
+        description: "Abre el enlace recibido por correo o pega el token.",
+        variant: "destructive"
+      });
       return;
     }
+
+    if (!pass.trim()) {
+      toast({ 
+        title: "Contraseña requerida", 
+        description: "Por favor ingresa una nueva contraseña.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (pass.length < 8) {
-      toast({ title: "Contraseña insegura", description: "Mínimo 8 caracteres." });
+      toast({ 
+        title: "Contraseña insegura", 
+        description: "La contraseña debe tener al menos 8 caracteres.",
+        variant: "destructive"
+      });
       return;
     }
+
+    // Validación de complejidad (opcional pero recomendada)
+    const hasLower = /[a-z]/.test(pass);
+    const hasUpper = /[A-Z]/.test(pass);
+    const hasNumber = /\d/.test(pass);
+
+    if (!hasLower || !hasUpper || !hasNumber) {
+      toast({ 
+        title: "Contraseña débil", 
+        description: "Debe incluir mayúscula, minúscula y número.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       await authService.resetPassword({ token, nuevaContrasena: pass });
-      toast({ title: "Actualizada", description: "Tu contraseña fue restablecida." });
+      toast({ 
+        title: "Contraseña actualizada", 
+        description: "Tu contraseña fue restablecida exitosamente. Puedes iniciar sesión."
+      });
       navigate("/login");
     } catch (err) {
-      const description = err?.response?.data?.message || "Error al restablecer.";
-      toast({ title: "Error", description });
+      const message = err?.response?.data?.message;
+      let description = "Error al restablecer la contraseña.";
+      
+      if (message) {
+        if (message.includes("Token inválido") || message.includes("expirado")) {
+          description = "El enlace ha expirado o es inválido. Solicita uno nuevo.";
+        } else {
+          description = message;
+        }
+      }
+      
+      toast({ title: "Error", description, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

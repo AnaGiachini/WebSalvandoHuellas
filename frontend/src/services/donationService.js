@@ -11,6 +11,18 @@ const donationService = {
     const { data } = await api.get('/donations/mine');
     return data; // Lista de donaciones del usuario
   },
+
+  // Admin: Listar todas las donaciones
+  async listAll() {
+    const { data } = await api.get('/donations');
+    return data;
+  },
+
+  // Admin: Actualizar estado de donación
+  async updateStatus(idDonacion, estadoPago) {
+    const { data } = await api.patch(`/donations/${idDonacion}/status`, { estadoPago });
+    return data;
+  },
 };
 
 export default donationService;

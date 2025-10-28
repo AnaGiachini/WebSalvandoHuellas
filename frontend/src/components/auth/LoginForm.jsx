@@ -16,16 +16,42 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validaciones frontend
+    if (!email.trim()) {
+      toast({ 
+        title: "Email requerido", 
+        description: "Por favor ingresa tu correo electrónico.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!password) {
+      toast({ 
+        title: "Contraseña requerida", 
+        description: "Por favor ingresa tu contraseña.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (password.length < 8) {
+      toast({ 
+        title: "Contraseña muy corta", 
+        description: "La contraseña debe tener al menos 8 caracteres.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Normalización básica
-      const payload = {
-        email: email.trim().toLowerCase(),
-        password: password,
-      };
+      // Normalización del email
+      const normalizedEmail = email.trim().toLowerCase();
 
-      await login(payload.email, payload.password);
+      await login(normalizedEmail, password);
 
       toast({
         title: "Inicio de sesión exitoso",
@@ -33,8 +59,30 @@ export default function LoginForm() {
       });
       navigate("/");
     } catch (err) {
-      const description = err?.response?.data?.message || "Revisa tus credenciales e inténtalo nuevamente.";
-      toast({ title: "Error al iniciar sesión", description });
+      const backendErrors = err?.response?.data?.errors;
+      const message = err?.response?.data?.message;
+      let title = "Error al iniciar sesión";
+      let description = "Revisa tus credenciales e inténtalo nuevamente.";
+
+      // Manejo específico de errores
+      if (message) {
+        if (message.includes("Credenciales inválidas")) {
+          title = "Credenciales incorrectas";
+          description = "El correo o la contraseña son incorrectos. Por favor, verifica tus datos.";
+        } else {
+          description = message;
+        }
+      }
+
+      // Errores de validación del backend
+      if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+        description = backendErrors
+          .map((e) => e?.msg || e?.message)
+          .filter(Boolean)
+          .join(". ");
+      }
+
+      toast({ title, description, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }

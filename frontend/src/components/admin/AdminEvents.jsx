@@ -35,8 +35,10 @@ import {
 import Loading from "../ui/Loading";
 import { createEvent, getEvents, updateEvent as updateEventApi, deleteEvent as deleteEventApi } from "../../services/eventsService";
 import ConfirmDialog from "../ui/ConfirmDialog";
+import { useToast } from "../../hooks/useToast";
 
 export default function AdminEvents() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -122,6 +124,32 @@ export default function AdminEvents() {
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
                   <Button disabled={submitting} onClick={async () => {
+                    // Validaciones frontend
+                    if (!form.titulo?.trim()) {
+                      toast({
+                        title: "Campo requerido",
+                        description: "El título es obligatorio.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    if (form.titulo.trim().length < 2) {
+                      toast({
+                        title: "Título muy corto",
+                        description: "El título debe tener al menos 2 caracteres.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    if (!form.fecha) {
+                      toast({
+                        title: "Campo requerido",
+                        description: "La fecha es obligatoria.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
                     setSubmitting(true);
                     setError("");
                     try {
@@ -144,10 +172,20 @@ export default function AdminEvents() {
                           description: created.descripcion,
                         },
                       ]);
+                      toast({
+                        title: "Evento creado",
+                        description: `El evento "${created.titulo}" se publicó correctamente.`,
+                      });
                       setOpen(false);
                       setForm({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
                     } catch (e) {
-                      setError("No se pudo crear el evento");
+                      const errorMsg = e?.response?.data?.message || "No se pudo crear el evento";
+                      toast({
+                        title: "Error",
+                        description: errorMsg,
+                        variant: "destructive"
+                      });
+                      setError(errorMsg);
                     } finally {
                       setSubmitting(false);
                     }
@@ -218,8 +256,18 @@ export default function AdminEvents() {
                                 image: updated.foto,
                                 description: updated.descripcion,
                               } : e));
+                              toast({
+                                title: "Evento actualizado",
+                                description: `El título se cambió a "${updated.titulo}".`,
+                              });
                             } catch (e) {
-                              setError('No se pudo actualizar el evento');
+                              const errorMsg = e?.response?.data?.message || 'No se pudo actualizar el evento';
+                              toast({
+                                title: "Error",
+                                description: errorMsg,
+                                variant: "destructive"
+                              });
+                              setError(errorMsg);
                             }
                           }
                         }}>
@@ -233,8 +281,18 @@ export default function AdminEvents() {
                               const iso = new Date(nuevaFecha).toISOString();
                               const updated = await updateEventApi(event.id, { fecha: iso });
                               setEvents((prev) => prev.map((e) => e.id === event.id ? { ...e, date: updated.fecha } : e));
+                              toast({
+                                title: "Evento reprogramado",
+                                description: "La fecha se actualizó correctamente.",
+                              });
                             } catch (e) {
-                              setError('No se pudo reprogramar el evento');
+                              const errorMsg = e?.response?.data?.message || 'No se pudo reprogramar el evento';
+                              toast({
+                                title: "Error",
+                                description: errorMsg,
+                                variant: "destructive"
+                              });
+                              setError(errorMsg);
                             }
                           }
                         }}>
@@ -250,8 +308,18 @@ export default function AdminEvents() {
                               try {
                                 await deleteEventApi(event.id);
                                 setEvents((prev) => prev.filter((e) => e.id !== event.id));
+                                toast({
+                                  title: "Evento eliminado",
+                                  description: `El evento "${event.title}" se eliminó correctamente.`,
+                                });
                               } catch (e) {
-                                setError('No se pudo eliminar el evento');
+                                const errorMsg = e?.response?.data?.message || 'No se pudo eliminar el evento';
+                                toast({
+                                  title: "Error",
+                                  description: errorMsg,
+                                  variant: "destructive"
+                                });
+                                setError(errorMsg);
                               }
                             }
                           });

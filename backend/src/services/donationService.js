@@ -7,6 +7,7 @@
 const sequelize = require('../configs/db');
 const AppError = require('../utils/AppError');
 const Donacion = require('../models/donacion');
+const Usuario = require('../models/usuario');
 
 /**
  * Crea una donación en estado pendiente
@@ -32,6 +33,18 @@ const getUserDonationsService = async (idUsuario) => {
   return await Donacion.findAll({ where: { idUsuario }, order: [['fechaDonacion', 'DESC']] });
 };
 
+/** Admin: Listar todas las donaciones con info del usuario */
+const getAllDonationsService = async () => {
+  return await Donacion.findAll({ 
+    include: [{ 
+      model: Usuario, 
+      as: 'usuario',
+      attributes: ['idUsuario', 'nombre', 'apellido', 'email']
+    }],
+    order: [['fechaDonacion', 'DESC']] 
+  });
+};
+
 /**
  * Actualizar estado de pago de una donación y guardar refs MP si aplica
  */
@@ -48,5 +61,6 @@ module.exports = {
   createDonationService,
   getDonationByIdService,
   getUserDonationsService,
+  getAllDonationsService,
   updateDonationStatusService,
 };

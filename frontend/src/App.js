@@ -11,6 +11,7 @@ import StorePage from "./pages/store/StorePage";
 import ProductDetail from "./pages/store/ProductDetail";
 import CartPage from "./pages/store/CartPage";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Information from "./pages/Information";
 import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
@@ -44,9 +45,10 @@ function App() {
           <Route path="/tienda/:id" element={<ProductDetail />} />
           <Route path="/carrito" element={<CartPage />} />
           <Route path="/eventos" element={<Events />} />
+          <Route path="/eventos/:id" element={<EventDetail />} />
           <Route path="/informacion" element={<Information />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/donaciones" element={<Donaciones />} />  
           <Route path="/mis-donaciones" element={<MyDonations />} />
           <Route path="/perfil" element={<Profile />} />         

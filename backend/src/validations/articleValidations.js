@@ -100,7 +100,7 @@ const validateUpdateArticle = [
 
 /**
  * Valida el ID al buscar o eliminar un artículo
-{{ ... }}
+ */
 const validateArticleId = [
   param('id')
     .notEmpty().withMessage('El ID del artículo es obligatorio')

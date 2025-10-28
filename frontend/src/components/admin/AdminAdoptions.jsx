@@ -6,7 +6,7 @@
  */
 import { useEffect, useState, useCallback } from "react"
 import {
-  Search, MoreHorizontal, Eye, Check, X, Mail, Calendar, User, Heart,
+  Search, MoreHorizontal, Eye, Check, X, Calendar, User, Heart,
 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -229,20 +229,85 @@ export default function AdminAdoptions() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <p className="font-semibold text-lg">{selectedRequest.usuario ? `${selectedRequest.usuario.nombre} ${selectedRequest.usuario.apellido || ""}` : ""}</p>
-                    <p className="text-muted-foreground">{selectedRequest.usuario?.email || ""}</p>
+                    <p className="font-semibold text-lg">
+                      {selectedRequest.nombre} {selectedRequest.apellido}
+                    </p>
+                    <p className="text-sm text-muted-foreground">ID Usuario: {selectedRequest.idUsuario}</p>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{selectedRequest.usuario?.email || ""}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Solicitud: {selectedRequest.fechaSolicitud ? formatDate(selectedRequest.fechaSolicitud) : ""}</span>
-                    </div>
-                  </div>
+                  
                   <Separator />
+                  
+                  {/* Datos al momento de la solicitud */}
+                  <div>
+                    <p className="text-sm font-semibold text-primary mb-2">📸 Datos al momento de la solicitud:</p>
+                    <div className="space-y-2 bg-primary/5 p-3 rounded-md">
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">Email</p>
+                        <p className="text-sm">{selectedRequest.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">Teléfono</p>
+                        <p className="text-sm">{selectedRequest.telefono}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">Dirección</p>
+                        <p className="text-sm">{selectedRequest.direccion}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Datos actuales del usuario */}
+                  {selectedRequest.usuario && (
+                    <div>
+                      <p className="text-sm font-semibold text-green-600 mb-2">✓ Datos actuales para contacto:</p>
+                      <div className="space-y-2 bg-green-50 p-3 rounded-md">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Email actual</p>
+                          <p className="text-sm font-medium">{selectedRequest.usuario.email}</p>
+                          {selectedRequest.usuario.email !== selectedRequest.email && (
+                            <p className="text-xs text-orange-600">⚠️ Cambió su email</p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Teléfono actual</p>
+                          <p className="text-sm font-medium">{selectedRequest.usuario.telefono}</p>
+                          {selectedRequest.usuario.telefono !== selectedRequest.telefono && (
+                            <p className="text-xs text-orange-600">⚠️ Cambió su teléfono</p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Dirección actual</p>
+                          <p className="text-sm font-medium">{selectedRequest.usuario.direccion}</p>
+                          {selectedRequest.usuario.direccion !== selectedRequest.direccion && (
+                            <p className="text-xs text-orange-600">⚠️ Cambió su dirección</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Separator />
+                  
+                  {/* Experiencia y motivación */}
+                  {selectedRequest.experienciaPrevia && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Experiencia con mascotas</p>
+                      <p className="text-sm whitespace-pre-wrap">{selectedRequest.experienciaPrevia}</p>
+                    </div>
+                  )}
+                  {selectedRequest.motivacion && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Motivación</p>
+                      <p className="text-sm whitespace-pre-wrap">{selectedRequest.motivacion}</p>
+                    </div>
+                  )}
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">Solicitud: {selectedRequest.fechaSolicitud ? formatDate(selectedRequest.fechaSolicitud) : ""}</span>
+                  </div>
                   <div>
                     <Badge className={getStatusBadgeColor(selectedRequest.estado)}>{selectedRequest.estado}</Badge>
                   </div>

@@ -15,6 +15,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardFooter } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
+import { useToast } from "../../hooks/useToast";
 
 
 export default function CartPage() {
@@ -23,6 +24,7 @@ export default function CartPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -66,7 +68,11 @@ export default function CartPage() {
       }
       await refreshCart();
     } catch (e) {
-      alert(e?.response?.data?.message || e.message || 'No se pudo actualizar la cantidad');
+      toast({
+        title: "Error",
+        description: e?.response?.data?.message || e.message || 'No se pudo actualizar la cantidad',
+        variant: "destructive"
+      });
     }
   };
 
@@ -74,8 +80,16 @@ export default function CartPage() {
     try {
       await cartService.removeItem(idItemCarrito);
       await refreshCart();
+      toast({
+        title: "Producto eliminado",
+        description: "El producto se eliminó del carrito.",
+      });
     } catch (e) {
-      alert(e?.response?.data?.message || e.message || 'No se pudo eliminar el ítem');
+      toast({
+        title: "Error",
+        description: e?.response?.data?.message || e.message || 'No se pudo eliminar el ítem',
+        variant: "destructive"
+      });
     }
   };
 

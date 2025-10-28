@@ -69,8 +69,20 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
 
     setIsSubmitting(true);
     try {
-      // El backend solo requiere idAnimal (idUsuario viene del token)
-      await adoptionApplicationsService.create({ idAnimal: animalId });
+      // Capturar todos los datos del formulario
+      const formData = new FormData(e.currentTarget);
+      const payload = {
+        idAnimal: animalId,
+        nombre: formData.get('firstName')?.trim() || me?.nombre || '',
+        apellido: formData.get('lastName')?.trim() || me?.apellido || '',
+        email: formData.get('email')?.trim() || me?.email || '',
+        telefono: me?.telefono?.toString().trim() || '',
+        direccion: me?.direccion?.toString().trim() || '',
+        experienciaPrevia: formData.get('experience')?.trim() || '',
+        motivacion: formData.get('reason')?.trim() || ''
+      };
+      
+      await adoptionApplicationsService.create(payload);
 
       toast({
         title: "Solicitud enviada",
@@ -99,18 +111,37 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">Nombre</Label>
-          <Input id="firstName" disabled={disabled || isSubmitting} />
+          <Label htmlFor="firstName">Nombre *</Label>
+          <Input 
+            id="firstName" 
+            name="firstName"
+            defaultValue={me?.nombre || ''}
+            required
+            disabled={disabled || isSubmitting} 
+          />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Apellido</Label>
-          <Input id="lastName" disabled={disabled || isSubmitting} />
+          <Label htmlFor="lastName">Apellido *</Label>
+          <Input 
+            id="lastName" 
+            name="lastName"
+            defaultValue={me?.apellido || ''}
+            required
+            disabled={disabled || isSubmitting} 
+          />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email">Correo electrónico</Label>
-        <Input id="email" type="email" disabled={disabled || isSubmitting} />
+        <Label htmlFor="email">Correo electrónico *</Label>
+        <Input 
+          id="email" 
+          name="email"
+          type="email" 
+          defaultValue={me?.email || ''}
+          required
+          disabled={disabled || isSubmitting} 
+        />
       </div>
 
       <div className="space-y-2">
@@ -127,12 +158,22 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
 
       <div className="space-y-2">
         <Label htmlFor="experience">¿Has tenido mascotas antes? Cuéntanos tu experiencia</Label>
-        <Textarea id="experience" disabled={disabled || isSubmitting} />
+        <Textarea 
+          id="experience" 
+          name="experience"
+          placeholder="Ej: He tenido perros toda mi vida, actualmente tengo un gato..."
+          disabled={disabled || isSubmitting} 
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="reason">¿Por qué quieres adoptar a {animalName}?</Label>
-        <Textarea id="reason" disabled={disabled || isSubmitting} />
+        <Textarea 
+          id="reason" 
+          name="reason"
+          placeholder={`Ej: Me encanta la personalidad de ${animalName}, tengo un hogar preparado...`}
+          disabled={disabled || isSubmitting} 
+        />
       </div>
 
       <div className="flex items-start space-x-2">
