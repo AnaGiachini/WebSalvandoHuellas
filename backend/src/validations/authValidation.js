@@ -16,12 +16,17 @@ const { body } = require('express-validator');
 /**
  * Validación de email: no vacío, formato correcto y normalizado
  */
-const email = body('email').notEmpty().isEmail().normalizeEmail();
+const email = body('email')
+  .notEmpty().withMessage('El correo electrónico es requerido')
+  .isEmail().withMessage('Correo electrónico inválido')
+  .normalizeEmail();
 
 /**
  * Validación de contraseña: mínimo 8 caracteres
  */
-const password = body('contrasena').isLength({ min: 8 });
+const password = body('contrasena')
+  .notEmpty().withMessage('La contraseña es requerida')
+  .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres');
 
 /**
  * Reglas de validación para inicio de sesión

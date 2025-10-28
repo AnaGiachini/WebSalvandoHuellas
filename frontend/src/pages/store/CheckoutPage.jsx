@@ -10,9 +10,11 @@ import { Separator } from "../../components/ui/separator";
 import userService from "../../services/userService";
 import { useAuth } from "../../components/auth/AuthProvider";
 import cartService from "../../services/cartService";
+import { useToast } from "../../hooks/useToast";
 
 export default function CheckoutPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState(null);
   const [error, setError] = useState(null);
@@ -70,15 +72,26 @@ export default function CheckoutPage() {
         }
       } else if (paymentMethod === 'transferencia') {
         await purchaseService.createFromCart({ idCarrito: cart.idCarrito, metodoPago: 'transferencia' });
-        alert("Compra generada en estado pendiente. Por favor, realiza la transferencia bancaria.\nAlias: salvandohuellas.jm\nCVU: 0000003100064017923408\nNombre: Mara Emma Giachini\nEnviar comprobante por el canal indicado.");
+        toast({
+          title: "Compra generada",
+          description: "Tu compra está en estado pendiente. Por favor, realiza la transferencia bancaria según los datos mostrados.",
+        });
         // Vaciar carrito inmediatamente para una mejor UX en el caso de transferencia
         try { await cartService.clearCart(); } catch {}
         navigate("/gracias");
         return;
       }
-      alert('No se pudo iniciar el proceso de pago');
+      toast({
+        title: "Error",
+        description: "No se pudo iniciar el proceso de pago",
+        variant: "destructive"
+      });
     } catch (e) {
-      alert(e?.response?.data?.message || e.message || "No se pudo completar la compra");
+      toast({
+        title: "Error al procesar compra",
+        description: e?.response?.data?.message || e.message || "No se pudo completar la compra",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

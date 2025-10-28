@@ -19,6 +19,7 @@ import RelatedProducts from "../../components/RelatedProducts";
 import cartService from "../../services/cartService";
 import articlesService from "../../services/articlesService";
 import { useAuth } from "../../components/auth/AuthProvider";
+import { useToast } from "../../hooks/useToast";
 
 /* -------------------- Tabs mínimos (sin dependencias) -------------------- */
 function Tabs({ defaultValue, children }) {
@@ -61,6 +62,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -103,7 +105,10 @@ export default function ProductDetail() {
         await navigator.share(shareData);
       } else {
         await navigator.clipboard.writeText(shareData.url);
-        alert("Enlace copiado al portapapeles");
+        toast({
+          title: "Enlace copiado",
+          description: "El enlace se copió al portapapeles.",
+        });
       }
     } catch {}
   };
@@ -116,9 +121,16 @@ export default function ProductDetail() {
       }
       const idArticulo = product?.idArticulo || Number(id);
       await cartService.addItem({ idArticulo, cantidad: qty });
-      alert("Producto agregado al carrito");
+      toast({
+        title: "Producto agregado",
+        description: `${qty} ${qty === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito.`,
+      });
     } catch (e) {
-      alert(e?.response?.data?.message || e.message || "No se pudo agregar al carrito");
+      toast({
+        title: "Error",
+        description: e?.response?.data?.message || e.message || "No se pudo agregar al carrito",
+        variant: "destructive"
+      });
     }
   };
 

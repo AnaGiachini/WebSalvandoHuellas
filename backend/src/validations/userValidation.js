@@ -22,13 +22,21 @@ const { body, param } = require('express-validator');
 const { validateRequest } = require('../middlewares/validateRequest');
 
 /* ─── Reglas de campos reutilizables ──────────────────────────────────── */
-const name = body('nombre').isString().isLength({ min: 2, max: 50 });
-const lastname = body('apellido').isString().isLength({ min: 2, max: 50 });
+const name = body('nombre')
+  .trim()
+  .isString().withMessage('El nombre debe ser un texto')
+  .isLength({ min: 2, max: 50 }).withMessage('El nombre debe tener entre 2 y 50 caracteres');
+const lastname = body('apellido')
+  .trim()
+  .isString().withMessage('El apellido debe ser un texto')
+  .isLength({ min: 2, max: 50 }).withMessage('El apellido debe tener entre 2 y 50 caracteres');
 const email = body('email')
   .trim() // Eliminar espacios antes y después
-  .isEmail()
+  .isEmail().withMessage('Correo electrónico inválido')
   .normalizeEmail();
-const password = body('contrasena').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/);
+const password = body('contrasena')
+  .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')
+  .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('La contraseña debe incluir mayúscula, minúscula y número');
 
 // Nuevos campos: direccion y telefono (opcionales en update)
 const direccion = body('direccion')

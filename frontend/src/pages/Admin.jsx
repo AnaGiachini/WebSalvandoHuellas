@@ -19,6 +19,7 @@ import AdminOrders from "../components/admin/AdminOrders";
 import AdminAdoptions from "../components/admin/AdminAdoptions";
 import AdminEvents from "../components/admin/AdminEvents";
 import AdminUsers from "../components/admin/AdminUsers";
+import AdminDonations from "../components/admin/AdminDonations";
 
 // Services para métricas
 import animalsService from "../services/animalsService";
@@ -26,6 +27,7 @@ import articlesService from "../services/articlesService";
 import { getEvents } from "../services/eventsService";
 import adoptionApplicationsService from "../services/adoptionApplicationsService";
 import purchaseService from "../services/purchaseService";
+import donationService from "../services/donationService";
 
 export default function AdminPage() {
   const [tab, setTab] = useState("users");
@@ -36,6 +38,8 @@ export default function AdminPage() {
     adoptionsApproved: 0,
     salesAmount: 0,
     salesCount: 0,
+    donationsAmount: 0,
+    donationsCount: 0,
   });
   const [loadingMetrics, setLoadingMetrics] = useState(true);
 
@@ -51,12 +55,13 @@ export default function AdminPage() {
         endOfMonth.setMonth(endOfMonth.getMonth() + 1);
         endOfMonth.setMilliseconds(-1);
 
-        const [animals, products, events, adoptions, sales] = await Promise.all([
+        const [animals, products, events, adoptions, sales, donations] = await Promise.all([
           animalsService.list().catch(() => []),
           articlesService.getAll().catch(() => []),
           getEvents().catch(() => []),
           adoptionApplicationsService.getAll().catch(() => []), // requiere admin
           purchaseService.getMetrics({ from: startOfMonth.toISOString(), to: endOfMonth.toISOString() }).catch(() => ({ totalAmount: 0, count: 0, byStatus: {} })),
+          donationService.listAll().catch(() => []),
         ]);
 
         // Próximos eventos: fecha >= hoy
@@ -67,6 +72,12 @@ export default function AdminPage() {
         const approved = Array.isArray(adoptions)
           ? adoptions.filter((a) => a.estado === "aprobada").length
           : 0;
+        
+        // Calcular donaciones pagadas del mes
+        const donationsPaid = Array.isArray(donations)
+          ? donations.filter((d) => d.estadoPago === 'pagado' && new Date(d.fechaDonacion) >= startOfMonth && new Date(d.fechaDonacion) <= endOfMonth)
+          : [];
+        const donationsTotal = donationsPaid.reduce((sum, d) => sum + Number(d.monto || 0), 0);
 
         if (!mounted) return;
         setMetrics({
@@ -76,6 +87,8 @@ export default function AdminPage() {
           adoptionsApproved: approved,
           salesAmount: Number(sales?.totalAmount || 0),
           salesCount: Number(sales?.count || 0),
+          donationsAmount: donationsTotal,
+          donationsCount: donationsPaid.length,
         });
       } finally {
         if (mounted) setLoadingMetrics(false);
@@ -95,7 +108,7 @@ export default function AdminPage() {
       </div>
 
       {/* Dashboard resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
@@ -156,6 +169,18 @@ export default function AdminPage() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Donaciones (mes actual)</p>
+              <p className="text-2xl font-bold">{loadingMetrics ? "-" : formatCurrency(metrics.donationsAmount)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{loadingMetrics ? "" : `${metrics.donationsCount} donaciones`}</p>
+            </div>
+            <div className="bg-green-100 p-3 rounded-full">
+              <Heart className="h-6 w-6 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Menú lateral y contenido */}
@@ -186,6 +211,10 @@ export default function AdminPage() {
               <ShoppingBag className="h-5 w-5 mr-2" />
               Pedidos
             </Button>
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("donations")}>
+              <Heart className="h-5 w-5 mr-2" />
+              Donaciones
+            </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("events")}>
               <Calendar className="h-5 w-5 mr-2" />
               Eventos
@@ -200,12 +229,13 @@ export default function AdminPage() {
         {/* Contenido principal */}
         <div>
           <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="grid grid-cols-6 mb-8">
+            <TabsList className="grid grid-cols-7 mb-8">
               <TabsTrigger value="users">Usuarios</TabsTrigger>
               <TabsTrigger value="adoptions">Adopciones</TabsTrigger>
               <TabsTrigger value="animals">Animales</TabsTrigger>
               <TabsTrigger value="products">Productos</TabsTrigger>
               <TabsTrigger value="orders">Pedidos</TabsTrigger>
+              <TabsTrigger value="donations">Donaciones</TabsTrigger>
               <TabsTrigger value="events">Eventos</TabsTrigger>
             </TabsList>
             <TabsContent value="users">
@@ -222,6 +252,9 @@ export default function AdminPage() {
             </TabsContent>
             <TabsContent value="orders">
               <AdminOrders />
+            </TabsContent>
+            <TabsContent value="donations">
+              <AdminDonations />
             </TabsContent>
             <TabsContent value="events">
               <AdminEvents />
