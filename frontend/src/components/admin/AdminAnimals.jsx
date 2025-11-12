@@ -48,6 +48,7 @@ export default function AdminAnimals() {
   const [editing, setEditing] = useState(null); // objeto animal o null
   const [form, setForm] = useState({
     nombre: "",
+    especie: "perro",
     sexo: "macho",
     edad: "joven",
     tamano: "mediano",
@@ -88,7 +89,7 @@ export default function AdminAnimals() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ nombre: "", sexo: "macho", edad: "joven", tamano: "mediano", historia: "", estadoAdopcion: "sin_hogar", foto: "" });
+    setForm({ nombre: "", especie: "perro", sexo: "macho", edad: "joven", tamano: "mediano", historia: "", estadoAdopcion: "sin_hogar", foto: "" });
     setOpen(true);
   };
 
@@ -96,6 +97,7 @@ export default function AdminAnimals() {
     setEditing(animal);
     setForm({
       nombre: animal.nombre || "",
+      especie: animal.especie || "perro",
       sexo: animal.sexo || "macho",
       edad: animal.edad || "joven",
       tamano: animal.tamano || "mediano",
@@ -184,6 +186,7 @@ export default function AdminAnimals() {
           <TableHeader>
             <TableRow>
               <TableHead>Animal</TableHead>
+              <TableHead>Especie</TableHead>
               <TableHead>Sexo</TableHead>
               <TableHead>Edad</TableHead>
               <TableHead>Tamaño</TableHead>
@@ -193,7 +196,7 @@ export default function AdminAnimals() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6}>Cargando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7}>Cargando...</TableCell></TableRow>
             ) : filteredAnimals.length > 0 ? (
               filteredAnimals.map((animal) => (
                 <TableRow key={animal.idAnimal}>
@@ -210,6 +213,7 @@ export default function AdminAnimals() {
                       <span className="font-medium">{animal.nombre}</span>
                     </div>
                   </TableCell>
+                  <TableCell><Badge variant="outline">{animal.especie}</Badge></TableCell>
                   <TableCell>{animal.sexo}</TableCell>
                   <TableCell>{animal.edad}</TableCell>
                   <TableCell>{animal.tamano}</TableCell>
@@ -243,7 +247,7 @@ export default function AdminAnimals() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
+                <TableCell colSpan={7} className="text-center py-4">
                   No se encontraron resultados para "{searchTerm}"
                 </TableCell>
               </TableRow>
@@ -262,14 +266,23 @@ export default function AdminAnimals() {
               <Label htmlFor="nombre">Nombre</Label>
               <Input id="nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="especie">Especie</Label>
+                <select id="especie" className="w-full h-10 rounded-md border px-3 text-sm" value={form.especie} onChange={(e) => setForm({ ...form, especie: e.target.value })} required>
+                  <option value="perro">Perro</option>
+                  <option value="gato">Gato</option>
+                </select>
+              </div>
               <div className="space-y-1">
                 <Label htmlFor="sexo">Sexo</Label>
                 <select id="sexo" className="w-full h-10 rounded-md border px-3 text-sm" value={form.sexo} onChange={(e) => setForm({ ...form, sexo: e.target.value })}>
-                  <option value="macho">macho</option>
-                  <option value="hembra">hembra</option>
+                  <option value="macho">Macho</option>
+                  <option value="hembra">Hembra</option>
                 </select>
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="edad">Edad</Label>
                 <select id="edad" className="w-full h-10 rounded-md border px-3 text-sm" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })}>

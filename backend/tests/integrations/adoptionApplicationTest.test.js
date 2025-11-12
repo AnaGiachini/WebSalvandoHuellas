@@ -38,11 +38,11 @@ describe("API de Solicitudes de Adopción", () => {
 
     animal = await Animal.create({
       nombre: "Manchitas",
-      especie: "Perro",
+      especie: "perro",
       sexo: "macho",
       edad: "adulto",
       tamano: "mediano",
-      descripcion: "Simpático y juguetón",
+      historia: "Simpático y juguetón",
       estadoAdopcion: "sin_hogar",
       foto: "imagen.jpg"
     });
@@ -94,11 +94,11 @@ describe("API de Solicitudes de Adopción", () => {
     // crear nueva solicitud
     const newAnimal = await Animal.create({
       nombre: "Luna",
-      especie: "Gato",
+      especie: "gato",
       sexo: "hembra",
       edad: "joven",
       tamano: "pequeño",
-      descripcion: "Tranquila y amorosa",
+      historia: "Tranquila y amorosa",
       estadoAdopcion: "sin_hogar",
       foto: "gato.jpg"
     });
@@ -132,11 +132,11 @@ describe("API de Solicitudes de Adopción", () => {
   it("PATCH /adoptions/:id - No permite cambiar estado a usuarios comunes", async () => {
   const anotherAnimal = await Animal.create({
     nombre: "Toby",
-    especie: "Perro",
+    especie: "perro",
     sexo: "macho",
     edad: "adulto",
     tamano: "grande",
-    descripcion: "Cariñoso pero guardián",
+    historia: "Cariñoso pero guardián",
     estadoAdopcion: "sin_hogar",
     foto: "perro2.jpg"
   });

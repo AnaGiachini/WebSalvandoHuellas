@@ -5,6 +5,7 @@
  *
  *  • Campos validados
  *      nombre      → entre 2-50 caracteres
+ *      especie     → debe ser 'perro' o 'gato'
  *      sexo        → debe ser 'macho' o 'hembra'
  *      edad        → debe ser un número entero positivo
  *      tamano      → entre 2-20 caracteres
@@ -29,6 +30,10 @@ const nombre = body('nombre')
   .isString()
   .isLength({ min: 2, max: 50 })
   .withMessage('El nombre debe tener entre 2 y 50 caracteres');
+
+const especie = body('especie')
+  .isIn(['perro', 'gato'])
+  .withMessage('La especie debe ser perro o gato');
 
 const sexo = body('sexo')
   .isIn(['macho', 'hembra'])
@@ -57,6 +62,7 @@ const foto = body('foto')
 /* ─── Conjuntos de reglas exportados ─────────────────────────────────── */
 const createAnimalValidation = [
   nombre, 
+  especie,
   sexo, 
   edad.optional(), 
   tamano.optional(), 
@@ -68,6 +74,7 @@ const createAnimalValidation = [
 
 const updateAnimalValidation = [
   nombre.optional(),
+  especie.optional(),
   sexo.optional(),
   edad.optional(),
   tamano.optional(),

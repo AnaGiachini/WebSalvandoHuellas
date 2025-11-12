@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardFooter } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
@@ -28,10 +28,11 @@ export default function AdopcionIndex() {
   const [error, setError] = useState(null);
 
   // Filtros controlados
-  const [search, setSearch] = useState("");
+  const [especie, setEspecie] = useState("");
   const [sexo, setSexo] = useState("");
   const [edad, setEdad] = useState("");
   const [tamano, setTamano] = useState("");
+  const [estadoAdopcion, setEstadoAdopcion] = useState("disponibles"); // Por defecto: disponibles y en proceso
 
   useEffect(() => {
     const load = async () => {
@@ -50,22 +51,31 @@ export default function AdopcionIndex() {
   }, [toast]);
 
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
     return (animals || []).filter((a) => {
       if (!a) return false;
-      const byName = term ? (a.nombre || "").toLowerCase().includes(term) : true;
+      const byEspecie = especie ? (a.especie || "").toLowerCase() === especie.toLowerCase() : true;
       const bySexo = sexo ? a.sexo === sexo : true;
       const byEdad = edad ? a.edad === edad : true;
       const byTamano = tamano ? a.tamano === tamano : true;
-      return byName && bySexo && byEdad && byTamano;
+      
+      // Filtro por estado
+      let byEstado = true;
+      if (estadoAdopcion === "disponibles") {
+        byEstado = a.estadoAdopcion === "sin_hogar" || a.estadoAdopcion === "en_proceso";
+      } else if (estadoAdopcion === "sin_hogar" || estadoAdopcion === "en_proceso" || estadoAdopcion === "adoptado") {
+        byEstado = a.estadoAdopcion === estadoAdopcion;
+      }
+      
+      return byEspecie && bySexo && byEdad && byTamano && byEstado;
     });
-  }, [animals, search, sexo, edad, tamano]);
+  }, [animals, especie, sexo, edad, tamano, estadoAdopcion]);
 
   const resetFilters = () => {
-    setSearch("");
+    setEspecie("");
     setSexo("");
     setEdad("");
     setTamano("");
+    setEstadoAdopcion("disponibles"); // Restaurar filtro por defecto
   };
 
   return (
@@ -84,18 +94,18 @@ export default function AdopcionIndex() {
           <h2 className="text-lg font-medium">Filtrar animales</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div className="md:col-span-2">
-            <label htmlFor="search" className="text-sm font-medium">Buscar por nombre</label>
-            <div className="relative mt-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                id="search"
-                placeholder="Buscar..."
-                className="pl-8 w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+          <div>
+            <label htmlFor="especie" className="text-sm font-medium">Especie</label>
+            <select
+              id="especie"
+              className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={especie}
+              onChange={(e) => setEspecie(e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="perro">Perro</option>
+              <option value="gato">Gato</option>
+            </select>
           </div>
           <div>
             <label htmlFor="sexo" className="text-sm font-medium">Sexo</label>
@@ -137,6 +147,20 @@ export default function AdopcionIndex() {
               <option value="pequeño">Pequeño</option>
               <option value="mediano">Mediano</option>
               <option value="grande">Grande</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="estado" className="text-sm font-medium">Estado</label>
+            <select
+              id="estado"
+              className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={estadoAdopcion}
+              onChange={(e) => setEstadoAdopcion(e.target.value)}
+            >
+              <option value="disponibles">Disponibles</option>
+              <option value="sin_hogar">Disponible</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="adoptado">Adoptado</option>
             </select>
           </div>
           <div className="flex items-end">

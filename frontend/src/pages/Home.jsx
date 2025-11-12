@@ -66,7 +66,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mt-8">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5 mt-8">
             {/* Adopta */}
             <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
               <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
@@ -82,32 +82,32 @@ export default function Home() {
                 </Link>
               </CardContent>
             </Card>
+            {/* Dona */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                <Heart className="h-12 w-12 text-primary" />
+                <h3 className="text-xl font-bold">Donar</h3>
+                <p className="text-sm text-muted-foreground">
+                  Dona para apoyar a los animales rescatados y su adopción.
+                </p>
+                <Link to="/donaciones">
+                  <Button variant="link" className="text-primary">
+                    Conoce más
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
             {/* Compra */}
             <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
               <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
                 <ShoppingBag className="h-12 w-12 text-primary" />
                 <h3 className="text-xl font-bold">Compra</h3>
                 <p className="text-sm text-muted-foreground">
-                  Adquiere productos para tu mascota y apoya nuestra labor.
+                  Adquiere productos de nuestra feria americana on-line y apoya nuestra labor.
                 </p>
                 <Link to="/tienda">
                   <Button variant="link" className="text-primary">
                     Visitar tienda
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-            {/* Participa */}
-            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
-              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
-                <Calendar className="h-12 w-12 text-primary" />
-                <h3 className="text-xl font-bold">Participa</h3>
-                <p className="text-sm text-muted-foreground">
-                  Asiste a nuestros eventos y actividades de recaudación de fondos.
-                </p>
-                <Link to="/eventos">
-                  <Button variant="link" className="text-primary">
-                    Ver eventos
                   </Button>
                 </Link>
               </CardContent>
@@ -123,6 +123,21 @@ export default function Home() {
                 <Link to="/informacion">
                   <Button variant="link" className="text-primary">
                     Leer más
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+            {/* Participa */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
+                <Calendar className="h-12 w-12 text-primary" />
+                <h3 className="text-xl font-bold">Participa</h3>
+                <p className="text-sm text-muted-foreground">
+                  Asiste a nuestros eventos y actividades de recaudación de fondos.
+                </p>
+                <Link to="/eventos">
+                  <Button variant="link" className="text-primary">
+                    Ver eventos
                   </Button>
                 </Link>
               </CardContent>
@@ -164,7 +179,7 @@ export default function Home() {
                 Productos Destacados
               </h2>
               <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Descubre nuestra selección de productos para tus mascotas.
+                Descubre nuestros productos destacados.
               </p>
             </div>
           </div>
