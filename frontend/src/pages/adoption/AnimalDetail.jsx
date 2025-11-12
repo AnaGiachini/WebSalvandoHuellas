@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Heart, Calendar, ArrowLeft, Share2 } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent } from "../../components/ui/card";
@@ -21,43 +21,6 @@ const mapEstado = (estado) => {
       return estado || "";
   }
 };
-
-/* -------------------- Tabs mínimos (sin dependencias) -------------------- */
-function Tabs({ defaultValue, children }) {
-  const [value, setValue] = useState(defaultValue);
-  return React.Children.map(children, (child) =>
-    React.isValidElement(child) ? React.cloneElement(child, { __tabs: { value, setValue } }) : child
-  );
-}
-function TabsList({ className = "", __tabs, children }) {
-  return (
-    <div className={`inline-grid gap-2 ${className}`} role="tablist">
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child) ? React.cloneElement(child, { __tabs }) : child
-      )}
-    </div>
-  );
-}
-function TabsTrigger({ value, children, __tabs }) {
-  const active = __tabs.value === value;
-  return (
-    <button
-      role="tab"
-      aria-selected={active}
-      onClick={() => __tabs.setValue(value)}
-      className={`px-3 py-2 text-sm rounded-md border ${
-        active ? "bg-primary text-primary-foreground border-primary" : "hover:bg-accent border-border"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-function TabsContent({ value, __tabs, className = "", children }) {
-  if (__tabs.value !== value) return null;
-  return <div className={className}>{children}</div>;
-}
-/* ------------------------------------------------------------------------ */
 
 export default function AnimalDetalle() {
   const { id } = useParams();
@@ -105,8 +68,6 @@ export default function AnimalDetalle() {
 
   // Defaults seguros para propiedades opcionales
   const fotos = Array.isArray(animal.fotos) ? animal.fotos : [];
-  const personalidad = Array.isArray(animal.personalidad) ? animal.personalidad : [];
-  const requisitos = Array.isArray(animal.requisitos) ? animal.requisitos : [];
 
   const estadoAmigable = mapEstado(animal.estadoAdopcion);
   const noDisponible = animal.estadoAdopcion !== 'sin_hogar';
@@ -147,97 +108,46 @@ export default function AnimalDetalle() {
             </div>
           )}
 
-          {/* Tabs */}
-          <Tabs defaultValue="about">
-            <TabsList className="grid grid-cols-3 gap-2">
-              <TabsTrigger value="about">Sobre {animal.nombre}</TabsTrigger>
-              <TabsTrigger value="personality">Personalidad</TabsTrigger>
-              <TabsTrigger value="requirements">Requisitos</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="about" className="p-4 bg-primary/5 rounded-lg mt-2">
-              <h3 className="text-lg font-medium mb-4">Información</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center">
-                  <Badge variant="outline" className="mr-2">Sexo</Badge>
-                  <span>{animal.sexo}</span>
-                </div>
-                <div className="flex items-center">
-                  <Badge variant="outline" className="mr-2">Edad</Badge>
-                  <span>{animal.edad}</span>
-                </div>
-                <div className="flex items-center">
-                  <Badge variant="outline" className="mr-2">Tamaño</Badge>
-                  <span>{animal.tamano}</span>
-                </div>
-                <div className="flex items-center">
-                  <Badge variant="outline" className="mr-2">Estado</Badge>
-                  <span>{estadoAmigable}</span>
-                </div>
+          {/* Información del animal */}
+          <div className="p-4 bg-primary/5 rounded-lg">
+            <h3 className="text-lg font-medium mb-4">Sobre {animal.nombre}</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center">
+                <Badge variant="outline" className="mr-2">Sexo</Badge>
+                <span>{animal.sexo}</span>
               </div>
-              {animal.historia && (
-                <div className="mt-4">
-                  <h4 className="text-md font-medium mb-2">Historia</h4>
-                  <p className="text-muted-foreground">{animal.historia}</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="personality" className="p-4 bg-primary/5 rounded-lg mt-2">
-              <h3 className="text-lg font-medium mb-4">Personalidad y comportamiento</h3>
-              {personalidad.length > 0 ? (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {personalidad.map((trait, index) => (
-                    <Badge key={index} className="bg-primary/20 text-primary hover:bg-primary/30">
-                      {trait}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">Sin información específica.</p>
-              )}
-              <p className="text-muted-foreground">
-                Cada animal tiene su propia personalidad única. Estas características pueden ayudarte a determinar si {" "}
-                {animal.nombre} es compatible con tu estilo de vida y hogar.
-              </p>
-            </TabsContent>
-
-            <TabsContent value="requirements" className="p-4 bg-primary/5 rounded-lg mt-2">
-              <h3 className="text-lg font-medium mb-4">Requisitos para adoptar a {animal.nombre}</h3>
-              {requisitos.length > 0 ? (
-                <ul className="space-y-2 mb-4">
-                  {requisitos.map((r, i) => (
-                    <li key={i} className="flex items-start">
-                      <span className="text-primary mr-2">•</span>
-                      <span className="text-muted-foreground">{r}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground mb-4">Sin requisitos adicionales.</p>
-              )}
-              <p className="text-muted-foreground">
-                Estos requisitos son importantes para asegurar que {animal.nombre} encuentre un hogar adecuado.
-              </p>
-            </TabsContent>
-          </Tabs>
+              <div className="flex items-center">
+                <Badge variant="outline" className="mr-2">Edad</Badge>
+                <span>{animal.edad}</span>
+              </div>
+              <div className="flex items-center">
+                <Badge variant="outline" className="mr-2">Tamaño</Badge>
+                <span>{animal.tamano}</span>
+              </div>
+              <div className="flex items-center">
+                <Badge variant="outline" className="mr-2">Estado</Badge>
+                <span>{estadoAmigable}</span>
+              </div>
+            </div>
+            {animal.historia && (
+              <div className="mt-4">
+                <h4 className="text-md font-medium mb-2">Historia</h4>
+                <p className="text-muted-foreground">{animal.historia}</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Columna derecha: Info y formulario */}
         <div>
           <Card className="mb-6">
             <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-primary">{animal.nombre}</h1>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Badge variant="secondary">{animal.sexo}</Badge>
-                    <Badge variant="outline">{animal.edad}</Badge>
-                  </div>
+              <div className="mb-4">
+                <h1 className="text-3xl font-bold text-primary">{animal.nombre}</h1>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Badge variant="secondary">{animal.sexo}</Badge>
+                  <Badge variant="outline">{animal.edad}</Badge>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => navigator.share?.({ title: animal.nombre })}>
-                  <Share2 className="h-5 w-5" />
-                </Button>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mt-6">
@@ -255,9 +165,9 @@ export default function AnimalDetalle() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 mt-6">
+              <div className="mt-6">
                 <Button
-                  className="flex-1 bg-primary hover:bg-primary/90"
+                  className="w-full bg-primary hover:bg-primary/90"
                   disabled={noDisponible}
                   title={noDisponible ? `Este animal está ${estadoAmigable.toLowerCase()}` : "Enviar solicitud de adopción"}
                   onClick={() => {
@@ -269,15 +179,11 @@ export default function AnimalDetalle() {
                   {noDisponible ? 'No disponible' : 'Solicitar adopción'}
                 </Button>
                 {noDisponible && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-2">
                     Este animal no está disponible actualmente ({estadoAmigable}). Puedes explorar otras opciones en la página de
                     <Link to="/adopcion" className="text-primary underline"> adopción</Link>.
                   </p>
                 )}
-                <Button variant="outline" className="flex-1 border-primary text-primary hover:bg-primary/10">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Agendar visita
-                </Button>
               </div>
             </CardContent>
           </Card>

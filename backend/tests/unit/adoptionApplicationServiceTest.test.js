@@ -31,6 +31,7 @@ describe('adoptionApplicationService unit tests', () => {
 
   const animalData = {
     nombre: 'Luna',
+    especie: 'gato',
     sexo: 'hembra',
     edad: 'adulto',
     tamano: 'pequeño',

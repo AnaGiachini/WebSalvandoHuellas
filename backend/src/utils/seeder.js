@@ -50,19 +50,19 @@ const Evento = require('../models/evento');
     console.log('> Creando animales...');
     const animalesData = [
       {
-        nombre: 'Luna', sexo: 'hembra', edad: 'joven', tamano: 'mediano', historia: 'Rescatada de la calle, muy cariñosa y juguetona.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Luna', especie: 'perro', sexo: 'hembra', edad: 'joven', tamano: 'mediano', historia: 'Rescatada de la calle, muy cariñosa y juguetona.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Simba', sexo: 'macho', edad: 'cachorro', tamano: 'pequeño', historia: 'Curioso y activo, ideal para familia con niños.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Simba', especie: 'gato', sexo: 'macho', edad: 'cachorro', tamano: 'pequeño', historia: 'Curioso y activo, ideal para familia con niños.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Mía', sexo: 'hembra', edad: 'adulto', tamano: 'pequeño', historia: 'Tranquila y muy limpia, le gustan los lugares cálidos.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Mía', especie: 'gato', sexo: 'hembra', edad: 'adulto', tamano: 'pequeño', historia: 'Tranquila y muy limpia, le gustan los lugares cálidos.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Rocky', sexo: 'macho', edad: 'adulto', tamano: 'grande', historia: 'Leal y protector, necesita espacio para jugar.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Rocky', especie: 'perro', sexo: 'macho', edad: 'adulto', tamano: 'grande', historia: 'Leal y protector, necesita espacio para jugar.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Nala', sexo: 'hembra', edad: 'adulto mayor', tamano: 'mediano', historia: 'Dulce y tranquila, excelente compañía.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Nala', especie: 'perro', sexo: 'hembra', edad: 'adulto mayor', tamano: 'mediano', historia: 'Dulce y tranquila, excelente compañía.', estadoAdopcion: 'sin_hogar', foto: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1200&auto=format&fit=crop'
       },
     ];
 
@@ -158,6 +158,11 @@ const Evento = require('../models/evento');
       idUsuario: user.idUsuario,
       idAnimal: animalPendiente.idAnimal,
       estado: 'pendiente',
+      nombre: user.nombre,
+      apellido: user.apellido,
+      email: user.email,
+      telefono: '11-2345-6789',
+      direccion: 'Calle Ejemplo 123, Buenos Aires',
     });
     await animalPendiente.update({ estadoAdopcion: 'en_proceso' });
 
@@ -167,6 +172,11 @@ const Evento = require('../models/evento');
       idUsuario: user.idUsuario,
       idAnimal: animalAprobada.idAnimal,
       estado: 'aprobada',
+      nombre: user.nombre,
+      apellido: user.apellido,
+      email: user.email,
+      telefono: '11-2345-6789',
+      direccion: 'Calle Ejemplo 123, Buenos Aires',
     });
     await animalAprobada.update({ estadoAdopcion: 'adoptado' });
 
@@ -176,6 +186,11 @@ const Evento = require('../models/evento');
       idUsuario: user.idUsuario,
       idAnimal: animalRechazada.idAnimal,
       estado: 'rechazada',
+      nombre: user.nombre,
+      apellido: user.apellido,
+      email: user.email,
+      telefono: '11-2345-6789',
+      direccion: 'Calle Ejemplo 123, Buenos Aires',
     });
     await animalRechazada.update({ estadoAdopcion: 'sin_hogar' });
 

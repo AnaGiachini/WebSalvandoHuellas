@@ -17,7 +17,8 @@ const resetDatabase = require('../../src/utils/resetDatabase.helper');
 
 describe('animalService unit tests', () => {
   const animalData = { 
-    nombre: 'Firulais', 
+    nombre: 'Firulais',
+    especie: 'perro',
     sexo: 'macho', 
     edad: 'adulto', 
     tamano: 'mediano', 
@@ -69,7 +70,7 @@ describe('animalService unit tests', () => {
 
   it('getAnimalsByStatusService filtra animales por estado de adopción', async () => {
     await createAnimalService({ ...animalData, estadoAdopcion: 'adoptado' });
-    await createAnimalService({ nombre: 'Luna', sexo: 'hembra', edad: 'joven', tamano: 'pequeño', estadoAdopcion: 'sin_hogar' });
+    await createAnimalService({ nombre: 'Luna', especie: 'gato', sexo: 'hembra', edad: 'joven', tamano: 'pequeño', estadoAdopcion: 'sin_hogar' });
 
     const adopted = await getAnimalsByStatusService('adoptado');
     expect(Array.isArray(adopted)).toBe(true);
