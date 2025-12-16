@@ -39,14 +39,26 @@ const hashPassword = (plain) => bcrypt.hash(plain, 10);
 const comparePassword = (plain, hash) => bcrypt.compare(plain, hash);
 
 /**
- * Registra un nuevo usuario en el sistema
+ * UC01: Registrar usuario - Lógica de negocio
+ * --------------------------------------------------------------------------
+ * Crea un nuevo usuario en el sistema aplicando normalización y seguridad.
+ *
+ *  • Pasos principales
+ *      - Normaliza nombre, apellido, email y dirección
+ *      - Encripta la contraseña con bcrypt
+ *      - Persiste el usuario en la base de datos (tabla 'usuarios')
+ *      - Genera un JWT con idUsuario y rol por defecto
+ *
+ *  • Errores
+ *      - Lanza AppError(409, 'Email ya registrado') si el email está duplicado
+ *
  * @param {Object} userData - Datos del nuevo usuario
  * @param {string} userData.nombre - Nombre del usuario
  * @param {string} userData.apellido - Apellido del usuario
- * @param {string} userData.email - Email (normalizado)
+ * @param {string} userData.email - Email (sin normalizar)
  * @param {string} userData.contrasena - Contraseña (sin encriptar)
- * @param {string} userData.direccion - Dirección del usuario
- * @returns {Promise<string>} Token JWT para autenticación
+ * @param {string} [userData.direccion] - Dirección del usuario
+ * @returns {Promise<{token: string, user: Object}>} Token JWT y datos básicos del usuario
  */
 const registerService = async ({ nombre, apellido, email, contrasena, direccion }) => {
   // Normalización de datos
@@ -63,9 +75,23 @@ const registerService = async ({ nombre, apellido, email, contrasena, direccion 
       ...datosNormalizados,
       contrasena: hash,
     });
-    return jwt.generate({ idUsuario: user.idUsuario, rol: user.rol });
+
+    const token = jwt.generate({ idUsuario: user.idUsuario, rol: user.rol });
+
+    // Devolvemos también datos básicos del usuario para que el frontend pueda
+    // reflejar inmediatamente la sesión sin depender solo del formulario.
+    const safeUser = {
+      idUsuario: user.idUsuario,
+      nombre: user.nombre,
+      apellido: user.apellido,
+      email: user.email,
+      rol: user.rol,
+    };
+
+    return { token, user: safeUser };
   } catch (err) {
-    // Refactor: centralizamos error de duplicado a 409 para consistencia con ADR
+    // UC01 - Regla de negocio: si el email ya existe, devolvemos un 409 controlado
+    // en lugar de un error genérico de base de datos.
     if (err && (err.name === 'SequelizeUniqueConstraintError' || /unique|duplic/i.test(String(err.message)))) {
       throw new AppError(409, 'Email ya registrado');
     }

@@ -1,3 +1,19 @@
+/**
+ * Página: RegisterPage
+ * --------------------------------------------------------------------------
+ * UC01: Formulario de registro de usuario.
+ *
+ *  • Responsabilidades
+ *      - Recoger los datos básicos del nuevo usuario
+ *      - Validar en el cliente las mismas reglas clave que el backend
+ *      - Llamar al contexto de autenticación para registrar al usuario
+ *      - Mostrar feedback (toasts) en caso de éxito o error
+ *
+ *  • Integraciones
+ *      - useAuth.register → delega en authService y gestiona el token
+ *      - Validaciones sincronizadas con userValidation en el backend
+ */
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -26,10 +42,20 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  /**
+   * Maneja el envío del formulario de registro (UC01)
+   * --------------------------------------------------------------------------
+   * - Valida los campos en el frontend para mejorar la experiencia de usuario
+   * - Envía los datos al backend (que repite las validaciones de seguridad)
+   * - Muestra mensajes claros según el tipo de error (email duplicado, validaciones, etc.)
+   *
+   * @param {React.FormEvent<HTMLFormElement>} e
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validaciones de frontend
+    // Ayudan a dar feedback inmediato antes de llegar al backend
     if (!firstName.trim()) {
       toast({ title: "Nombre requerido", description: "Por favor ingresa tu nombre." });
       return;
@@ -101,7 +127,7 @@ export default function RegisterPage() {
         }
       }
 
-      // Errores de validación del backend
+      // Errores de validación devueltos por express-validator en el backend
       if (Array.isArray(backendErrors) && backendErrors.length > 0) {
         description = backendErrors
           .map((e) => e?.msg || e?.message)
