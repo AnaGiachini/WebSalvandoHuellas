@@ -83,6 +83,14 @@ export function AuthProvider({ children }) {
     }
   };
 
+  /**
+   * UC01: Registrar usuario (capa de contexto)
+   * --------------------------------------------------------------------------
+   * - Llama a authService.register para crear el usuario en el backend
+   * - Almacena el token JWT en localStorage
+   * - Usa los datos de usuario devueltos por el backend (si existen) o,
+   *   en su defecto, los del formulario como representación mínima.
+   */
   const register = async (payload) => {
     setIsLoading(true);
     try {
@@ -90,12 +98,22 @@ export function AuthProvider({ children }) {
       const token = data?.token || data?.data?.token;
       if (token) localStorage.setItem("authToken", token);
 
-      // No viene user → usar datos del formulario como user base
-      const resolvedUser = {
-        name: payload.name ?? payload.nombre,
-        apellido: payload.lastName ?? payload.apellido,
-        email: payload.email,
-      };
+      // Si el backend devuelve datos de usuario, los usamos como fuente de verdad
+      const backendUser = data?.user || data?.data?.user;
+      const resolvedUser = backendUser
+        ? {
+            idUsuario: backendUser.idUsuario,
+            name: backendUser.nombre,
+            apellido: backendUser.apellido,
+            email: backendUser.email,
+            rol: backendUser.rol,
+          }
+        : {
+            // Fallback mínimo: usar los datos del formulario
+            name: payload.name ?? payload.nombre,
+            apellido: payload.lastName ?? payload.apellido,
+            email: payload.email,
+          };
       localStorage.setItem("user", JSON.stringify(resolvedUser));
       setUser(resolvedUser);
 

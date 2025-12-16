@@ -11,6 +11,18 @@ export const authService = {
     return data; // expected: { token, user } or similar
   },
 
+  /**
+   * UC01: Registro de usuario (cliente → API)
+   * --------------------------------------------------------------------------
+   * Adapta la estructura de datos del formulario de frontend al formato
+   * esperado por el backend.
+   *
+   *  • Entrada (desde RegisterPage)
+   *      { name, lastName, email, password }
+   *
+   *  • Request al backend
+   *      { nombre, apellido, email, contrasena }
+   */
   async register(payload) {
     // Backend espera: { nombre, apellido, email, contrasena }
     const body = {

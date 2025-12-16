@@ -51,6 +51,13 @@ const telefono = body('telefono')
   .withMessage('Teléfono inválido');
 
 /* ─── Conjuntos de reglas exportados ─────────────────────────────────── */
+/**
+ * Conjunto de reglas: registerValidation
+ * --------------------------------------------------------------------------
+ * Valida los campos requeridos para UC01 (registro de usuario).
+ * Se asegura de que nombre, apellido, email y contraseña cumplan las
+ * restricciones mínimas antes de llegar al controlador.
+ */
 const registerValidation = [name, lastname, email, password, validateRequest];
 const updateProfileValidation = [
   name.optional(),

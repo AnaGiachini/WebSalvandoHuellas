@@ -27,15 +27,26 @@ const mailService = require('../services/mailService');
 const RESET_TOKEN_TTL = process.env.RESET_TOKEN_TTL || '15m';
 
 /**
- * Registra un nuevo usuario en el sistema
+ * UC01: Registrar usuario
+ * --------------------------------------------------------------------------
+ * Recibe los datos del formulario de registro, delega la lógica de creación
+ * al servicio de autenticación y devuelve un token JWT.
+ *
+ *  • Request body esperado
+ *      { nombre, apellido, email, contrasena }
+ *
+ *  • Respuestas
+ *      201 → Usuario creado y token de acceso generado
+ *      4xx/5xx → Errores manejados por middlewares de validación y error global
+ *
  * @param {Object} req - Objeto de solicitud Express con datos en body
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const register = async (req, res, next) => {
   try {
-    const token = await registerService(req.body);
-    res.status(201).json({ token });
+    const { token, user } = await registerService(req.body);
+    res.status(201).json({ token, user });
   } catch (err) { next(err); }
 };
 

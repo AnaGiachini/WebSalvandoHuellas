@@ -1,3 +1,19 @@
+/**
+ * Rutas: Autenticación
+ * --------------------------------------------------------------------------
+ * Expone los endpoints HTTP relacionados con autenticación de usuarios.
+ *
+ *  • Casos de uso cubiertos
+ *      - UC01: Registro de usuario (/auth/register)
+ *      - UC02: Inicio de sesión (/auth/login)
+ *      - Recuperar y restablecer contraseña
+ *      - OAuth con Google y Facebook
+ *
+ *  • Notas
+ *      – Se apoya en validaciones de authValidation y userValidation
+ *      – El controlador principal es authController
+ */
+
 const express = require('express');
 const router = express.Router();
 
@@ -14,8 +30,9 @@ const { registerValidation } = require('../validations/userValidation');
 const { validateRequest } = require('../middlewares/validateRequest');
 
 // Rutas tradicionales
-// Registrar un nuevo usuario
-router.post('/register', registerValidation, validateRequest, authController.register);
+// UC01 - Registrar usuario
+// Aplica validaciones de usuario y delega la creación al authController.register
+router.post('/register', registerValidation, authController.register);
 // Iniciar sesión
 router.post('/login', loginValidation, validateRequest, authController.login);
 
