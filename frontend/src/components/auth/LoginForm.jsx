@@ -14,10 +14,17 @@ export default function LoginForm() {
   const { toast } = useToast();
   const { login } = useAuth();
 
+  /**
+   * Maneja el envío del formulario de inicio de sesión (UC02)
+   * --------------------------------------------------------------------------
+   * - Valida que email y contraseña cumplan los requisitos mínimos
+   * - Normaliza el email antes de enviarlo al backend
+   * - Muestra mensajes claros según el tipo de error devuelto por la API
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones frontend
+    // Validaciones frontend: mejoran la UX antes de llegar al backend
     if (!email.trim()) {
       toast({ 
         title: "Email requerido", 
@@ -48,7 +55,7 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      // Normalización del email
+      // Normalización del email (coherente con el backend)
       const normalizedEmail = email.trim().toLowerCase();
 
       await login(normalizedEmail, password);

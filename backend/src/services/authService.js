@@ -100,12 +100,18 @@ const registerService = async ({ nombre, apellido, email, contrasena, direccion 
 };
 
 /**
- * Verifica credenciales y genera token de acceso
+ * UC02: Inicio de sesión - Lógica de negocio
+ * --------------------------------------------------------------------------
+ * Verifica las credenciales del usuario y genera un token de acceso junto
+ * con datos básicos del usuario.
+ *
+ *  • Errores
+ *      - Lanza AppError(401, 'Credenciales inválidas') para email o contraseña incorrectos
+ *
  * @param {Object} credentials - Credenciales de acceso
  * @param {string} credentials.email - Email del usuario
  * @param {string} credentials.contrasena - Contraseña sin encriptar
- * @returns {Promise<string>} Token JWT para autenticación
- * @throws {AppError} Error 401 si las credenciales son inválidas
+ * @returns {Promise<{token: string, user: Object}>} Token JWT y datos básicos del usuario
  */
 const loginService = async ({ email, contrasena }) => {
   // Aseguramos email normalizado por seguridad adicional (además de la validación)
@@ -114,7 +120,17 @@ const loginService = async ({ email, contrasena }) => {
   if (!user || !(await comparePassword(contrasena, user.contrasena)))
     throw new AppError(401, 'Credenciales inválidas');
 
-  return jwt.generate({ idUsuario: user.idUsuario, rol: user.rol });
+  const token = jwt.generate({ idUsuario: user.idUsuario, rol: user.rol });
+
+  const safeUser = {
+    idUsuario: user.idUsuario,
+    nombre: user.nombre,
+    apellido: user.apellido,
+    email: user.email,
+    rol: user.rol,
+  };
+
+  return { token, user: safeUser };
 };
 
 module.exports = { registerService, loginService };
