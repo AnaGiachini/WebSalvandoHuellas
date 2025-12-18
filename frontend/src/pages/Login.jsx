@@ -1,3 +1,14 @@
+/**
+ * Página: LoginPage
+ * --------------------------------------------------------------------------
+ * UC02: Inicio de sesión de usuarios.
+ *
+ *  • Responsabilidades
+ *      - Mostrar el formulario de login tradicional (email + contraseña)
+ *      - Ofrecer login social (Google/Facebook) y login invitado
+ *      - Enlazar con la página de registro para nuevos usuarios
+ */
+
 import { Link } from "react-router-dom";
 import {
   Card,

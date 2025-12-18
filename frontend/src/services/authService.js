@@ -4,6 +4,15 @@ import api from './api';
 const base = '/auth'; // Mounted under /api/v1 in backend app.js
 
 export const authService = {
+  /**
+   * UC02: Inicio de sesión (cliente → API)
+   * --------------------------------------------------------------------------
+   * Envía las credenciales al endpoint /auth/login adaptando el nombre de
+   * campo 'password' del frontend al 'contrasena' esperado por el backend.
+   *
+   * @param {{ email: string, password: string }} payload
+   * @returns {Promise<{ token: string, user?: Object }>} Respuesta del backend
+   */
   async login({ email, password }) {
     // Backend espera 'contrasena'
     const body = { email, contrasena: password };

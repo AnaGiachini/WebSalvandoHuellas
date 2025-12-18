@@ -51,15 +51,27 @@ const register = async (req, res, next) => {
 };
 
 /**
- * Valida credenciales y genera token de acceso
+ * UC02: Iniciar sesión
+ * --------------------------------------------------------------------------
+ * Verifica las credenciales del usuario y, si son válidas, devuelve un
+ * token JWT de acceso junto con datos básicos del usuario.
+ *
+ *  • Request body esperado
+ *      { email, contrasena }
+ *
+ *  • Respuestas
+ *      200 → Credenciales válidas, se devuelve { token, user }
+ *      401 → Credenciales inválidas (mensaje genérico)
+ *      4xx/5xx → Otros errores manejados por middlewares
+ *
  * @param {Object} req - Objeto de solicitud Express con credenciales en body
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const login = async (req, res, next) => {
   try {
-    const token = await loginService(req.body);
-    res.json({ token });
+    const { token, user } = await loginService(req.body);
+    res.json({ token, user });
   } catch (err) { next(err); }
 };
 

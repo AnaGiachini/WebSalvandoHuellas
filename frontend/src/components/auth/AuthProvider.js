@@ -54,13 +54,25 @@ export function AuthProvider({ children }) {
       const data = await authService.login({ email, password });
       const token = data?.token || data?.data?.token;
       if (token) localStorage.setItem("authToken", token);
+      
+      // Si el backend devuelve datos de usuario, los usamos como fuente principal
+      const backendUser = data?.user || data?.data?.user;
+      let resolvedUser = backendUser
+        ? {
+            idUsuario: backendUser.idUsuario,
+            name: backendUser.nombre,
+            apellido: backendUser.apellido,
+            email: backendUser.email,
+            rol: backendUser.rol,
+          }
+        : null;
 
-      // Backend no devuelve user; intentamos decodificar el token
-      let resolvedUser = null;
-      if (token) {
+      // Si no hay user explícito, intentamos decodificar el token JWT
+      if (!resolvedUser && token) {
         const decoded = decodeJwt(token);
         if (decoded) {
           resolvedUser = {
+            idUsuario: decoded.idUsuario || decoded.id || decoded.userId,
             name: decoded.name || decoded.nombre || null,
             apellido: decoded.apellido || null,
             email: decoded.email || decoded.correo || email,
@@ -68,6 +80,7 @@ export function AuthProvider({ children }) {
           };
         }
       }
+
       // Fallback mínimo: guardar email para reflejar sesión
       if (!resolvedUser) {
         resolvedUser = { email };
