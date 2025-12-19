@@ -38,7 +38,14 @@ const getEventById = async (req, res, next) => {
 };
 
 /**
- * Crea un nuevo evento (solo admin)
+ * Crea un nuevo evento (solo admin) – UC04
+ * --------------------------------------------------------------------------
+ *  • Este endpoint representa el caso de uso "Crear evento" en el panel de
+ *    administración.
+ *  • Requiere que el usuario esté autenticado y tenga rol "admin" (se
+ *    valida en las rutas con protect + restrictTo('admin')).
+ *  • Delegan la lógica de negocio en createEventService, que se encarga de
+ *    normalizar datos y persistir en la base.
  */
 const createEvent = async (req, res, next) => {
   try {

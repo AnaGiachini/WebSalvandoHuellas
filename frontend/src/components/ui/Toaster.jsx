@@ -18,16 +18,8 @@ export default function Toaster() {
         >
           {t.title && <div className="font-semibold mb-1">{t.title}</div>}
           {t.description && (
-            <div className="text-muted-foreground mb-2">{t.description}</div>
+            <div className="text-muted-foreground">{t.description}</div>
           )}
-          <div className="flex justify-end">
-            <button
-              onClick={() => dismiss(t.id)}
-              className="text-xs text-primary hover:underline"
-            >
-              Cerrar
-            </button>
-          </div>
         </div>
       ))}
     </div>
