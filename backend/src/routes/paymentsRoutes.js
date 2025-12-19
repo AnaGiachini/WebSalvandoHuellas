@@ -1,6 +1,16 @@
 /**
  * Rutas: Payments (Mercado Pago)
  * --------------------------------------------------------------------------
+ * Expone los endpoints relacionados con pagos mediante Mercado Pago.
+ *
+ *  • Casos de uso
+ *      - UC03: Realizar compra con Mercado Pago
+ *      - UC Donaciones: Donar mediante Mercado Pago
+ *
+ *  • Rutas principales
+ *      POST /api/payments/mp/preference             → crea preferencia para un carrito
+ *      POST /api/payments/mp/donations/preference   → crea preferencia para una donación
+ *      POST /api/payments/mp/webhook                → recibe notificaciones de pago (webhook)
  */
 const express = require('express');
 const router = express.Router();

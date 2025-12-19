@@ -1,3 +1,21 @@
+/**
+ * Página: CheckoutPage
+ * --------------------------------------------------------------------------
+ * UC03: Confirmación de compra.
+ *
+ *  • Responsabilidades
+ *      - Verificar que el usuario esté autenticado y tenga carrito con ítems
+ *      - Mostrar resumen de productos y datos básicos del comprador
+ *      - Permitir elegir el método de pago (Mercado Pago o transferencia)
+ *      - Iniciar el flujo de pago correspondiente
+ *
+ *  • Integraciones
+ *      - cartService.getMyCart → obtiene el carrito a convertir en compra
+ *      - userService.me       → pre-rellena datos del comprador
+ *      - purchaseService.createFromCart → crea compra pendiente (transferencia)
+ *      - paymentService.createPreference → crea preferencia de MP y redirige a Mercado Pago
+ */
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import purchaseService from "../../services/purchaseService";
@@ -60,6 +78,17 @@ export default function CheckoutPage() {
   const subtotal = items.reduce((acc, it) => acc + (it.cantidad || 0) * (it.articulo?.precio || 0), 0);
   const total = subtotal; // Sin flete ni descuentos
 
+  /**
+   * Confirma la compra según el método de pago seleccionado.
+   * --------------------------------------------------------------------------
+   *  • Mercado Pago
+   *      - Llama a paymentService.createPreference({ idCarrito })
+   *      - Redirige al usuario al checkout de Mercado Pago (init_point)
+   *
+   *  • Transferencia
+   *      - Crea la compra en estado 'pendiente' con metodoPago='transferencia'
+   *      - Muestra instrucciones de pago y vacía el carrito local
+   */
   const onConfirm = async () => {
     if (!cart?.idCarrito) return;
     try {

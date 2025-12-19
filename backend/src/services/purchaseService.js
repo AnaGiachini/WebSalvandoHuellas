@@ -28,6 +28,20 @@ const ItemCarrito = require('../models/itemCarrito');
 
 /**
  * Crea una nueva compra a partir del carrito de un usuario
+ * --------------------------------------------------------------------------
+ * UC03: paso central del flujo de compra.
+ *
+ *  • Flujo según método de pago
+ *      - Sin metodoPago (compra inmediata):
+ *          - Verifica stock
+ *          - Calcula total
+ *          - Crea compra en estado 'pendiente'
+ *          - Descuenta stock y vacía carrito en la misma transacción
+ *      - Con metodoPago (ej. 'mercado_pago', 'transferencia'):
+ *          - Verifica stock y calcula total
+ *          - Crea compra en estado 'pendiente' pero NO descuenta stock
+ *          - El descuento se realizará al confirmar el pago
+ *
  * @param {number} idCarrito
  * @param {number} idUsuario
  * @returns {Promise<Object>} Compra creada con sus ítems
@@ -167,6 +181,14 @@ const getAllPurchasesService = async () => {
 
 /**
  * Actualiza el estado de pago de una compra
+ * --------------------------------------------------------------------------
+ *  • Reglas de negocio
+ *      - No se puede cancelar una compra ya 'pagado'
+ *      - Si se cancela una compra 'pendiente', se devuelve el stock reservado
+ *      - Si se aprueba una compra 'pendiente' con metodoPago diferido
+ *        (ej. Mercado Pago), se descuenta stock en este momento y se vacía
+ *        el carrito más reciente del usuario.
+ *
  * @param {number} idCompra
  * @param {('pendiente'|'pagado'|'cancelado')} estadoPago
  */

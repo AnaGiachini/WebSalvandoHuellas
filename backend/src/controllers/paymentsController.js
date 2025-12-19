@@ -2,6 +2,14 @@
  * Controlador: Payments (Mercado Pago)
  * --------------------------------------------------------------------------
  * Crea preferencias reales con el SDK de Mercado Pago y procesa webhooks.
+ *
+ *  • Casos de uso
+ *      - UC03: Realizar compra con Mercado Pago
+ *      - UC Donaciones: Donar mediante Mercado Pago
+ *
+ *  • Configuración
+ *      – Requiere variable de entorno MP_ACCESS_TOKEN y el paquete 'mercadopago'
+ *      – Usa BACK_URL y FRONT_URL para armar las URLs de retorno y de webhook
  */
 
 const AppError = require('../utils/AppError');
@@ -23,8 +31,21 @@ try {
 
 /**
  * Crea preferencia de Mercado Pago para un carrito.
- * Body: { idCarrito }
- * Respuesta: { init_point, preference_id, compra }
+ * --------------------------------------------------------------------------
+ * UC03: Rama de pago con Mercado Pago.
+ *
+ *  • Flujo
+ *      - Crea una Compra en estado 'pendiente' con metodoPago='mercado_pago'
+ *        (sin descontar stock todavía)
+ *      - Construye los ítems de la preferencia a partir de los ItemCompra
+ *      - Configura back_urls al frontend (/gracias) y notification_url al webhook
+ *      - Devuelve init_point para redirigir al checkout de Mercado Pago
+ *
+ *  • Request body
+ *      { idCarrito }
+ *
+ *  • Respuesta
+ *      { init_point, preference_id, compra }
  */
 const createMpPreference = async (req, res, next) => {
   try {
@@ -101,7 +122,7 @@ const createMpDonationPreference = async (req, res, next) => {
         pending: `${FRONT_URL}/donaciones/gracias`,
         failure: `${FRONT_URL}/donaciones/gracias`,
       },
-      auto_return: 'approved',
+      //auto_return: 'approved',
       notification_url: `${BACK_URL}/api/v1/payments/mp/webhook`,
     };
 
@@ -116,8 +137,16 @@ const createMpDonationPreference = async (req, res, next) => {
 };
 
 /**
- * Webhook de Mercado Pago: consulta el pago y actualiza la compra.
- * MP envía normalmente: type=payment & data.id=<payment_id>
+ * Webhook de Mercado Pago: consulta el pago y actualiza la compra/donación.
+ * --------------------------------------------------------------------------
+ *  • Comportamiento
+ *      - Recibe notificaciones 'payment' con data.id (payment_id)
+ *      - Consulta el pago en Mercado Pago y obtiene status + external_reference
+ *      - Si external_reference corresponde a una donación, delega en donationService
+ *      - Si corresponde a una compra:
+ *          - Guarda mp_payment_id en la Compra
+ *          - Si el pago está 'approved', llama updatePurchaseStatusService(idCompra, 'pagado')
+ *            → aquí se descuenta stock y se limpia el carrito (UC03)
  */
 const mpWebhook = async (req, res, next) => {
   try {
