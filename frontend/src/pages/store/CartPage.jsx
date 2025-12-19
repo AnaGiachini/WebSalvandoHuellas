@@ -1,3 +1,19 @@
+/**
+ * Página: CartPage
+ * --------------------------------------------------------------------------
+ * UC03: Paso de revisión del carrito antes del checkout.
+ *
+ *  • Responsabilidades
+ *      - Mostrar los ítems del carrito del usuario
+ *      - Permitir actualizar cantidades o eliminar productos
+ *      - Calcular subtotal, envío estimado y total
+ *      - Redirigir al checkout si el usuario decide continuar con la compra
+ *
+ *  • Integraciones
+ *      - cartService.getMyCart / updateItem / removeItem / clearCart
+ *      - useAuth para verificar sesión antes de ir a /checkout
+ */
+
 import { Link, useNavigate } from "react-router-dom";
 import {
   Minus,

@@ -3,11 +3,16 @@
  * --------------------------------------------------------------------------
  * Define los endpoints de la API relacionados con las compras.
  *
+ *  • Casos de uso
+ *      - UC03: Realizar compra
+ *      - UC Admin: Gestión de compras por parte del administrador
+ *
  *  • Rutas principales
- *      POST /api/purchases         → crea una nueva compra a partir de un carrito
- *      GET /api/purchases/:idCompra → obtiene los detalles de una compra específica
- *      GET /api/purchases          → lista todas las compras del usuario actual
- *      PUT /api/purchases/:idCompra/status → actualiza el estado de pago (solo admin)
+ *      POST /api/purchases                    → crea una nueva compra a partir de un carrito
+ *      GET  /api/purchases/:idCompra          → obtiene los detalles de una compra específica
+ *      GET  /api/purchases                    → lista todas las compras del usuario actual
+ *      PUT  /api/purchases/:idCompra/status   → actualiza el estado de pago (solo admin)
+ *      GET  /api/purchases/metrics            → métricas de ventas (solo admin)
  *
  *  • Características
  *      - Todas las rutas requieren autenticación (authMiddleware)

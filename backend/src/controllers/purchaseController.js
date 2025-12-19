@@ -30,7 +30,18 @@ const {
 } = require('../services/purchaseService');
 
 /**
- * Crea una nueva compra a partir del carrito del usuario
+ * UC03: Crear compra desde carrito
+ * --------------------------------------------------------------------------
+ * Crea una nueva compra a partir del carrito actual del usuario.
+ *
+ *  • Request body esperado
+ *      { idCarrito, metodoPago? }
+ *
+ *  • Comportamiento
+ *      - Para compras directas (sin metodoPago) se descuenta stock y se vacía el carrito
+ *      - Para pagos diferidos (ej. Mercado Pago, transferencia) se deja la compra en
+ *        estado 'pendiente' y el stock se descuenta al confirmar el pago
+ *
  * @param {Object} req - Objeto de solicitud Express con usuario autenticado y body (idCarrito)
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
@@ -66,7 +77,11 @@ const getPurchaseById = async (req, res, next) => {
 };
 
 /**
- * Obtiene todas las compras del usuario actual
+ * UC03: Historial de compras del usuario actual
+ * --------------------------------------------------------------------------
+ * Obtiene todas las compras del usuario actual. Si el usuario es admin y pasa
+ * el query param ?all=1, devuelve todas las compras registradas en el sistema.
+ *
  * @param {Object} req - Objeto de solicitud Express con usuario autenticado
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
