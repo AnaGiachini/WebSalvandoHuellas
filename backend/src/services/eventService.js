@@ -2,22 +2,32 @@
  * Servicio: Evento
  * --------------------------------------------------------------------------
  * Lógica de negocio para creación y consulta de eventos.
+ *
+ *  • Casos de uso
+ *      - UC04: Crear evento (alta de actividades como jornadas de adopción,
+ *        campañas, etc.)
  */
 
 const AppError = require('../utils/AppError');
 const Evento = require('../models/evento');
 
 /**
- * Crea un nuevo evento
- * @param {Object} data
- * @param {string} data.titulo
- * @param {string} [data.descripcion]
- * @param {string|Date} data.fecha
- * @param {string} [data.lugar]
- * @param {string} [data.foto]
+ * Crea un nuevo evento (UC04)
+ * --------------------------------------------------------------------------
+ *  • Responsabilidad
+ *      - Encapsula la lógica de alta de eventos en la base de datos.
+ *      - Normaliza los datos mínimos recibidos desde el controlador antes de
+ *        llamar al modelo Sequelize.
+ *
+ * @param {Object} data             Datos enviados desde el controlador
+ * @param {string} data.titulo      Título visible del evento
+ * @param {string} [data.descripcion] Descripción más extensa (opcional)
+ * @param {string|Date} data.fecha  Fecha/hora del evento (ISO string o Date)
+ * @param {string} [data.lugar]     Lugar donde se realizará (opcional)
+ * @param {string} [data.foto]      URL o ruta de imagen del evento (opcional)
  */
 const createEventService = async ({ titulo, descripcion, fecha, lugar, foto }) => {
-  // Normalización mínima
+  // Normalización mínima: se limpian espacios y se fuerza fecha a Date
   const payload = {
     titulo: titulo?.trim(),
     descripcion: descripcion?.trim(),

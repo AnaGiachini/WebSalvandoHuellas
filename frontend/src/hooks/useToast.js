@@ -3,7 +3,10 @@ import React from "react";
 // Basado en el hook de shadcn/ui pero sin TypeScript ni Next imports.
 
 const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+// Tiempo (ms) que tarda en eliminar definitivamente un toast del estado una vez
+// que fue marcado como cerrado. Debe ser ligeramente mayor que la duración
+// visible del toast para permitir la animación de salida.
+const TOAST_REMOVE_DELAY = 9000;
 
 let count = 0;
 function genId() {
@@ -110,6 +113,15 @@ function toast(props) {
       },
     },
   });
+
+  // Cierre automático del toast después de un tiempo razonable.
+  // Se puede sobreescribir pasando props.duration (en ms) al llamar a toast().
+  const autoCloseMs = typeof props?.duration === "number" ? props.duration : 8000;
+  if (autoCloseMs > 0) {
+    setTimeout(() => {
+      dismiss();
+    }, autoCloseMs);
+  }
 
   return { id, dismiss, update };
 }

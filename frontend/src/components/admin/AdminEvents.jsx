@@ -1,8 +1,11 @@
 /**
  * Componente AdminEvents
  * -------------------------
- * Muestra una lista de eventos
- * con opciones para crear, editar y eliminar.
+ * Panel de administración para la gestión de eventos.
+ *
+ *  • Casos de uso
+ *      - UC04: Crear evento (alta de nuevos eventos desde el modal "Nuevo evento")
+ *      - Actualizar y eliminar eventos existentes para mantener la agenda al día.
  */
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
@@ -47,6 +50,7 @@ export default function AdminEvents() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
+  const [editDialog, setEditDialog] = useState({ open: false, mode: null, value: "", event: null });
 
   // Cargar eventos desde backend
   useEffect(() => {
@@ -84,6 +88,66 @@ export default function AdminEvents() {
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString("es-ES", options);
+  };
+
+  const openEditDialog = (event, mode) => {
+    if (mode === "title") {
+      setEditDialog({ open: true, mode: "title", value: event.title, event });
+    } else if (mode === "date") {
+      const current = event.date ? new Date(event.date) : new Date();
+      const value = current.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+      setEditDialog({ open: true, mode: "date", value, event });
+    }
+  };
+
+  const handleEditSave = async () => {
+    const { mode, value, event } = editDialog;
+    if (!event || !mode) return;
+
+    try {
+      if (mode === "title") {
+        const nuevoTitulo = value?.trim();
+        if (!nuevoTitulo || nuevoTitulo === event.title) {
+          setEditDialog({ open: false, mode: null, value: "", event: null });
+          return;
+        }
+        const payload = { titulo: nuevoTitulo };
+        const updated = await updateEventApi(event.id, payload);
+        setEvents((prev) => prev.map((e) => e.id === event.id ? {
+          ...e,
+          title: updated.titulo,
+          date: updated.fecha,
+          location: updated.lugar,
+          image: updated.foto,
+          description: updated.descripcion,
+        } : e));
+        toast({
+          title: "Evento actualizado",
+          description: `El título se cambió a "${updated.titulo}".`,
+        });
+      } else if (mode === "date") {
+        if (!value) {
+          setEditDialog({ open: false, mode: null, value: "", event: null });
+          return;
+        }
+        const iso = new Date(value).toISOString();
+        const updated = await updateEventApi(event.id, { fecha: iso });
+        setEvents((prev) => prev.map((e) => e.id === event.id ? { ...e, date: updated.fecha } : e));
+        toast({
+          title: "Evento reprogramado",
+          description: "La fecha se actualizó correctamente.",
+        });
+      }
+      setEditDialog({ open: false, mode: null, value: "", event: null });
+    } catch (e) {
+      const errorMsg = e?.response?.data?.message || (mode === "title" ? "No se pudo actualizar el evento" : "No se pudo reprogramar el evento");
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive"
+      });
+      setError(errorMsg);
+    }
   };
 
   return (
@@ -242,60 +306,11 @@ export default function AdminEvents() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={async () => {
-                          const nuevoTitulo = window.prompt('Nuevo título', event.title);
-                          if (nuevoTitulo && nuevoTitulo !== event.title) {
-                            try {
-                              const payload = { titulo: nuevoTitulo };
-                              const updated = await updateEventApi(event.id, payload);
-                              setEvents((prev) => prev.map((e) => e.id === event.id ? {
-                                ...e,
-                                title: updated.titulo,
-                                date: updated.fecha,
-                                location: updated.lugar,
-                                image: updated.foto,
-                                description: updated.descripcion,
-                              } : e));
-                              toast({
-                                title: "Evento actualizado",
-                                description: `El título se cambió a "${updated.titulo}".`,
-                              });
-                            } catch (e) {
-                              const errorMsg = e?.response?.data?.message || 'No se pudo actualizar el evento';
-                              toast({
-                                title: "Error",
-                                description: errorMsg,
-                                variant: "destructive"
-                              });
-                              setError(errorMsg);
-                            }
-                          }
-                        }}>
+                        <DropdownMenuItem onClick={() => openEditDialog(event, "title")}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={async () => {
-                          const nuevaFecha = window.prompt('Nueva fecha (YYYY-MM-DD HH:mm)', '');
-                          if (nuevaFecha) {
-                            try {
-                              const iso = new Date(nuevaFecha).toISOString();
-                              const updated = await updateEventApi(event.id, { fecha: iso });
-                              setEvents((prev) => prev.map((e) => e.id === event.id ? { ...e, date: updated.fecha } : e));
-                              toast({
-                                title: "Evento reprogramado",
-                                description: "La fecha se actualizó correctamente.",
-                              });
-                            } catch (e) {
-                              const errorMsg = e?.response?.data?.message || 'No se pudo reprogramar el evento';
-                              toast({
-                                title: "Error",
-                                description: errorMsg,
-                                variant: "destructive"
-                              });
-                              setError(errorMsg);
-                            }
-                          }
-                        }}>
+                        <DropdownMenuItem onClick={() => openEditDialog(event, "date")}>
                           <Calendar className="h-4 w-4 mr-2" />
                           Reprogramar
                         </DropdownMenuItem>
@@ -351,6 +366,47 @@ export default function AdminEvents() {
         confirmText="Confirmar"
         cancelText="Cancelar"
       />
+      <Dialog open={editDialog.open} onOpenChange={(open) => {
+        if (!open) {
+          setEditDialog({ open: false, mode: null, value: "", event: null });
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editDialog.mode === "title" ? "Editar título" : "Reprogramar fecha"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 mt-2">
+            {editDialog.mode === "title" && (
+              <Input
+                placeholder="Nuevo título"
+                value={editDialog.value}
+                onChange={(e) => setEditDialog((prev) => ({ ...prev, value: e.target.value }))}
+              />
+            )}
+            {editDialog.mode === "date" && (
+              <Input
+                type="datetime-local"
+                placeholder="Nueva fecha"
+                value={editDialog.value}
+                onChange={(e) => setEditDialog((prev) => ({ ...prev, value: e.target.value }))}
+              />
+            )}
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setEditDialog({ open: false, mode: null, value: "", event: null })}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleEditSave}>
+                Guardar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
