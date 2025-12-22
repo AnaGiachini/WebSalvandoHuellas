@@ -1,11 +1,18 @@
 // src/services/adoptionApplicationsService.js
+// ---------------------------------------------------------------------------
+// Servicio de frontend para interactuar con la API de solicitudes de adopción.
+//
+//  • Casos de uso
+//      - UC05: Enviar formulario de adopción (create)
+//      - Consultar solicitudes del usuario y del panel admin.
 import api from './api';
 
 const base = '/adoptions';
 
 export const adoptionApplicationsService = {
   async create(payload) {
-    // payload expected: { animalId, ...formData }
+    // payload esperado por el backend:
+    // { idAnimal, nombre, apellido, email, telefono, direccion, experienciaPrevia, motivacion }
     const { data } = await api.post(`${base}`, payload);
     return data;
   },

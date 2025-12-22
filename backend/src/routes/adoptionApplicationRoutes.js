@@ -39,7 +39,8 @@ router.get('/', protect, restrictTo('admin'), validateRequest, adoptionApplicati
 // Obtener una solicitud específica
 router.get('/:id', protect, validateRequest, adoptionApplicationController.getAdoptionApplicationById);
 // Crear solicitud (requiere usuario autenticado)
-router.post('/', protect, createAdoptionApplicationValidation, validateRequest, adoptionApplicationController.createAdoptionApplication);
+// Nota: createAdoptionApplicationValidation ya incluye validateRequest.
+router.post('/', protect, createAdoptionApplicationValidation, adoptionApplicationController.createAdoptionApplication);
 // Actualizar estado (solo admin)
 router.put('/:id/estado', protect, restrictTo('admin'), updateAdoptionApplicationValidation, validateRequest, adoptionApplicationController.updateAdoptionApplication);
 // Eliminar solicitud (solo admin)

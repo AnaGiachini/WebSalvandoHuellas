@@ -70,6 +70,8 @@ const estado = body('estado')
   .withMessage('El estado debe ser uno de los siguientes valores: pendiente, aprobada, rechazada');
 
 /* ─── Conjuntos de reglas exportados ─────────────────────── */
+// UC05: completar formulario de adopción
+// Estas reglas se aplican al endpoint POST /adoptions antes de crear la solicitud.
 const createAdoptionApplicationValidation = [
   idAnimal,
   nombre,
