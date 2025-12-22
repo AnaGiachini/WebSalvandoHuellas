@@ -101,6 +101,12 @@ const createMpPreference = async (req, res, next) => {
  * Body: { monto }
  * Respuesta: { init_point, preference_id, donacion }
  */
+// UC06: Realizar donación – rama Mercado Pago
+// ---------------------------------------------------------------------------
+//  • Crea una donación en estado 'pendiente' y genera una preferencia de
+//    Mercado Pago para que el usuario complete el pago.
+//  • Cuando MP confirma el pago (webhook), mpWebhook actualizará la donación
+//    a estado 'pagado' usando updateDonationStatusService.
 const createMpDonationPreference = async (req, res, next) => {
   try {
     const { monto } = req.body;

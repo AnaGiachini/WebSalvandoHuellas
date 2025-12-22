@@ -1,7 +1,11 @@
 const AppError = require('../utils/AppError');
 const { createDonationService, getUserDonationsService, getAllDonationsService, updateDonationStatusService } = require('../services/donationService');
 
-// Crear donación por transferencia (queda pendiente)
+// Crear donación por transferencia (UC06 – realizar donación)
+// ---------------------------------------------------------------------------
+//  • Representa la rama de "transferencia bancaria" del UC06.
+//  • Registra la donación en estado 'pendiente'; luego un admin podrá marcarla
+//    como 'pagado' cuando verifique la transferencia.
 const createTransferDonation = async (req, res, next) => {
   try {
     const { monto } = req.body;
