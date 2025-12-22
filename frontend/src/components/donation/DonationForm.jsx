@@ -1,3 +1,14 @@
+/**
+ * Componente DonationForm
+ * ---------------------------------------------------------------------------
+ * Implementa el UC06: Realizar donación.
+ *
+ *  • Permite elegir un monto (predefinido u otro monto) y el método de pago
+ *    (Mercado Pago o transferencia bancaria).
+ *  • Para Mercado Pago, redirige a la pasarela usando una preferencia.
+ *  • Para transferencia, registra la donación como 'pendiente' y muestra las
+ *    instrucciones para realizar el pago fuera del sistema.
+ */
 import { useState } from "react"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
@@ -33,6 +44,10 @@ export function DonationForm() {
     setAmount(null)
   }
 
+  // Maneja el envío de la donación (UC06)
+  //  • Valida monto mínimo y sesión.
+  //  • Según paymentMethod, llama al backend para crear preferencia de MP o
+  //    registrar donación por transferencia.
   const handleDonate = async () => {
     try {
       const donationAmount = amount || parseInt(customAmount)

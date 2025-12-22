@@ -3,7 +3,7 @@ const router = express.Router();
 const { protect, restrictTo } = require('../middlewares/authMiddleware');
 const { createTransferDonation, getMyDonations, getAllDonations, updateDonationStatus } = require('../controllers/donationsController');
 
-// Crear donación por transferencia (pendiente)
+// Crear donación por transferencia (UC06 – opción transferencia)
 router.post('/transfer', protect, createTransferDonation);
 
 // Listado de donaciones del usuario

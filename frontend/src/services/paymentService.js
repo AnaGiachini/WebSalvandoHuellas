@@ -9,7 +9,7 @@ import api from './api';
  *  • UC03: Realizar compra con Mercado Pago
  *      - createPreference({ idCarrito }) → POST /payments/mp/preference
  *
- *  • Donaciones
+ *  • UC06: Realizar donación (vía Mercado Pago)
  *      - createDonationPreference({ monto }) → POST /payments/mp/donations/preference
  */
 const paymentService = {

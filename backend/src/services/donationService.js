@@ -10,10 +10,19 @@ const Donacion = require('../models/donacion');
 const Usuario = require('../models/usuario');
 
 /**
+ * Caso de uso 06 (UC06): Crear donación en estado pendiente
+ * --------------------------------------------------------------------------
+ *  • Se utiliza tanto para donaciones por transferencia como por Mercado Pago.
+ *  • El estado inicial siempre es 'pendiente'; luego se marca 'pagado' cuando
+ *    el administrador confirma la transferencia o el webhook de Mercado Pago
+ *    notifica un pago aprobado.
+ *
  * Crea una donación en estado pendiente
- * @param {number} idUsuario
- * @param {number} monto
- * @param {object} opt { metodoPago }
+ * 
+ * @param {number} idUsuario     ID del usuario donante (desde el token)
+ * @param {number} monto         Importe de la donación
+ * @param {object} opt           Opciones adicionales
+ * @param {string} opt.metodoPago  'mercado_pago' o 'transferencia'
  */
 const createDonationService = async (idUsuario, monto, { metodoPago } = {}) => {
   if (!monto || Number(monto) <= 0) throw new AppError(400, 'Monto inválido');

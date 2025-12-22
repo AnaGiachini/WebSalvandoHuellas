@@ -1,4 +1,10 @@
 // src/services/donationService.js
+// ---------------------------------------------------------------------------
+// Servicio de frontend para la gestión de donaciones.
+//
+//  • UC06: Realizar donación (opción transferencia bancaria)
+//      - createTransfer({ monto }) → POST /donations/transfer
+//  • Consultas para "Mis donaciones" y panel admin.
 import api from './api';
 
 const donationService = {
