@@ -1,3 +1,14 @@
+/**
+ * Componente AdoptionForm
+ * ---------------------------------------------------------------------------
+ * Formulario principal del UC05: completar formulario de adopción.
+ *
+ *  • Rol en el flujo
+ *      - Se muestra en el detalle de un animal disponible para adopción.
+ *      - Toma un snapshot de los datos de contacto del usuario (desde su perfil)
+ *        y recoge información adicional (experiencia y motivación).
+ *      - Envía la solicitud al backend y redirige a "Mis solicitudes".
+ */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -29,6 +40,18 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
     })();
   }, []);
 
+  /**
+   * Envía la solicitud de adopción (UC05)
+   * -------------------------------------------------------------------------
+   *  • Requisitos previos
+   *      - Usuario autenticado (token en localStorage).
+   *      - Teléfono y dirección completos en el perfil.
+   *      - Check de confirmación de datos marcado.
+   *  • Comportamiento
+   *      - Construye el payload mezclando datos del perfil y del formulario.
+   *      - Llama al servicio de solicitudes de adopción.
+   *      - Muestra toast de resultado y redirige a "Mis solicitudes".
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (disabled) return;
@@ -44,7 +67,10 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
     // Requiere confirmación de datos correctos
     const termsChecked = e.currentTarget?.querySelector('#terms')?.checked;
     if (!termsChecked) {
-      toast({ title: "Confirma tus datos", description: "Debes confirmar que tus datos son correctos para continuar." });
+      toast({
+        title: "Confirma tus datos",
+        description: "Debes confirmar que tus datos son correctos y que cumples con los requisitos de adopción para continuar.",
+      });
       return;
     }
 
@@ -109,6 +135,19 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="rounded-md bg-white/70 border p-3 text-xs text-muted-foreground space-y-1">
+        <p className="font-semibold text-[0.8rem] uppercase tracking-wide text-primary">
+          Requisitos para adoptar
+        </p>
+        <ul className="list-disc pl-4 space-y-0.5">
+          <li>Ser mayor de edad y presentar identificación válida.</li>
+          <li>Tener un domicilio estable y adecuado para el animal.</li>
+          <li>Contar con recursos económicos suficientes para mantener al animal.</li>
+          <li>Disponer de tiempo para atender las necesidades del animal.</li>
+          <li>Aceptar las condiciones del contrato de adopción.</li>
+          <li>Compromiso de cuidado responsable y de no abandono.</li>
+        </ul>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="firstName">Nombre *</Label>
@@ -176,15 +215,17 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
         />
       </div>
 
-      <div className="flex items-start space-x-2">
-        <Checkbox id="terms" disabled={disabled || isSubmitting} />
-        <div className="grid gap-1.5 leading-none">
-          <label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Confirmo que mis datos son correctos
-          </label>
-          <p className="text-sm text-muted-foreground">
-            La confirmación final se realizará por el equipo de Salvando Huellas.
-          </p>
+      <div className="space-y-3">
+        <div className="flex items-start space-x-2">
+          <Checkbox id="terms" disabled={disabled || isSubmitting} />
+          <div className="space-y-1 leading-none">
+            <Label htmlFor="terms" className="text-sm font-medium">
+              Confirmo que mis datos son correctos y que cumplo con los requisitos de adopción.
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              La confirmación final se realizará por el equipo de Salvando Huellas.
+            </p>
+          </div>
         </div>
       </div>
 
