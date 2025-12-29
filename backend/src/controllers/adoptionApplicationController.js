@@ -143,16 +143,16 @@ const getAdoptionApplicationByAnimal = async (req, res, next) => {
 
 /**
  * Actualiza el estado de una solicitud de adopción
- * @param {Object} req - Objeto de solicitud Express con parámetro id y estado en el body
+ * @param {Object} req - Objeto de solicitud Express con parámetro id y estado/observaciones en el body
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const updateAdoptionApplication = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { estado } = req.body;
+    const { estado, observaciones } = req.body;
 
-    const solicitudActualizada = await updateAdoptionApplicationService(id, estado);
+    const solicitudActualizada = await updateAdoptionApplicationService(id, estado, observaciones);
 
     res.json({
       status: 'success',

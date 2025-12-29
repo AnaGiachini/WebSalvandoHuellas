@@ -38,8 +38,8 @@ export const adoptionApplicationsService = {
     return data;
   },
 
-  async updateStatus(id, estado) {
-    const { data } = await api.put(`${base}/${id}/estado`, { estado });
+  async updateStatus(id, estado, observaciones) {
+    const { data } = await api.put(`${base}/${id}/estado`, { estado, observaciones });
     return data;
   },
 

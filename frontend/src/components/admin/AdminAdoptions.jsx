@@ -26,6 +26,9 @@ export default function AdminAdoptions() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [decisionRequest, setDecisionRequest] = useState(null)
+  const [decisionMode, setDecisionMode] = useState(null) // 'aprobada' | 'rechazada'
+  const [decisionNotes, setDecisionNotes] = useState("")
 
   const load = useCallback(async () => {
     try {
@@ -67,9 +70,9 @@ export default function AdminAdoptions() {
     }
   }
 
-  const onApprove = async (req) => {
+  const onApprove = async (req, observaciones) => {
     try {
-      await adoptionApplicationsService.updateStatus(req.idSolicitud, "aprobada")
+      await adoptionApplicationsService.updateStatus(req.idSolicitud, "aprobada", observaciones)
       toast({ title: "Aprobada", description: `Solicitud #${req.idSolicitud} aprobada. El animal pasa a 'adoptado'.` })
       load()
     } catch (err) {
@@ -77,9 +80,9 @@ export default function AdminAdoptions() {
     }
   }
 
-  const onReject = async (req) => {
+  const onReject = async (req, observaciones) => {
     try {
-      await adoptionApplicationsService.updateStatus(req.idSolicitud, "rechazada")
+      await adoptionApplicationsService.updateStatus(req.idSolicitud, "rechazada", observaciones)
       toast({ title: "Rechazada", description: `Solicitud #${req.idSolicitud} rechazada. El animal vuelve a 'disponible'.` })
       load()
     } catch (err) {
@@ -177,11 +180,19 @@ export default function AdminAdoptions() {
                         </DropdownMenuItem>
                         {request.estado === "pendiente" && (
                           <>
-                            <DropdownMenuItem onClick={() => onApprove(request)}>
+                            <DropdownMenuItem onClick={() => {
+                            setDecisionRequest(request)
+                            setDecisionMode("aprobada")
+                            setDecisionNotes("")
+                          }}>
                               <Check className="h-4 w-4 mr-2" />
                               Aprobar
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive" onClick={() => onReject(request)}>
+                            <DropdownMenuItem className="text-destructive" onClick={() => {
+                            setDecisionRequest(request)
+                            setDecisionMode("rechazada")
+                            setDecisionNotes("")
+                          }}>
                               <X className="h-4 w-4 mr-2" />
                               Rechazar
                             </DropdownMenuItem>
@@ -301,6 +312,16 @@ export default function AdminAdoptions() {
                       <p className="text-sm whitespace-pre-wrap">{selectedRequest.motivacion}</p>
                     </div>
                   )}
+
+                  {selectedRequest.observaciones && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">Observaciones del administrador</p>
+                        <p className="text-sm whitespace-pre-wrap">{selectedRequest.observaciones}</p>
+                      </div>
+                    </>
+                  )}
                   
                   <Separator />
                   
@@ -350,6 +371,57 @@ export default function AdminAdoptions() {
                   </Button>
                 </>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Dialog para decisión con observaciones */}
+      {decisionRequest && (
+        <Dialog open={!!decisionRequest} onOpenChange={(open) => { if (!open) { setDecisionRequest(null); setDecisionMode(null); setDecisionNotes(""); } }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {decisionMode === "aprobada" ? "Aprobar solicitud" : "Rechazar solicitud"} #{decisionRequest.idSolicitud}
+              </DialogTitle>
+              <DialogDescription>
+                Podés agregar observaciones internas para dejar registro del motivo de la decisión. Este texto no lo ve el usuario final.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-2">
+              <textarea
+                className="w-full min-h-[100px] p-2 border rounded-md text-sm"
+                placeholder="Observaciones internas (opcional)"
+                value={decisionNotes}
+                onChange={(e) => setDecisionNotes(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Ejemplo: "Se visitó el domicilio y se verificó que cumple con los requisitos" o "Se rechazó por incompatibilidad con otros animales del hogar".
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => { setDecisionRequest(null); setDecisionMode(null); setDecisionNotes(""); }}>
+                Cancelar
+              </Button>
+              <Button
+                className={decisionMode === "aprobada" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                onClick={async () => {
+                  try {
+                    if (decisionMode === "aprobada") {
+                      await onApprove(decisionRequest, decisionNotes)
+                    } else if (decisionMode === "rechazada") {
+                      await onReject(decisionRequest, decisionNotes)
+                    }
+                    setDecisionRequest(null)
+                    setDecisionMode(null)
+                    setDecisionNotes("")
+                  } catch (err) {
+                    // Errores ya son notificados en onApprove/onReject
+                  }
+                }}
+              >
+                {decisionMode === "aprobada" ? "Confirmar aprobación" : "Confirmar rechazo"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
