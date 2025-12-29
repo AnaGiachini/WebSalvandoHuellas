@@ -1,7 +1,10 @@
 /**
  * AdminUsers
  * --------------------------------------------------------------------------
- * Gestión de usuarios para administradores: listar, crear, cambiar rol, eliminar.
+ * Vista de panel de administración para UC07: Gestión de usuarios.
+ * Permite a los administradores listar usuarios, crear nuevas cuentas, editar
+ * datos de perfil, cambiar el rol (user/admin) y eliminar usuarios, apoyándose
+ * en el servicio de usuarios del frontend y las rutas protegidas del backend.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";

@@ -3,11 +3,16 @@
  * --------------------------------------------------------------------------
  * Provee la capa de lógica de negocio para operaciones relacionadas con usuarios.
  *
+ *  • Casos de uso
+ *      - UC01 / UC02: apoyo indirecto para registro e inicio de sesión
+ *      - UC07: Gestión de usuarios (panel admin y datos de perfil)
+ *
  *  • Funciones principales
- *      getAllUsersService   → obtiene todos los usuarios registrados
- *      getUserByIdService   → busca un usuario por su ID
- *      updateUserService    → actualiza datos de un usuario existente
- *      deleteUserService    → elimina un usuario del sistema
+ *      getAllUsersService   → obtiene todos los usuarios registrados (admin, UC07)
+ *      getUserByIdService   → busca un usuario por su ID (admin, UC07)
+ *      updateUserService    → actualiza datos de un usuario existente (perfil propio o admin, UC07)
+ *      deleteUserService    → elimina un usuario del sistema (admin, UC07)
+ *      getMeFullService     → devuelve el perfil del usuario autenticado (UC07)
  *
  *  • Manejo de errores
  *      - Lanza AppError 404 cuando no encuentra un usuario solicitado
@@ -82,7 +87,13 @@ const getMeFullService = async (idUsuario) => {
 };
 
 module.exports = {
-  /** Admin: crea usuario manualmente */
+  /**
+   * Admin: crea usuario manualmente (UC07)
+   * ------------------------------------------------------------------------
+   * Permite que un administrador registre usuarios desde el panel de gestión,
+   * aplicando las mismas reglas de normalización y seguridad que el registro
+   * tradicional (UC01), pero sin pasar por el flujo de formulario público.
+   */
   adminCreateUserService: async ({ nombre, apellido, email, contrasena, direccion, telefono, rol = 'user' }) => {
     // Normalización (siguiendo memoria previa)
     const normalized = {
@@ -112,7 +123,12 @@ module.exports = {
   deleteUserService,
   getMeService,
   getMeFullService,
-  /** Admin: cambiar rol */
+  /**
+   * Admin: cambiar rol (UC07)
+   * ------------------------------------------------------------------------
+   * Habilita la administración de permisos dentro del sistema, permitiendo
+   * promover o degradar usuarios entre los roles "user" y "admin".
+   */
   changeUserRoleService: async (id, rol) => {
     const user = await getUserByIdService(id);
     await user.update({ rol });
