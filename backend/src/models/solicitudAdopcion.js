@@ -18,6 +18,7 @@
  *      direccion      → dirección actual
  *      experienciaPrevia → experiencia con mascotas
  *      motivacion     → razón para adoptar
+ *      observaciones  → notas internas del administrador (opcional)
  *
  *  • Relaciones
  *      SolicitudAdopcion N‐1 Usuario (usuario que solicitó la adopción)
@@ -46,6 +47,7 @@ const SolicitudAdopcion = sequelize.define("SolicitudAdopcion", {
   telefono: { type: DataTypes.STRING(20), allowNull: false },
   direccion: { type: DataTypes.STRING(200), allowNull: false },
   experienciaPrevia: { type: DataTypes.TEXT, allowNull: true },
-  motivacion: { type: DataTypes.TEXT, allowNull: true }
+  motivacion: { type: DataTypes.TEXT, allowNull: true },
+  observaciones: { type: DataTypes.TEXT, allowNull: true }
 }, { tableName: 'solicitudes_adopcion', timestamps: false });
 module.exports = SolicitudAdopcion;

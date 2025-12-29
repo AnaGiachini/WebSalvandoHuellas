@@ -65,6 +65,11 @@ const motivacion = body('motivacion')
   .optional()
   .trim();
 
+const observaciones = body('observaciones')
+  .optional()
+  .isLength({ max: 1000 })
+  .withMessage('Las observaciones no pueden exceder 1000 caracteres');
+
 const estado = body('estado')
   .isIn(['pendiente', 'aprobada', 'rechazada'])
   .withMessage('El estado debe ser uno de los siguientes valores: pendiente, aprobada, rechazada');
@@ -86,6 +91,7 @@ const createAdoptionApplicationValidation = [
 
 const updateAdoptionApplicationValidation = [
   estado,
+  observaciones,
   validateRequest
 ];
 
