@@ -1,3 +1,14 @@
+// ---------------------------------------------------------------------------
+// Servicio de frontend para la gestión de usuarios.
+//
+//  • UC07: Gestión de usuarios (perfil y panel admin)
+//      - me()           → POST /users/me
+//      - update(id, ..) → PUT /users/:id
+//      - listAll()      → GET /users (solo admin)
+//      - adminCreate()  → POST /users (solo admin)
+//      - changeRole()   → PATCH /users/:id/role (solo admin)
+//      - remove()       → DELETE /users/:id (solo admin)
+// ---------------------------------------------------------------------------
 import api from './api';
 
 const userService = {

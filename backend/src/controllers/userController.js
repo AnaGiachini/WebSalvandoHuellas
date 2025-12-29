@@ -3,11 +3,16 @@
  * --------------------------------------------------------------------------
  * Gestiona las rutas de la API relacionadas con usuarios.
  *
+ *  • Caso de uso principal
+ *      UC07: Gestión de usuarios (perfil del usuario logueado y panel admin).
+ *
  *  • Operaciones principales
- *      getAllUsers   → lista todos los usuarios registrados
- *      getUserById   → obtiene un usuario específico por ID
+ *      getAllUsers   → lista todos los usuarios registrados (solo admin)
+ *      getUserById   → obtiene un usuario específico por ID (solo admin)
  *      updateUser    → actualiza datos de un usuario existente
- *      deleteUser    → elimina un usuario del sistema
+ *      deleteUser    → elimina un usuario del sistema (solo admin)
+ *      getMe         → devuelve el perfil completo del usuario autenticado
+ *      adminCreateUser / changeUserRole → funciones específicas de panel admin
  *
  *  • Características
  *      - Implementa manejo de errores con try/catch
@@ -100,7 +105,10 @@ const getMe = async (req, res, next) => {
 
 module.exports = { getAllUsers, getUserById, updateUser, deleteUser, getMe };
 /**
- * Crea un usuario manualmente (solo admin)
+ * Crea un usuario manualmente (solo admin, UC07)
+ * --------------------------------------------------------------------------
+ * Forma parte del panel de gestión de usuarios: permite al administrador
+ * registrar cuentas sin pasar por el formulario de registro público.
  */
 const adminCreateUser = async (req, res, next) => {
   try {
@@ -110,7 +118,10 @@ const adminCreateUser = async (req, res, next) => {
 };
 
 /**
- * Cambia el rol de un usuario (solo admin)
+ * Cambia el rol de un usuario (solo admin, UC07)
+ * --------------------------------------------------------------------------
+ * Permite administrar permisos dentro del sistema, alternando entre los roles
+ * "user" y "admin" según las necesidades de la organización.
  */
 const changeUserRole = async (req, res, next) => {
   try {
