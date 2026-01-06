@@ -24,9 +24,12 @@ export default function Home() {
                   adopción de animales abandonados en Jesús María, Córdoba.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
+              <div className="flex flex-col gap-3 min-[400px]:flex-row">
                 <Link to="/adopcion">
-                  <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 px-8 py-4 text-lg font-semibold w-full min-[400px]:w-auto"
+                  >
                     Adoptar
                   </Button>
                 </Link>
@@ -34,20 +37,20 @@ export default function Home() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary/10"
+                    className="border-2 border-primary text-primary hover:bg-primary/10 px-8 py-4 text-lg font-semibold w-full min-[400px]:w-auto"
                   >
                     Donar
                   </Button>
                 </Link>
               </div>
             </div>
-            <img
-              src="/images/hero-image.jpg"
-              alt="Perros y gatos rescatados"
-              width={550}
-              height={550}
-              className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
-            />
+            <div className="mx-auto w-full max-w-[260px] sm:max-w-[300px] lg:max-w-[340px] lg:order-last rounded-full shadow-md bg-white flex items-center justify-center">
+              <img
+                src="/images/logo.jpg"
+                alt="Logo Salvando Huellas"
+                className="w-[75%] h-[75%] object-contain rounded-full"
+              />
+            </div>
           </div>
         </div>
       </section>

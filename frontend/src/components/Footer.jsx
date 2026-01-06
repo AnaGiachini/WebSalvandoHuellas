@@ -43,8 +43,8 @@ export default function Footer() {
             <h4 className="font-medium text-base mb-4">Contacto</h4>
             <ul className="space-y-2 text-sm">
               <li className="text-muted-foreground">Jesús María, Córdoba</li>
-              <li className="text-muted-foreground">contacto@salvandohuellas.org</li>
-              <li className="text-muted-foreground">+54 351 123 4567</li>
+              <li className="text-muted-foreground">salvandohuellasjm@gmail.com</li>
+              <li className="text-muted-foreground">+54 3525 418986</li>
             </ul>
           </div>
 
@@ -78,6 +78,13 @@ export default function Footer() {
                 <Twitter className="h-5 w-5" />
                 <span className="sr-only">Twitter</span>
               </a>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <img
+                src="/images/hero-image.jpg"
+                alt="Mascotas Salvando Huellas"
+                className="h-16 w-24 md:h-20 md:w-32 object-cover shadow-sm"
+              />
             </div>
           </div>
         </div>
