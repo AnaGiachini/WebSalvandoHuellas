@@ -1,78 +1,93 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardFooter } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardFooter } from "./ui/card";
+import { Badge } from "./ui/badge";
 import { ShoppingCart } from "lucide-react";
-
-// Datos de ejemplo para productos
-const featuredProducts = [
-  {
-    id: 1,
-    name: "Alimento Premium para Perros",
-    category: "Alimentos",
-    price: 2500,
-    image: "/images/product1.jpg",
-    description: "Alimento balanceado de alta calidad para perros adultos.",
-  },
-  {
-    id: 2,
-    name: "Cama para Gatos",
-    category: "Accesorios",
-    price: 1800,
-    image: "/images/product2.jpg",
-    description: "Cama suave y cómoda para gatos de todos los tamaños.",
-  },
-  {
-    id: 3,
-    name: "Juguete Interactivo",
-    category: "Juguetes",
-    price: 950,
-    image: "/images/product3.jpg",
-    description: "Juguete interactivo para mantener a tu mascota entretenida.",
-  },
-  {
-    id: 4,
-    name: "Collar Personalizado",
-    category: "Accesorios",
-    price: 750,
-    image: "/images/product4.jpg",
-    description: "Collar ajustable y personalizable para perros y gatos.",
-  },
-];
+import articlesService from "../services/articlesService";
 
 export default function FeaturedProducts() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await articlesService.getAll();
+        const list = Array.isArray(data) ? data : data?.data || [];
+        // Mostramos solo algunos productos destacados en Home
+        setProducts(list.slice(0, 4));
+        setError("");
+      } catch (e) {
+        console.error("Error cargando productos destacados", e);
+        setError("No pudimos cargar los productos destacados.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Cargando productos destacados...
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="mt-8 text-center text-sm text-red-600">
+        {error}
+      </p>
+    );
+  }
+
+  if (!products.length) {
+    return (
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Por el momento no hay productos destacados en la tienda.
+      </p>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-      {featuredProducts.map((product) => (
-        <Card key={product.id} className="overflow-hidden">
+      {products.map((product) => (
+        <Card key={product.idArticulo} className="overflow-hidden">
           <div className="relative aspect-square">
-            {/* Sustituimos next/image por img normal */}
             <img
-              src={product.image || "/placeholder.svg"}
-              alt={product.name}
+              src={product.foto || "/placeholder.svg"}
+              alt={product.nombre}
               className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
             />
             <Badge className="absolute top-2 right-2 bg-primary">
-              {product.category}
+              {product.categoria || "Producto"}
             </Badge>
           </div>
           <CardContent className="p-4">
-            <h3 className="text-lg font-bold line-clamp-1">{product.name}</h3>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {product.description}
-            </p>
+            <h3 className="text-lg font-bold line-clamp-1">{product.nombre}</h3>
+            {product.descripcion && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                {product.descripcion}
+              </p>
+            )}
             <p className="mt-2 font-bold text-primary">
-              ${product.price.toLocaleString()}
+              ${Number(product.precio || 0).toLocaleString()}
             </p>
           </CardContent>
           <CardFooter className="p-4 pt-0 flex gap-2">
-            <Link to={`/tienda/${product.id}`} className="flex-1">
+            <Link to={`/tienda/${product.idArticulo}`} className="flex-1">
               <Button variant="outline" className="w-full">
                 Ver detalles
               </Button>
             </Link>
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button className="bg-primary hover:bg-primary/90 mt-2" aria-label="Agregar al carrito">
               <ShoppingCart className="h-4 w-4" />
             </Button>
           </CardFooter>
