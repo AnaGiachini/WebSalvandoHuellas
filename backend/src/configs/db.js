@@ -47,8 +47,8 @@ if (env === 'test') {
       idle: 10000
     }
   });
-} else {
-  // Configuración para entorno de desarrollo/producción (Neon o similar)
+} else if (process.env.DATABASE_URL) {
+  // Configuración para entornos donde se proporciona una URL completa (Neon, producción, etc.)
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     dialectOptions: {
@@ -57,6 +57,23 @@ if (env === 'test') {
         rejectUnauthorized: false
       }
     },
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  });
+} else {
+  // Configuración por defecto con variables separadas (desarrollo local)
+  sequelize = new Sequelize({
+    database: process.env.DB_NAME,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
     logging: false,
     pool: {
       max: 5,
