@@ -32,7 +32,7 @@ export default function AdopcionIndex() {
   const [sexo, setSexo] = useState("");
   const [edad, setEdad] = useState("");
   const [tamano, setTamano] = useState("");
-  const [estadoAdopcion, setEstadoAdopcion] = useState("disponibles"); // Por defecto: disponibles y en proceso
+  const [estadoAdopcion, setEstadoAdopcion] = useState("disponibles"); // Por defecto: solo animales disponibles
 
   useEffect(() => {
     const load = async () => {
@@ -61,7 +61,8 @@ export default function AdopcionIndex() {
       // Filtro por estado
       let byEstado = true;
       if (estadoAdopcion === "disponibles") {
-        byEstado = a.estadoAdopcion === "sin_hogar" || a.estadoAdopcion === "en_proceso";
+        // Solo animales disponibles para adoptar
+        byEstado = a.estadoAdopcion === "sin_hogar";
       } else if (estadoAdopcion === "sin_hogar" || estadoAdopcion === "en_proceso" || estadoAdopcion === "adoptado") {
         byEstado = a.estadoAdopcion === estadoAdopcion;
       }
@@ -93,7 +94,21 @@ export default function AdopcionIndex() {
           <Filter className="h-5 w-5 text-primary mr-2" />
           <h2 className="text-lg font-medium">Filtrar animales</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">  
+          <div>
+            <label htmlFor="estado" className="text-sm font-medium">Estado</label>
+            <select
+              id="estado"
+              className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={estadoAdopcion}
+              onChange={(e) => setEstadoAdopcion(e.target.value)}
+            >
+              <option value="disponibles">Disponibles</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="adoptado">Adoptado</option>
+              <option value="">Todos</option>
+            </select>
+          </div>
           <div>
             <label htmlFor="especie" className="text-sm font-medium">Especie</label>
             <select
@@ -148,21 +163,7 @@ export default function AdopcionIndex() {
               <option value="mediano">Mediano</option>
               <option value="grande">Grande</option>
             </select>
-          </div>
-          <div>
-            <label htmlFor="estado" className="text-sm font-medium">Estado</label>
-            <select
-              id="estado"
-              className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-              value={estadoAdopcion}
-              onChange={(e) => setEstadoAdopcion(e.target.value)}
-            >
-              <option value="disponibles">Disponibles</option>
-              <option value="sin_hogar">Disponible</option>
-              <option value="en_proceso">En proceso</option>
-              <option value="adoptado">Adoptado</option>
-            </select>
-          </div>
+          </div>    
           <div className="flex items-end">
             <Button variant="outline" className="w-full" onClick={resetFilters}>Limpiar filtros</Button>
           </div>
@@ -213,7 +214,7 @@ export default function AdopcionIndex() {
           <div className="flex flex-col items-center text-center">
             <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">1</div>
             <h3 className="text-lg font-medium mb-2">Selecciona un animal</h3>
-            <p className="text-sm text-muted-foreground">Explora nuestros animales disponibles y encuentra el que mejor se adapte a ti.</p>
+            <p className="text-sm text-muted-foreground">Explorá nuestros animales en adopción y conocé a tu próximo compañero.</p>
           </div>
           <div className="flex flex-col items-center text-center">
             <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">2</div>
@@ -228,7 +229,7 @@ export default function AdopcionIndex() {
         </div>
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">Para más información sobre nuestro proceso de adopción, requisitos y responsabilidades, por favor contacta con nosotros.</p>
-          <Link to="/informacion/adopcion">
+          <Link to="/informacion?tab=adoption">
             <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">Más información sobre adopción</Button>
           </Link>
         </div>

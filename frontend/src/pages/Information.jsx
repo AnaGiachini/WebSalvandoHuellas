@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 
 export default function InformationPage() {
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "about";
+
   return (
     <div className="container py-8 md:py-12">
       <div className="flex flex-col items-center text-center mb-8">
@@ -29,7 +32,7 @@ export default function InformationPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="about" className="w-full">
+      <Tabs defaultValue={initialTab} className="w-full">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-8">
           <TabsTrigger value="about">Sobre Nosotros</TabsTrigger>
           <TabsTrigger value="faq">Preguntas Frecuentes</TabsTrigger>
