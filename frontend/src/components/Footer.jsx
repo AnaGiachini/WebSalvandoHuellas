@@ -43,7 +43,7 @@ export default function Footer() {
             <h4 className="font-medium text-base mb-4">Contacto</h4>
             <ul className="space-y-2 text-sm">
               <li className="text-muted-foreground">Jesús María, Córdoba</li>
-              <li className="text-muted-foreground">salvandohuellasjm@gmail.com</li>
+              <li className="text-muted-foreground">salvandohuellasjesusmaria@gmail.com</li>
               <li className="text-muted-foreground">+54 3525 418986</li>
             </ul>
           </div>

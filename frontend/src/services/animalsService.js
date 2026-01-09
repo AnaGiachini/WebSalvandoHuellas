@@ -35,7 +35,19 @@ const animalsService = {
   async remove(id) {
     await api.delete(`${base}/${id}`);
     return true;
-  }
+  },
+
+  // Sube una foto de animal al backend (Cloudinary) y devuelve la URL
+  async uploadPhoto(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const { data } = await api.post('/uploads/animal-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    return data?.url;
+  },
 };
 
 export default animalsService;

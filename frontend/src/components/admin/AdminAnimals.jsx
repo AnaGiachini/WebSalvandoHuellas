@@ -56,6 +56,7 @@ export default function AdminAnimals() {
     estadoAdopcion: "sin_hogar",
     foto: "",
   });
+  const [photoFile, setPhotoFile] = useState(null);
   const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
 
   const loadAnimals = useCallback(async () => {
@@ -90,6 +91,7 @@ export default function AdminAnimals() {
   const openCreate = () => {
     setEditing(null);
     setForm({ nombre: "", especie: "perro", sexo: "macho", edad: "joven", tamano: "mediano", historia: "", estadoAdopcion: "sin_hogar", foto: "" });
+    setPhotoFile(null);
     setOpen(true);
   };
 
@@ -105,6 +107,7 @@ export default function AdminAnimals() {
       estadoAdopcion: animal.estadoAdopcion || "sin_hogar",
       foto: animal.foto || "",
     });
+    setPhotoFile(null);
     setOpen(true);
   };
 
@@ -128,11 +131,21 @@ export default function AdminAnimals() {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
+      let payload = { ...form };
+
+      // Si se seleccionó un archivo de imagen, subirlo primero a Cloudinary
+      if (photoFile) {
+        const url = await animalsService.uploadPhoto(photoFile);
+        if (url) {
+          payload.foto = url;
+        }
+      }
+
       if (editing) {
-        await animalsService.update(editing.idAnimal, form);
+        await animalsService.update(editing.idAnimal, payload);
         toast({ title: "Actualizado", description: "Animal actualizado correctamente" });
       } else {
-        await animalsService.create(form);
+        await animalsService.create(payload);
         toast({ title: "Creado", description: "Animal creado correctamente" });
       }
       setOpen(false);
@@ -306,8 +319,28 @@ export default function AdminAnimals() {
               <Input id="historia" value={form.historia} onChange={(e) => setForm({ ...form, historia: e.target.value })} />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="foto">Foto (URL)</Label>
-              <Input id="foto" value={form.foto} onChange={(e) => setForm({ ...form, foto: e.target.value })} />
+              <Label htmlFor="fotoArchivo">Foto (archivo)</Label>
+              <Input
+                id="fotoArchivo"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setPhotoFile(file);
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Si seleccionas un archivo, se subirá a Cloudinary y se usará su URL.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="foto">Foto (URL opcional)</Label>
+              <Input
+                id="foto"
+                value={form.foto}
+                onChange={(e) => setForm({ ...form, foto: e.target.value })}
+                placeholder="https://..."
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="estadoAdopcion">Estado de adopción</Label>
