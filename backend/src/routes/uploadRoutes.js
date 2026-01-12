@@ -18,4 +18,13 @@ router.post(
   uploadController.uploadAnimalPhoto
 );
 
+// Solo administradores pueden subir fotos de productos
+router.post(
+  '/product-photo',
+  protect,
+  restrictTo('admin'),
+  upload.single('image'),
+  uploadController.uploadProductPhoto
+);
+
 module.exports = router;
