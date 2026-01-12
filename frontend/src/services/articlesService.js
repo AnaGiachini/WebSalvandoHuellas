@@ -26,6 +26,16 @@ const articlesService = {
     const { data } = await api.delete(`/articles/${id}`);
     return data;
   },
+  async uploadPhoto(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const { data } = await api.post('/uploads/product-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    return data?.url;
+  },
 };
 
 export default articlesService;

@@ -29,3 +29,32 @@ exports.uploadAnimalPhoto = async (req, res, next) => {
     next(error);
   }
 };
+
+// Sube una foto de producto a Cloudinary y devuelve la URL segura
+exports.uploadProductPhoto = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No se recibió ninguna imagen.' });
+    }
+
+    const folder = process.env.CLOUDINARY_FOLDER_PRODUCTOS || 'salvando-huellas/productos';
+
+    const result = await cloudinary.uploader.upload_stream(
+      { folder },
+      (error, uploadResult) => {
+        if (error) {
+          return next(error);
+        }
+        return res.status(201).json({
+          message: 'Imagen subida correctamente',
+          url: uploadResult.secure_url,
+          public_id: uploadResult.public_id,
+        });
+      }
+    );
+
+    result.end(req.file.buffer);
+  } catch (error) {
+    next(error);
+  }
+};

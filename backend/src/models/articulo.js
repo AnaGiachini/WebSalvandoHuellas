@@ -33,6 +33,10 @@ const Articulo = sequelize.define("Articulo", {
   foto: { type: DataTypes.STRING },
   // Nueva metadata para gestión en admin
   categoria: { type: DataTypes.STRING(50), allowNull: true },
+  segmento: {
+    type: DataTypes.ENUM("hombre", "mujer", "niño", "niña", "unisex"),
+    allowNull: true,
+  },
   descuento: { type: DataTypes.FLOAT, allowNull: true, defaultValue: 0 }, // porcentaje 0-100
   variantes: { type: DataTypes.TEXT, allowNull: true }, // JSON string: [{nombre, precioExtra, stock}]
   activo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },

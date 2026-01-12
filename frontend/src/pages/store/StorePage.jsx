@@ -19,7 +19,7 @@ export default function StorePage() {
   // Estados de filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedPetType, setSelectedPetType] = useState("all");
+  const [selectedSegment, setSelectedSegment] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
 
   useEffect(() => {
@@ -51,14 +51,14 @@ export default function StorePage() {
       );
     }
 
-    // Filtro por categoría (si el modelo lo tiene)
+    // Filtro por categoría (ropa, calzados, libros, accesorios, blancos, otros)
     if (selectedCategory !== "all") {
       filtered = filtered.filter(p => p.categoria === selectedCategory);
     }
 
-    // Filtro por tipo de mascota (si el modelo lo tiene)
-    if (selectedPetType !== "all") {
-      filtered = filtered.filter(p => p.tipoMascota === selectedPetType);
+    // Filtro por segmento (hombre, mujer, niño, niña, unisex)
+    if (selectedSegment !== "all") {
+      filtered = filtered.filter(p => p.segmento === selectedSegment);
     }
 
     // Filtro por precio máximo
@@ -68,7 +68,7 @@ export default function StorePage() {
     }
 
     setFilteredProducts(filtered);
-  }, [products, searchTerm, selectedCategory, selectedPetType, maxPrice]);
+  }, [products, searchTerm, selectedCategory, selectedSegment, maxPrice]);
 
   const addToCart = async (idArticulo) => {
     if (!user) {
@@ -102,7 +102,7 @@ export default function StorePage() {
       <div className="flex flex-col items-center text-center mb-8">
         <h1 className="text-3xl font-bold text-primary mb-4">Tienda de Productos</h1>
         <p className="text-muted-foreground max-w-3xl">
-          Todos los productos de nuestra tienda son de alta calidad y cada compra contribuye a nuestra labor de rescate y cuidado de animales.
+          Todos los productos de Tienda americana son seleccionados y están en buen estado. Con cada compra, ayudás a sostener el rescate y cuidado de animales.
         </p>
       </div>
 
@@ -135,23 +135,28 @@ export default function StorePage() {
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value="all">Todas</option>
-              <option value="alimentos">Alimentos</option>
+              <option value="ropa">Ropa</option>
+              <option value="calzados">Calzados</option>
+              <option value="libros">Libros</option>
               <option value="accesorios">Accesorios</option>
-              <option value="juguetes">Juguetes</option>
-              <option value="higiene">Higiene</option>
+              <option value="blancos">Blancos</option>
+              <option value="otros">Otros</option>
             </select>
           </div>
           <div>
-            <label htmlFor="pet-type" className="font-medium">Tipo de mascota</label>
+            <label htmlFor="segment" className="font-medium">Segmento</label>
             <select 
-              id="pet-type" 
+              id="segment" 
               className="mt-1 w-full border rounded p-2"
-              value={selectedPetType}
-              onChange={(e) => setSelectedPetType(e.target.value)}
+              value={selectedSegment}
+              onChange={(e) => setSelectedSegment(e.target.value)}
             >
-              <option value="all">Todas</option>
-              <option value="perro">Perros</option>
-              <option value="gato">Gatos</option>
+              <option value="all">Todos</option>
+              <option value="hombre">Hombre</option>
+              <option value="mujer">Mujer</option>
+              <option value="niño">Niño</option>
+              <option value="niña">Niña</option>
+              <option value="unisex">Unisex</option>
             </select>
           </div>
           <div>
@@ -176,7 +181,7 @@ export default function StorePage() {
             onClick={() => {
               setSearchTerm("");
               setSelectedCategory("all");
-              setSelectedPetType("all");
+              setSelectedSegment("all");
               setMaxPrice("");
             }}
             className="mt-4 text-primary hover:underline"
