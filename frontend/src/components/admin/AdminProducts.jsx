@@ -242,7 +242,7 @@ export default function AdminProducts() {
           </DialogHeader>
           <div className="grid gap-3">
             <Input
-              placeholder="Nombre"
+              placeholder="Nombre del producto (ej: Campera de jean)"
               value={form.nombre}
               onChange={(e) => setForm({ ...form, nombre: e.target.value })}
             />
@@ -250,18 +250,18 @@ export default function AdminProducts() {
               <Input
                 type="number"
                 step="0.01"
-                placeholder="Precio"
+                placeholder="Precio (ej: 1200)"
                 value={form.precio}
                 onChange={(e) => setForm({ ...form, precio: e.target.value })}
               />
               <Input
                 type="number"
-                placeholder="Stock"
+                placeholder="Stock disponible (ej: 10)"
                 value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: e.target.value })}
               />
               <Input
-                placeholder="URL imagen"
+                placeholder="URL imagen (opcional si subís archivo)"
                 value={form.foto}
                 onChange={(e) => setForm({ ...form, foto: e.target.value })}
               />
@@ -317,15 +317,7 @@ export default function AdminProducts() {
                   <option value="unisex">Unisex</option>
                 </select>
               </div>
-              <Input
-                type="number"
-                step="1"
-                min="0"
-                max="100"
-                placeholder="Descuento %"
-                value={form.descuento}
-                onChange={(e) => setForm({ ...form, descuento: e.target.value })}
-              />
+              {/* Campo de descuento ocultado por ahora, no se usa en la venta */}
               <div className="flex items-center gap-2">
                 <input
                   id="activo"
@@ -339,15 +331,11 @@ export default function AdminProducts() {
               </div>
             </div>
             <Input
-              placeholder="Descripción"
+              placeholder="Descripción del producto (ej: Remera de algodón, talle M)"
               value={form.descripcion}
               onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
             />
-            <Input
-              placeholder="Variantes (JSON)"
-              value={form.variantes}
-              onChange={(e) => setForm({ ...form, variantes: e.target.value })}
-            />
+            {/* Campo de variantes ocultado para no complicar la carga en esta versión */}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
@@ -365,7 +353,8 @@ export default function AdminProducts() {
                       descripcion: form.descripcion || "",
                       foto: form.foto || "",
                       categoria: form.categoria || "",
-                      segmento: form.segmento || "",
+                      // Si no se eligió segmento, no mandar string vacío (ENUM no lo acepta)
+                      segmento: form.segmento || null,
                       descuento: form.descuento === "" ? undefined : Number(form.descuento),
                       variantes: form.variantes || "",
                       activo: !!form.activo,
