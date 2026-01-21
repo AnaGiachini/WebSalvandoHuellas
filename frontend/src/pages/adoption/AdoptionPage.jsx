@@ -32,7 +32,8 @@ export default function AdopcionIndex() {
   const [sexo, setSexo] = useState("");
   const [edad, setEdad] = useState("");
   const [tamano, setTamano] = useState("");
-  const [estadoAdopcion, setEstadoAdopcion] = useState("disponibles"); // Por defecto: disponibles y en proceso
+  // Por defecto: solo animales disponibles (sin_hogar)
+  const [estadoAdopcion, setEstadoAdopcion] = useState("sin_hogar");
 
   useEffect(() => {
     const load = async () => {
@@ -60,9 +61,7 @@ export default function AdopcionIndex() {
       
       // Filtro por estado
       let byEstado = true;
-      if (estadoAdopcion === "disponibles") {
-        byEstado = a.estadoAdopcion === "sin_hogar" || a.estadoAdopcion === "en_proceso";
-      } else if (estadoAdopcion === "sin_hogar" || estadoAdopcion === "en_proceso" || estadoAdopcion === "adoptado") {
+      if (estadoAdopcion === "sin_hogar" || estadoAdopcion === "en_proceso" || estadoAdopcion === "adoptado") {
         byEstado = a.estadoAdopcion === estadoAdopcion;
       }
       
@@ -75,7 +74,8 @@ export default function AdopcionIndex() {
     setSexo("");
     setEdad("");
     setTamano("");
-    setEstadoAdopcion("disponibles"); // Restaurar filtro por defecto
+    // Restaurar filtro por defecto: solo disponibles (sin_hogar)
+    setEstadoAdopcion("sin_hogar");
   };
 
   return (
@@ -157,8 +157,8 @@ export default function AdopcionIndex() {
               value={estadoAdopcion}
               onChange={(e) => setEstadoAdopcion(e.target.value)}
             >
-              <option value="disponibles">Disponibles</option>
-              <option value="sin_hogar">Disponible</option>
+              <option value="">Todos</option>
+              <option value="sin_hogar">Disponibles</option>
               <option value="en_proceso">En proceso</option>
               <option value="adoptado">Adoptado</option>
             </select>

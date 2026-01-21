@@ -1,18 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { useToast } from "../hooks/useToast";
+import contactService from "../services/contactService";
 import {
   Heart,
   Info,
   HelpCircle,
-  FileText,
   DollarSign,
   PawPrint,
   Phone,
   Mail,
-  Clock,
-  MapPin,
   Facebook,
   Instagram,
   Twitter,
@@ -20,6 +20,25 @@ import {
 } from "lucide-react";
 
 export default function InformationPage() {
+  // Permitir abrir y controlar una pestaña específica usando el query param ?tab=...
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const validTabs = ["about", "faq", "adoption", "contact"];
+
+  const getInitialTab = () => (validTabs.includes(tabParam) ? tabParam : "about");
+  const [currentTab, setCurrentTab] = useState(getInitialTab);
+  const [sendingContact, setSendingContact] = useState(false);
+  const { toast } = useToast();
+
+  // Si cambia el query param externamente (por ejemplo, desde un Link), sincronizar la pestaña visible.
+  useEffect(() => {
+    const next = getInitialTab();
+    if (next !== currentTab) {
+      setCurrentTab(next);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabParam]);
+
   return (
     <div className="container py-8 md:py-12">
       <div className="flex flex-col items-center text-center mb-8">
@@ -29,7 +48,18 @@ export default function InformationPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="about" className="w-full">
+      <Tabs
+        value={currentTab}
+        onValueChange={(value) => {
+          setCurrentTab(value);
+          if (value === "about") {
+            setSearchParams({});
+          } else {
+            setSearchParams({ tab: value });
+          }
+        }}
+        className="w-full"
+      >
         <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-8">
           <TabsTrigger value="about">Sobre Nosotros</TabsTrigger>
           <TabsTrigger value="faq">Preguntas Frecuentes</TabsTrigger>
@@ -109,25 +139,6 @@ export default function InformationPage() {
             </Card>
           </div>
 
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-primary mb-4">Nuestro Equipo</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((member) => (
-                <div key={member} className="flex flex-col items-center text-center">
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4">
-                    <img
-                      src={`/images/team-${member}.jpg`}
-                      alt={`Miembro del equipo ${member}`}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                  <h3 className="font-bold">Nombre Apellido</h3>
-                  <p className="text-sm text-muted-foreground">Cargo / Rol</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </TabsContent>
 
         {/* Preguntas Frecuentes */}
@@ -158,16 +169,6 @@ export default function InformationPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-bold mb-2">¿Hay algún costo por adoptar?</h3>
-                  <p className="text-muted-foreground">
-                    Sí, hay una cuota de adopción que varía según el animal. Esta cuota ayuda a cubrir parte de los
-                    gastos veterinarios, alimentación y cuidados que el animal ha recibido durante su estancia con
-                    nosotros. Todos los animales se entregan vacunados, desparasitados y, en el caso de adultos,
-                    esterilizados.
-                  </p>
-                </div>
-
-                <div>
                   <h3 className="text-lg font-bold mb-2">¿Cómo puedo ayudar si no puedo adoptar?</h3>
                   <p className="text-muted-foreground">
                     Hay muchas formas de ayudar: puedes ser hogar temporal, donar alimentos o insumos, hacer donaciones
@@ -189,9 +190,7 @@ export default function InformationPage() {
                 <div>
                   <h3 className="text-lg font-bold mb-2">¿Ofrecen servicios veterinarios al público?</h3>
                   <p className="text-muted-foreground">
-                    No ofrecemos servicios veterinarios regulares al público, pero ocasionalmente organizamos campañas
-                    de vacunación y esterilización a bajo costo. Estas campañas se anuncian en nuestras redes sociales y
-                    página web.
+                    No. Somos una protectora a pulmón, sostenida por donaciones, y no contamos con fondos para brindar un servicio veterinario al público.
                   </p>
                 </div>
               </div>
@@ -204,7 +203,7 @@ export default function InformationPage() {
                   Si no encuentras la respuesta a tu pregunta, no dudes en contactarnos. Estaremos encantados de
                   ayudarte.
                 </p>
-                <Link to="/informacion/contacto">
+                <Link to="/informacion?tab=contact">
                   <Button className="w-full bg-primary hover:bg-primary/90">
                     <HelpCircle className="h-4 w-4 mr-2" />
                     Contactar
@@ -212,29 +211,7 @@ export default function InformationPage() {
                 </Link>
               </div>
 
-              <div className="mt-6 bg-primary/5 rounded-lg p-6">
-                <h3 className="text-lg font-bold mb-4">Documentos útiles</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="/docs/guia-adopcion.pdf" className="flex items-center text-primary hover:underline">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Guía de adopción
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/docs/cuidados-basicos.pdf" className="flex items-center text-primary hover:underline">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Cuidados básicos para mascotas
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/docs/estatutos.pdf" className="flex items-center text-primary hover:underline">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Estatutos de la organización
-                    </a>
-                  </li>
-                </ul>
-              </div>
+              {/* Bloque de "Documentos útiles" ocultado por ahora para evitar enlaces a PDFs inexistentes */}
             </div>
           </div>
         </TabsContent>
@@ -289,23 +266,7 @@ export default function InformationPage() {
             </div>
 
             <div>
-              <div className="bg-primary/5 rounded-lg p-6">
-                <h3 className="text-lg font-bold mb-4">Cuotas de adopción</h3>
-                <p className="text-muted-foreground mb-4">
-                  Las cuotas de adopción varían según el tipo y edad del animal...
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between"><span>Perros adultos</span><span className="font-bold">$2,000</span></div>
-                  <div className="flex justify-between"><span>Perros cachorros</span><span className="font-bold">$2,500</span></div>
-                  <div className="flex justify-between"><span>Gatos adultos</span><span className="font-bold">$1,500</span></div>
-                  <div className="flex justify-between"><span>Gatos cachorros</span><span className="font-bold">$2,000</span></div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-4">
-                  * Todos los animales se entregan vacunados, desparasitados y, en el caso de adultos, esterilizados.
-                </p>
-              </div>
-
-              <div className="mt-6 bg-primary/5 rounded-lg p-6">
+              <div className="bg-primary/5 rounded-lg p-6 mt-0">
                 <h3 className="text-lg font-bold mb-4">¿Listo para adoptar?</h3>
                 <p className="text-muted-foreground mb-4">
                   Si estás listo para dar el paso y adoptar un animal, explora nuestro catálogo...
@@ -342,18 +303,10 @@ export default function InformationPage() {
 
               <div className="space-y-6">
                 <div className="flex items-start">
-                  <MapPin className="h-5 w-5 text-primary mr-3 mt-1" />
-                  <div>
-                    <h3 className="font-bold">Dirección</h3>
-                    <p className="text-muted-foreground">Av. Principal 123, Jesús María, Córdoba, Argentina</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
                   <Phone className="h-5 w-5 text-primary mr-3 mt-1" />
                   <div>
                     <h3 className="font-bold">Teléfono</h3>
-                    <p className="text-muted-foreground">+54 351 123 4567</p>
+                    <p className="text-muted-foreground">+54 3525 418986</p>
                   </div>
                 </div>
 
@@ -361,17 +314,7 @@ export default function InformationPage() {
                   <Mail className="h-5 w-5 text-primary mr-3 mt-1" />
                   <div>
                     <h3 className="font-bold">Correo electrónico</h3>
-                    <p className="text-muted-foreground">contacto@salvandohuellas.org</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <Clock className="h-5 w-5 text-primary mr-3 mt-1" />
-                  <div>
-                    <h3 className="font-bold">Horario de atención</h3>
-                    <p className="text-muted-foreground">Lunes a Viernes: 9:00 - 18:00</p>
-                    <p className="text-muted-foreground">Sábados: 10:00 - 14:00</p>
-                    <p className="text-muted-foreground">Domingos: Cerrado</p>
+                    <p className="text-muted-foreground">salvandohuellasjm@gmail.com</p>
                   </div>
                 </div>
               </div>
@@ -418,7 +361,52 @@ export default function InformationPage() {
             <div>
               <div className="bg-primary/5 rounded-lg p-6">
                 <h3 className="text-lg font-bold mb-4">Envíanos un mensaje</h3>
-                <form className="space-y-4">
+                <form
+                  className="space-y-4"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget;
+                    const formData = new FormData(form);
+                    const payload = {
+                      nombre: formData.get("name"),
+                      email: formData.get("email"),
+                      asunto: formData.get("subject"),
+                      mensaje: formData.get("message"),
+                    };
+
+                    if (!payload.email || !payload.mensaje) {
+                      toast({
+                        title: "Datos incompletos",
+                        description: "El correo y el mensaje son obligatorios.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    try {
+                      setSendingContact(true);
+                      const response = await contactService.sendMessage(payload);
+                      // Debug: ver respuesta real del backend en consola
+                      console.log("[Contact] Mensaje enviado OK", response);
+                      toast({
+                        title: "Mensaje enviado",
+                        description: "Gracias por contactarte con Salvando Huellas.",
+                      });
+                      form.reset();
+                    } catch (err) {
+                      // Debug: ver error real que está llegando al catch
+                      console.error("[Contact] Error al enviar mensaje", err);
+                      const msg = err?.response?.data?.message || "No se pudo enviar el mensaje.";
+                      toast({
+                        title: "Error",
+                        description: msg,
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setSendingContact(false);
+                    }
+                  }}
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label htmlFor="name" className="text-sm font-medium">
@@ -426,6 +414,7 @@ export default function InformationPage() {
                       </label>
                       <input
                         id="name"
+                        name="name"
                         type="text"
                         className="w-full px-3 py-2 border border-input rounded-md"
                         required
@@ -437,6 +426,7 @@ export default function InformationPage() {
                       </label>
                       <input
                         id="email"
+                        name="email"
                         type="email"
                         className="w-full px-3 py-2 border border-input rounded-md"
                         required
@@ -449,6 +439,7 @@ export default function InformationPage() {
                     </label>
                     <input
                       id="subject"
+                      name="subject"
                       type="text"
                       className="w-full px-3 py-2 border border-input rounded-md"
                       required
@@ -460,26 +451,20 @@ export default function InformationPage() {
                     </label>
                     <textarea
                       id="message"
+                      name="message"
                       rows={5}
                       className="w-full px-3 py-2 border border-input rounded-md"
                       required
                     ></textarea>
                   </div>
-                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-                    Enviar mensaje
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary hover:bg-primary/90"
+                    disabled={sendingContact}
+                  >
+                    {sendingContact ? "Enviando..." : "Enviar mensaje"}
                   </Button>
                 </form>
-              </div>
-
-              <div className="mt-6">
-                <div className="relative w-full h-64 rounded-lg overflow-hidden">
-                  <img
-                    src="/images/map.jpg"
-                    alt="Mapa de ubicación"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
               </div>
             </div>
           </div>

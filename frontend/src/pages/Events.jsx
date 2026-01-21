@@ -66,7 +66,12 @@ export default function EventsPage() {
 
       {/* Eventos próximos */}
       <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Próximos Eventos</h2>
+        <h2 className="text-2xl font-bold mb-2">Próximos Eventos</h2>
+        {upcomingEvents.length === 0 && (
+          <p className="mb-6 text-sm text-muted-foreground">
+            Por el momento no hay eventos próximos publicados.
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {upcomingEvents.map((event) => (
             <Card key={event.id} className="overflow-hidden">
@@ -161,24 +166,7 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Suscripción a eventos */}
-      <div className="mt-16 bg-primary/5 rounded-lg p-6 text-center">
-        <h2 className="text-2xl font-bold text-primary mb-4">
-          ¿Quieres estar al tanto de nuestros eventos?
-        </h2>
-        <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-          Suscríbete a nuestro boletín para recibir información sobre próximos eventos y actividades. No te pierdas la
-          oportunidad de participar y ayudar a nuestra causa.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-          <input
-            type="email"
-            placeholder="Tu correo electrónico"
-            className="px-4 py-2 rounded-md border border-input bg-background"
-          />
-          <Button className="bg-primary hover:bg-primary/90">Suscribirse</Button>
-        </div>
-      </div>
+      {/* Sección de suscripción oculta por ahora (mock, sin backend) */}
     </div>
   );
 }
