@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const authRoutes = require("./authRoutes");
+const uploadRoutes = require('./uploadRoutes');
+const contactRoutes = require('./contactRoutes');
 const userRoutes = require("./userRoutes");
 const animalRoutes = require("./animalRoutes");
 const adoptionApplicationRoutes = require("./adoptionApplicationRoutes");
@@ -15,6 +17,8 @@ const uploadRoutes = require("./uploadRoutes");
 
 
 router.use("/auth", authRoutes); // Rutas de autenticación
+router.use('/uploads', uploadRoutes);
+router.use('/contact', contactRoutes);
 router.use("/users", userRoutes); // Rutas de usuarios
 router.use("/animals", animalRoutes); // Rutas de animales
 router.use("/adoptions", adoptionApplicationRoutes); // Rutas de solicitudes de adopción

@@ -5,28 +5,35 @@ export function Accordion({ children, className = "" }) {
   return <div className={`space-y-2 ${className}`}>{children}</div>
 }
 
+// Cada AccordionItem maneja su propio estado de apertura y lo pasa a Trigger/Content
 export function AccordionItem({ value, children }) {
-  return <div className="border rounded-md">{children}</div>
-}
-
-export function AccordionTrigger({ children }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex justify-between items-center px-4 py-2 text-left font-medium"
-      >
-        {children}
-        <span>{open ? "−" : "+"}</span>
-      </button>
-      {open && <div className="px-4 pb-4">{/* Aquí va el contenido */}</div>}
+    <div className="border rounded-md">
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child, { open, setOpen })
+          : child
+      )}
     </div>
   )
 }
 
-export function AccordionContent({ children }) {
+export function AccordionTrigger({ children, open, setOpen }) {
+  return (
+    <button
+      onClick={() => setOpen && setOpen(!open)}
+      className="w-full flex justify-between items-center px-4 py-2 text-left font-medium"
+    >
+      {children}
+      <span>{open ? "−" : "+"}</span>
+    </button>
+  )
+}
+
+export function AccordionContent({ children, open }) {
+  if (!open) return null
   return <div className="px-4 pb-4 text-sm text-gray-600">{children}</div>
 }
 
@@ -47,12 +54,10 @@ export function DonationFAQ() {
             <AccordionItem value="item-1">
               <AccordionTrigger>¿Cómo sé que mi donación llega a los animales?</AccordionTrigger>
               <AccordionContent>
-                Publicamos informes mensuales de transparencia donde detallamos exactamente cómo se utilizan los fondos.
-                Además, puedes visitarnos en cualquier momento para ver el trabajo que realizamos. El 98% de las
-                donaciones van directamente al cuidado de los animales.
+                ublicamos en nuestras redes y en nuestra página informes de transparencia con los saldos/estado de cuenta de las veterinarias con las que trabajamos y el detalle de los principales gastos. Además, cuando hay rescates o casos especiales, compartimos actualizaciones y comprobantes para que puedas ver exactamente en qué se utiliza cada donación.
               </AccordionContent>
             </AccordionItem>
-
+{/* 
             <AccordionItem value="item-2">
               <AccordionTrigger>¿Puedo deducir mi donación de impuestos?</AccordionTrigger>
               <AccordionContent>
@@ -60,48 +65,35 @@ export function DonationFAQ() {
                 deducibles de impuestos según la legislación vigente. Te enviaremos un certificado oficial por email que
                 podrás usar en tu declaración anual.
               </AccordionContent>
-            </AccordionItem>
+            </AccordionItem> */}
 
             <AccordionItem value="item-3">
               <AccordionTrigger>¿Cuál es el monto mínimo para donar?</AccordionTrigger>
               <AccordionContent>
-                Para donaciones únicas el monto mínimo es de $100. Para donaciones recurrentes el mínimo es de $500. Sin
-                embargo, cualquier monto es bienvenido y hace la diferencia en la vida de nuestros animales rescatados.
+                Cualquier monto es bienvenido y hace la diferencia en la vida de nuestros animales rescatados.
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-4">
+            {/* <AccordionItem value="item-4">
               <AccordionTrigger>¿Puedo cancelar mi donación recurrente?</AccordionTrigger>
               <AccordionContent>
                 Por supuesto. Puedes cancelar, pausar o modificar tu donación recurrente en cualquier momento desde tu
                 perfil en nuestra web, o contactándonos directamente. No hay compromisos a largo plazo ni
                 penalizaciones.
               </AccordionContent>
-            </AccordionItem>
+            </AccordionItem> */}
 
             <AccordionItem value="item-5">
               <AccordionTrigger>¿Qué métodos de pago aceptan?</AccordionTrigger>
               <AccordionContent>
-                Aceptamos tarjetas de crédito y débito (Visa, Mastercard, American Express), transferencias bancarias, y
-                billeteras digitales como MercadoPago, PayPal y Ualá. Todos los pagos son procesados de forma segura.
+                Aceptamos transferencias bancarias, y billeteras digitales como MercadoPago. Todos los pagos son procesados de forma segura.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-6">
               <AccordionTrigger>¿Puedo donar productos en lugar de dinero?</AccordionTrigger>
               <AccordionContent>
-                ¡Sí! Aceptamos donaciones en especie como alimento balanceado, medicamentos, mantas, juguetes y
-                materiales de construcción. Contáctanos para coordinar la entrega y conocer nuestras necesidades
-                actuales más urgentes.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-7">
-              <AccordionTrigger>¿Cómo puedo seguir el impacto de mi donación?</AccordionTrigger>
-              <AccordionContent>
-                Los donantes recurrentes reciben actualizaciones mensuales por email con fotos y historias de los
-                animales ayudados. También publicamos en nuestras redes sociales y página web el progreso de nuestros
-                proyectos y rescates.
+                ¡Sí! Aceptamos donaciones como alimento balanceado, medicamentos, mantas. Contáctanos para coordinar la entrega.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

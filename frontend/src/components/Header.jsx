@@ -127,6 +127,9 @@ export default function Header() {
             <Link to="/adopcion" className="text-sm font-medium transition-colors hover:text-primary">
               Adopción
             </Link>
+            <Link to="/donaciones" className="text-sm font-medium transition-colors hover:text-primary">
+              Donar
+            </Link>
             <Link to="/tienda" className="text-sm font-medium transition-colors hover:text-primary">
               Tienda
             </Link>
@@ -173,11 +176,6 @@ export default function Header() {
                       <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/mis-donaciones"); }}>
                         Mis donaciones
                       </DropdownMenuItem>
-                      {!user.isGuest && (
-                        <DropdownMenuItem onClick={() => { setUserMenuOpen(false); navigate("/favoritos"); }}>
-                          Favoritos
-                        </DropdownMenuItem>
-                      )}
                       {isAdmin && (
                         <DropdownMenuItem onClick={handleAdminLogin}>
                           Panel de administración
@@ -215,6 +213,9 @@ export default function Header() {
             <Link to="/adopcion" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Adopción
             </Link>
+            <Link to="/donaciones" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+              Donar
+            </Link>
             <Link to="/tienda" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
               Tienda
             </Link>
@@ -242,11 +243,6 @@ export default function Header() {
                 <Link to="/mis-donaciones" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Mis donaciones
                 </Link>
-                {!user.isGuest && (
-                  <Link to="/favoritos" className="text-sm font-medium transition-colors hover:text-primary" onClick={() => setIsMenuOpen(false)}>
-                    Favoritos
-                  </Link>
-                )}
                 {isAdmin && (
                   <Button
                     variant="ghost"

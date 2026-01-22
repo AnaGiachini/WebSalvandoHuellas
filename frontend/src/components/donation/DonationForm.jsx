@@ -23,7 +23,7 @@ import { useAuth } from "../../components/auth/AuthProvider"
 import paymentService from "../../services/paymentService"
 import donationService from "../../services/donationService"
 
-const predefinedAmounts = [500, 1000, 2500, 5000, 10000]
+const predefinedAmounts = [5000, 10000, 20000]
 
 export function DonationForm() {
   const [amount, setAmount] = useState(null)
@@ -188,11 +188,6 @@ export function DonationForm() {
         >
           {isProcessing ? "Procesando..." : `Donar $${finalAmount.toLocaleString()}`}
         </Button>
-
-        <p className="text-xs text-gray-500 text-center">
-          Al hacer clic en "Donar" aceptas nuestros términos y condiciones. Recibirás un certificado de donación por
-          email.
-        </p>
       </CardContent>
     </Card>
   )

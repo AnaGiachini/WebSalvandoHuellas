@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+
 const router = express.Router();
 
 const uploadController = require('../controllers/uploadController');
@@ -27,4 +28,5 @@ router.post(
   uploadController.uploadProductPhoto
 );
 
+module.exports = router;
 module.exports = router;

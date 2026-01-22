@@ -9,7 +9,7 @@ exports.uploadAnimalPhoto = async (req, res, next) => {
 
     const folder = process.env.CLOUDINARY_FOLDER_ANIMALES || 'salvando-huellas/animales';
 
-    const result = await cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       { folder },
       (error, uploadResult) => {
         if (error) {
@@ -24,7 +24,7 @@ exports.uploadAnimalPhoto = async (req, res, next) => {
     );
 
     // Escribimos el buffer en el stream
-    result.end(req.file.buffer);
+    stream.end(req.file.buffer);
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ exports.uploadProductPhoto = async (req, res, next) => {
 
     const folder = process.env.CLOUDINARY_FOLDER_PRODUCTOS || 'salvando-huellas/productos';
 
-    const result = await cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       { folder },
       (error, uploadResult) => {
         if (error) {
@@ -53,7 +53,7 @@ exports.uploadProductPhoto = async (req, res, next) => {
       }
     );
 
-    result.end(req.file.buffer);
+    stream.end(req.file.buffer);
   } catch (error) {
     next(error);
   }

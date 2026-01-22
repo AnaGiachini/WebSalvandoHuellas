@@ -32,7 +32,8 @@ export default function AdopcionIndex() {
   const [sexo, setSexo] = useState("");
   const [edad, setEdad] = useState("");
   const [tamano, setTamano] = useState("");
-  const [estadoAdopcion, setEstadoAdopcion] = useState("disponibles"); // Por defecto: solo animales disponibles
+  // Por defecto: solo animales disponibles (sin_hogar)
+  const [estadoAdopcion, setEstadoAdopcion] = useState("sin_hogar");
 
   useEffect(() => {
     const load = async () => {
@@ -42,7 +43,10 @@ export default function AdopcionIndex() {
         setAnimals(Array.isArray(data) ? data : data?.data || []);
       } catch (err) {
         setError("No pudimos cargar los animales");
-        toast({ title: "Error", description: err?.response?.data?.message || "Error al obtener animales" });
+        toast({
+          title: "Error",
+          description: err?.response?.data?.message || "Error al obtener animales",
+        });
       } finally {
         setLoading(false);
       }
@@ -57,16 +61,14 @@ export default function AdopcionIndex() {
       const bySexo = sexo ? a.sexo === sexo : true;
       const byEdad = edad ? a.edad === edad : true;
       const byTamano = tamano ? a.tamano === tamano : true;
-      
+
       // Filtro por estado
       let byEstado = true;
-      if (estadoAdopcion === "disponibles") {
-        // Solo animales disponibles para adoptar
-        byEstado = a.estadoAdopcion === "sin_hogar";
-      } else if (estadoAdopcion === "sin_hogar" || estadoAdopcion === "en_proceso" || estadoAdopcion === "adoptado") {
+      if (estadoAdopcion === "sin_hogar" || estadoAdopcion === "en_proceso" || estadoAdopcion === "adoptado") {
         byEstado = a.estadoAdopcion === estadoAdopcion;
       }
-      
+      // Si estadoAdopcion === "" → "Todos": no se filtra por estado
+
       return byEspecie && bySexo && byEdad && byTamano && byEstado;
     });
   }, [animals, especie, sexo, edad, tamano, estadoAdopcion]);
@@ -76,7 +78,8 @@ export default function AdopcionIndex() {
     setSexo("");
     setEdad("");
     setTamano("");
-    setEstadoAdopcion("disponibles"); // Restaurar filtro por defecto
+    // Restaurar filtro por defecto: solo disponibles (sin_hogar)
+    setEstadoAdopcion("sin_hogar");
   };
 
   return (
@@ -84,7 +87,8 @@ export default function AdopcionIndex() {
       <div className="flex flex-col items-center text-center mb-8">
         <h1 className="text-3xl font-bold text-primary mb-4">Animales en Adopción</h1>
         <p className="text-muted-foreground max-w-3xl">
-          Todos nuestros animales han sido rescatados, rehabilitados y están listos para encontrar un hogar permanente. Adoptar es un acto de amor que cambia vidas.
+          Todos nuestros animales han sido rescatados, rehabilitados y están listos para encontrar un hogar permanente.
+          Adoptar es un acto de amor que cambia vidas.
         </p>
       </div>
 
@@ -94,23 +98,11 @@ export default function AdopcionIndex() {
           <Filter className="h-5 w-5 text-primary mr-2" />
           <h2 className="text-lg font-medium">Filtrar animales</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">  
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
-            <label htmlFor="estado" className="text-sm font-medium">Estado</label>
-            <select
-              id="estado"
-              className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-              value={estadoAdopcion}
-              onChange={(e) => setEstadoAdopcion(e.target.value)}
-            >
-              <option value="disponibles">Disponibles</option>
-              <option value="en_proceso">En proceso</option>
-              <option value="adoptado">Adoptado</option>
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="especie" className="text-sm font-medium">Especie</label>
+            <label htmlFor="especie" className="text-sm font-medium">
+              Especie
+            </label>
             <select
               id="especie"
               className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -123,7 +115,9 @@ export default function AdopcionIndex() {
             </select>
           </div>
           <div>
-            <label htmlFor="sexo" className="text-sm font-medium">Sexo</label>
+            <label htmlFor="sexo" className="text-sm font-medium">
+              Sexo
+            </label>
             <select
               id="sexo"
               className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -136,7 +130,9 @@ export default function AdopcionIndex() {
             </select>
           </div>
           <div>
-            <label htmlFor="edad" className="text-sm font-medium">Edad</label>
+            <label htmlFor="edad" className="text-sm font-medium">
+              Edad
+            </label>
             <select
               id="edad"
               className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -151,7 +147,9 @@ export default function AdopcionIndex() {
             </select>
           </div>
           <div>
-            <label htmlFor="tamano" className="text-sm font-medium">Tamaño</label>
+            <label htmlFor="tamano" className="text-sm font-medium">
+              Tamaño
+            </label>
             <select
               id="tamano"
               className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -163,9 +161,27 @@ export default function AdopcionIndex() {
               <option value="mediano">Mediano</option>
               <option value="grande">Grande</option>
             </select>
-          </div>    
+          </div>
+          <div>
+            <label htmlFor="estado" className="text-sm font-medium">
+              Estado
+            </label>
+            <select
+              id="estado"
+              className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={estadoAdopcion}
+              onChange={(e) => setEstadoAdopcion(e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="sin_hogar">Disponibles</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="adoptado">Adoptado</option>
+            </select>
+          </div>
           <div className="flex items-end">
-            <Button variant="outline" className="w-full" onClick={resetFilters}>Limpiar filtros</Button>
+            <Button variant="outline" className="w-full" onClick={resetFilters}>
+              Limpiar filtros
+            </Button>
           </div>
         </div>
       </div>
@@ -176,12 +192,19 @@ export default function AdopcionIndex() {
       {!loading && !error && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filtered.length === 0 && (
-            <div className="col-span-full text-center text-muted-foreground">No hay animales que coincidan con los filtros.</div>
+            <div className="col-span-full text-center text-muted-foreground">
+              No hay animales que coincidan con los filtros.
+            </div>
           )}
           {filtered.map((animal) => (
             <Card key={animal.idAnimal} className="overflow-hidden">
               <div className="relative aspect-square">
-                <img src={animal.foto || "/placeholder.svg"} alt={animal.nombre} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                <img
+                  src={animal.foto || "/placeholder.svg"}
+                  alt={animal.nombre}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
                 <Badge className="absolute top-2 right-2 bg-primary">{animal.sexo}</Badge>
               </div>
               <CardContent className="p-4">
@@ -197,8 +220,11 @@ export default function AdopcionIndex() {
               </CardContent>
               <CardFooter className="p-4 pt-0">
                 <Link to={`/adopcion/${animal.idAnimal}`} className="w-full">
-                  <Button className="w-full bg-primary hover:bg-primary/90" disabled={animal.estadoAdopcion !== 'sin_hogar'}>
-                    {animal.estadoAdopcion === 'sin_hogar' ? 'Ver detalles' : 'No disponible'}
+                  <Button
+                    className="w-full bg-primary hover:bg-primary/90"
+                    disabled={animal.estadoAdopcion !== "sin_hogar"}
+                  >
+                    {animal.estadoAdopcion === "sin_hogar" ? "Ver detalles" : "No disponible"}
                   </Button>
                 </Link>
               </CardFooter>
@@ -212,25 +238,42 @@ export default function AdopcionIndex() {
         <h2 className="text-2xl font-bold text-primary mb-4">Proceso de Adopción</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex flex-col items-center text-center">
-            <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">1</div>
+            <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">
+              1
+            </div>
             <h3 className="text-lg font-medium mb-2">Selecciona un animal</h3>
-            <p className="text-sm text-muted-foreground">Explorá nuestros animales en adopción y conocé a tu próximo compañero.</p>
+            <p className="text-sm text-muted-foreground">
+              Explora nuestros animales en adopción y encontrá a tu próximo compañero.
+            </p>
           </div>
           <div className="flex flex-col items-center text-center">
-            <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">2</div>
+            <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">
+              2
+            </div>
             <h3 className="text-lg font-medium mb-2">Completa la solicitud</h3>
-            <p className="text-sm text-muted-foreground">Llena el formulario de adopción con tus datos y preferencias.</p>
+            <p className="text-sm text-muted-foreground">
+              Llena el formulario de adopción con tus datos y preferencias.
+            </p>
           </div>
           <div className="flex flex-col items-center text-center">
-            <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">3</div>
+            <div className="bg-primary text-primary-foreground rounded-full w-10 h-10 flex items-center justify-center mb-4">
+              3
+            </div>
             <h3 className="text-lg font-medium mb-2">Entrevista y visita</h3>
-            <p className="text-sm text-muted-foreground">Realizaremos una entrevista y posiblemente una visita a tu hogar para asegurar un buen ambiente.</p>
+            <p className="text-sm text-muted-foreground">
+              Realizaremos una entrevista y posiblemente una visita a tu hogar para asegurar un buen ambiente.
+            </p>
           </div>
         </div>
         <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground mb-4">Para más información sobre nuestro proceso de adopción, requisitos y responsabilidades, por favor contacta con nosotros.</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Para más información sobre nuestro proceso de adopción, requisitos y responsabilidades, por favor contacta
+            con nosotros.
+          </p>
           <Link to="/informacion?tab=adoption">
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">Más información sobre adopción</Button>
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+              Más información sobre adopción
+            </Button>
           </Link>
         </div>
       </div>

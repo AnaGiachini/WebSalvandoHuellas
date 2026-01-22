@@ -112,12 +112,9 @@ export default function CartPage() {
   if (loading) return <div className="container py-8">Cargando...</div>;
   if (error) return <div className="container py-8 text-destructive">{error}</div>;
 
-  // Calcular subtotal
+  // Calcular subtotal y total (sin cálculo de envío)
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  // Calcular envío (gratis si el subtotal es mayor a 5000)
-  const shipping = subtotal > 5000 ? 0 : (cartItems.length ? 500 : 0);
-  // Calcular total
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   return (
     <div className="container py-8 md:py-12">
@@ -220,12 +217,6 @@ export default function CartPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>${subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Envío</span>
-                    <span>
-                      {shipping === 0 ? "Gratis" : `$${shipping.toLocaleString()}`}
-                    </span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold">

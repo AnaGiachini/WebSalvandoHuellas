@@ -85,7 +85,6 @@ export default function MyAdoptions() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
                 <TableHead>Animal</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Estado</TableHead>
@@ -94,7 +93,6 @@ export default function MyAdoptions() {
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.idSolicitud}>
-                  <TableCell className="font-medium">#{r.idSolicitud}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="relative w-10 h-10 rounded-md overflow-hidden">
@@ -102,7 +100,6 @@ export default function MyAdoptions() {
                       </div>
                       <div>
                         <p className="font-medium">{r.animal?.nombre || ""}</p>
-                        <p className="text-sm text-muted-foreground">ID: {r.idAnimal}</p>
                       </div>
                     </div>
                   </TableCell>
