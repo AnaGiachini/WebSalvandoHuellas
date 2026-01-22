@@ -1,15 +1,16 @@
 const express = require('express');
 const multer = require('multer');
-const { protect, restrictTo } = require('../middlewares/authMiddleware');
-const uploadController = require('../controllers/uploadController');
-
-// Usamos almacenamiento en memoria porque luego subimos a Cloudinary
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 const router = express.Router();
 
-// Subida de foto de animal a Cloudinary
+const uploadController = require('../controllers/uploadController');
+const { protect, restrictTo } = require('../middlewares/authMiddleware');
+
+// Usamos multer en memoria, Cloudinary se encarga del almacenamiento
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Solo administradores pueden subir fotos de animales
 router.post(
   '/animal-photo',
   protect,
@@ -18,7 +19,7 @@ router.post(
   uploadController.uploadAnimalPhoto
 );
 
-// Subida de foto de producto a Cloudinary
+// Solo administradores pueden subir fotos de productos
 router.post(
   '/product-photo',
   protect,
@@ -27,4 +28,5 @@ router.post(
   uploadController.uploadProductPhoto
 );
 
+module.exports = router;
 module.exports = router;

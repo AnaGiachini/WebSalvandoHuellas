@@ -13,6 +13,7 @@ const articleRoutes = require("./articleRoutes");
 const paymentsRoutes = require("./paymentsRoutes");
 const donationRoutes = require("./donationRoutes");;
 const eventRoutes = require("./eventRoutes");
+const uploadRoutes = require("./uploadRoutes");
 
 
 router.use("/auth", authRoutes); // Rutas de autenticación
@@ -27,5 +28,6 @@ router.use("/articles", articleRoutes); // Rutas de artículos
 router.use("/payments", paymentsRoutes); // Rutas de pagos (mercadopago)
 router.use("/donations", donationRoutes); // Rutas de donaciones
 router.use("/events", eventRoutes); // Rutas de eventos (UC04)
+router.use("/uploads", uploadRoutes); // Rutas de subida de archivos (Cloudinary)
 
 module.exports = router;

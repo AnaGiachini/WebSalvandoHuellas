@@ -138,7 +138,6 @@ export default function InformationPage() {
               </CardContent>
             </Card>
           </div>
-
         </TabsContent>
 
         {/* Preguntas Frecuentes */}
@@ -148,7 +147,6 @@ export default function InformationPage() {
               <h2 className="text-2xl font-bold text-primary mb-6">Preguntas Frecuentes</h2>
 
               <div className="space-y-6">
-                {/* …contenidos de FAQ tal cual… */}
                 <div>
                   <h3 className="text-lg font-bold mb-2">¿Cómo puedo adoptar un animal?</h3>
                   <p className="text-muted-foreground">
@@ -190,7 +188,8 @@ export default function InformationPage() {
                 <div>
                   <h3 className="text-lg font-bold mb-2">¿Ofrecen servicios veterinarios al público?</h3>
                   <p className="text-muted-foreground">
-                    No. Somos una protectora a pulmón, sostenida por donaciones, y no contamos con fondos para brindar un servicio veterinario al público.
+                    No. Somos una protectora a pulmón, sostenida por donaciones, y no contamos con fondos para brindar
+                    un servicio veterinario al público.
                   </p>
                 </div>
               </div>
@@ -210,8 +209,7 @@ export default function InformationPage() {
                   </Button>
                 </Link>
               </div>
-
-              {/* Bloque de "Documentos útiles" ocultado por ahora para evitar enlaces a PDFs inexistentes */}
+              {/* Bloque de documentos útiles ocultado para evitar enlaces a PDFs inexistentes */}
             </div>
           </div>
         </TabsContent>
@@ -222,9 +220,8 @@ export default function InformationPage() {
             <div>
               <h2 className="text-2xl font-bold text-primary mb-6">Proceso de Adopción</h2>
 
-              {/* …pasos tal cual… */}
               <div className="space-y-8">
-                {/* 1 */} 
+                {/* 1 */}
                 <div className="flex items-start">
                   <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center mr-4 mt-1">
                     1
@@ -232,7 +229,8 @@ export default function InformationPage() {
                   <div>
                     <h3 className="text-lg font-bold mb-2">Selección del animal</h3>
                     <p className="text-muted-foreground">
-                      Explora nuestro catálogo de animales disponibles para adopción...
+                      Explora nuestro catálogo de animales disponibles para adopción y elige aquel con el que sientas
+                      una conexión especial.
                     </p>
                   </div>
                 </div>
@@ -244,23 +242,104 @@ export default function InformationPage() {
                   <div>
                     <h3 className="text-lg font-bold mb-2">Solicitud de adopción</h3>
                     <p className="text-muted-foreground">
-                      Completa el formulario de solicitud de adopción...
+                      Completa el formulario de adopción con tus datos y responde algunas preguntas sobre tu hogar,
+                      familia y experiencia con animales.
                     </p>
                   </div>
                 </div>
-                {/* 3,4,5,6 — igual que el original */}
-                {/* ...contenido restante idéntico... */}
+                {/* 3 */}
+                <div className="flex items-start">
+                  <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center mr-4 mt-1">
+                    3
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Entrevista</h3>
+                    <p className="text-muted-foreground">
+                      Nuestro equipo se pondrá en contacto contigo para una entrevista. Esto nos ayuda a conocer mejor
+                      tu situación y resolver cualquier duda que puedas tener.
+                    </p>
+                  </div>
+                </div>
+                {/* 4 */}
+                <div className="flex items-start">
+                  <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center mr-4 mt-1">
+                    4
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Visita al hogar (si aplica)</h3>
+                    <p className="text-muted-foreground">
+                      En algunos casos, realizamos una visita al hogar para asegurarnos de que el entorno sea adecuado
+                      para el animal.
+                    </p>
+                  </div>
+                </div>
+                {/* 5 */}
+                <div className="flex items-start">
+                  <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center mr-4 mt-1">
+                    5
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Firma del contrato</h3>
+                    <p className="text-muted-foreground">
+                      Si la solicitud es aprobada, firmarás un contrato de adopción donde se establecen los
+                      compromisos y responsabilidades.
+                    </p>
+                  </div>
+                </div>
+                {/* 6 */}
+                <div className="flex items-start">
+                  <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center mr-4 mt-1">
+                    6
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-2">Seguimiento</h3>
+                    <p className="text-muted-foreground">
+                      Después de la adopción, realizamos seguimientos para asegurarnos de que la adaptación sea buena,
+                      tanto para el animal como para la familia.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-8 p-6 bg-primary/5 rounded-lg">
                 <h3 className="text-lg font-bold mb-4">Requisitos para adoptar</h3>
                 <ul className="space-y-2">
-                  <li className="flex items-start"><span className="text-primary mr-2">•</span><span className="text-muted-foreground">Ser mayor de edad y presentar identificación válida.</span></li>
-                  <li className="flex items-start"><span className="text-primary mr-2">•</span><span className="text-muted-foreground">Tener un domicilio estable y adecuado para el animal.</span></li>
-                  <li className="flex items-start"><span className="text-primary mr-2">•</span><span className="text-muted-foreground">Contar con recursos económicos suficientes para mantener al animal.</span></li>
-                  <li className="flex items-start"><span className="text-primary mr-2">•</span><span className="text-muted-foreground">Disponer de tiempo para atender las necesidades del animal.</span></li>
-                  <li className="flex items-start"><span className="text-primary mr-2">•</span><span className="text-muted-foreground">Aceptar las condiciones del contrato de adopción.</span></li>
-                  <li className="flex items-start"><span className="text-primary mr-2">•</span><span className="text-muted-foreground">Compromiso de cuidado responsable y de no abandono.</span></li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-muted-foreground">
+                      Ser mayor de edad y presentar identificación válida.
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-muted-foreground">
+                      Tener un domicilio estable y adecuado para el animal.
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-muted-foreground">
+                      Contar con recursos económicos suficientes para mantener al animal.
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-muted-foreground">
+                      Disponer de tiempo para atender las necesidades del animal.
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-muted-foreground">
+                      Aceptar las condiciones del contrato de adopción.
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-muted-foreground">
+                      Compromiso de cuidado responsable y de no abandono.
+                    </span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -269,7 +348,8 @@ export default function InformationPage() {
               <div className="bg-primary/5 rounded-lg p-6 mt-0">
                 <h3 className="text-lg font-bold mb-4">¿Listo para adoptar?</h3>
                 <p className="text-muted-foreground mb-4">
-                  Si estás listo para dar el paso y adoptar un animal, explora nuestro catálogo...
+                  Si estás listo para dar el paso y adoptar un animal, explora nuestro catálogo de animales en
+                  adopción y completa la solicitud.
                 </p>
                 <Link to="/adopcion">
                   <Button className="w-full bg-primary hover:bg-primary/90">
@@ -386,7 +466,6 @@ export default function InformationPage() {
                     try {
                       setSendingContact(true);
                       const response = await contactService.sendMessage(payload);
-                      // Debug: ver respuesta real del backend en consola
                       console.log("[Contact] Mensaje enviado OK", response);
                       toast({
                         title: "Mensaje enviado",
@@ -394,7 +473,6 @@ export default function InformationPage() {
                       });
                       form.reset();
                     } catch (err) {
-                      // Debug: ver error real que está llegando al catch
                       console.error("[Contact] Error al enviar mensaje", err);
                       const msg = err?.response?.data?.message || "No se pudo enviar el mensaje.";
                       toast({

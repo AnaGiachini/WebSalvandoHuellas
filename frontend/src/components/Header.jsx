@@ -109,7 +109,7 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-[10px] leading-4 text-white text-center">
+                  <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full border border-primary bg-white text-[10px] leading-4 text-primary text-center">
                     {cartCount}
                   </span>
                 )}
@@ -140,8 +140,13 @@ export default function Header() {
               Información
             </Link>
             <Link to="/carrito">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full border border-primary bg-white text-[10px] leading-4 text-primary text-center">
+                    {cartCount}
+                  </span>
+                )}
               </Button>
             </Link>
 
