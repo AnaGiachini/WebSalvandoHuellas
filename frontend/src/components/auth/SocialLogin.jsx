@@ -15,9 +15,40 @@ export default function SocialLogin() {
   const go = (provider) => {
     setIsLoading(provider);
     try {
-      const target = provider === "Google"
+      // Intentar recuperar desde dónde viene el usuario para poder volver tras el login social
+      let from = null;
+      try {
+        const stored = localStorage.getItem("postLoginRedirect");
+        if (stored) {
+          from = stored;
+        }
+      } catch (_e) {}
+
+      if (!from) {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const rawNext = params.get("next");
+          if (rawNext) {
+            from = decodeURIComponent(rawNext);
+          }
+        } catch (_e) {}
+      }
+
+      if (!from) {
+        from = window.location.pathname + window.location.search + window.location.hash;
+      }
+
+      // Persistimos el destino para que SocialCallback pueda usarlo si el backend no reenvía `from`
+      try {
+        localStorage.setItem("postLoginRedirect", from);
+      } catch (_e) {}
+
+      const fromParam = encodeURIComponent(from);
+
+      const base = provider === "Google"
         ? `${BACK_URL}/api/v1/auth/google`
         : `${BACK_URL}/api/v1/auth/facebook`;
+      const target = `${base}?from=${fromParam}`;
       window.location.href = target;
     } catch (err) {
       setIsLoading(null);

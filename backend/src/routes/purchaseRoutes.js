@@ -34,14 +34,14 @@ const { validateRequest } = require('../middlewares/validateRequest');
 // Rutas protegidas
 // Crear una nueva compra
 router.post('/', protect, validateCreatePurchase, validateRequest, purchaseController.createPurchase);
+// Métricas de ventas (solo admin) → DEBE ir antes de :idCompra para evitar conflictos
+router.get('/metrics', protect, restrictTo('admin'), purchaseController.getSalesMetrics);
 // Obtener los detalles de una compra específica
 router.get('/:idCompra', protect, validateRequest, purchaseController.getPurchaseById);
 // Listar todas las compras del usuario actual
 router.get('/', protect, validateRequest, purchaseController.getUserPurchases);
 // Actualizar el estado de pago (solo admin)
 router.put('/:idCompra/status', protect, restrictTo('admin'), validateUpdateStatus, validateRequest, purchaseController.updatePurchaseStatus);
-// Métricas de ventas (solo admin)
-router.get('/metrics', protect, restrictTo('admin'), purchaseController.getSalesMetrics);
 
 module.exports = router;
 

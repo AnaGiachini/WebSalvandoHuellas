@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Reemplazo de useRouter
+import { useLocation, useNavigate } from "react-router-dom"; // Reemplazo de useRouter
 import { Button } from "../ui/button"; // Ajusta la ruta según tu estructura
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -11,6 +11,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { login } = useAuth();
 
@@ -64,7 +65,17 @@ export default function LoginForm() {
         title: "Inicio de sesión exitoso",
         description: "Has iniciado sesión correctamente.",
       });
-      navigate("/");
+      let storedFrom = null;
+      try {
+        storedFrom = localStorage.getItem("postLoginRedirect");
+        if (storedFrom) {
+          localStorage.removeItem("postLoginRedirect");
+        }
+      } catch (_e) {
+        storedFrom = null;
+      }
+      const from = location.state?.from || storedFrom || "/";
+      navigate(from, { replace: true });
     } catch (err) {
       const backendErrors = err?.response?.data?.errors;
       const message = err?.response?.data?.message;

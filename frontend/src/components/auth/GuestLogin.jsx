@@ -20,7 +20,14 @@ export default function GuestLogin() {
         description:
           "Has ingresado como invitado. Algunas funciones pueden estar limitadas.",
       });
-      navigate("/"); // Reemplazo de router.push("/")
+      let redirectTo = "/";
+      try {
+        const storedFrom = localStorage.getItem("postLoginRedirect");
+        if (storedFrom) {
+          redirectTo = storedFrom;
+        }
+      } catch (_e) {}
+      navigate(redirectTo); // Reemplazo de router.push("/")
     }, 1000);
   };
 

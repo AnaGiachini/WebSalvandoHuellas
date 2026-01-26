@@ -101,7 +101,11 @@ export default function ProductDetail() {
   const addToCart = async () => {
     try {
       if (!user) {
-        navigate('/login');
+        const from = window.location.pathname + window.location.search + window.location.hash;
+        try {
+          localStorage.setItem("postLoginRedirect", from);
+        } catch (_e) {}
+        navigate('/login', { state: { from } });
         return;
       }
       const idArticulo = product?.idArticulo || Number(id);

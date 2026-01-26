@@ -231,7 +231,13 @@ export default function CartPage() {
                   <Button
                     className="w-full bg-primary hover:bg-primary/90"
                     onClick={() => {
-                      if (!user) return navigate('/login');
+                      if (!user) {
+                        const from = window.location.pathname + window.location.search + window.location.hash;
+                        try {
+                          localStorage.setItem("postLoginRedirect", from);
+                        } catch (_e) {}
+                        return navigate('/login', { state: { from } });
+                      }
                       navigate("/checkout");
                     }}
                   >

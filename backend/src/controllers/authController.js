@@ -89,7 +89,10 @@ const socialCallback = async (req, res) => {
     }
 
     const token = jwtUtil.generate({ idUsuario: user.idUsuario, rol: user.rol });
-    const redirectUrl = `${FRONT_URL}/auth/callback?token=${encodeURIComponent(token)}`;
+    const from = req.query?.from;
+    const redirectUrl = from
+      ? `${FRONT_URL}/auth/callback?token=${encodeURIComponent(token)}&from=${encodeURIComponent(from)}`
+      : `${FRONT_URL}/auth/callback?token=${encodeURIComponent(token)}`;
     return res.redirect(302, redirectUrl);
   } catch (err) {
     const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';

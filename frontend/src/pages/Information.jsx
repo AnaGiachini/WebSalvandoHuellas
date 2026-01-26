@@ -229,8 +229,7 @@ export default function InformationPage() {
                   <div>
                     <h3 className="text-lg font-bold mb-2">Selección del animal</h3>
                     <p className="text-muted-foreground">
-                      Explora nuestro catálogo de animales disponibles para adopción y elige aquel con el que sientas
-                      una conexión especial.
+                      Explora los animales en adopción y elige aquel con el que sientas una conexión especial.
                     </p>
                   </div>
                 </div>
@@ -348,8 +347,7 @@ export default function InformationPage() {
               <div className="bg-primary/5 rounded-lg p-6 mt-0">
                 <h3 className="text-lg font-bold mb-4">¿Listo para adoptar?</h3>
                 <p className="text-muted-foreground mb-4">
-                  Si estás listo para dar el paso y adoptar un animal, explora nuestro catálogo de animales en
-                  adopción y completa la solicitud.
+                  Si estás listo para dar el paso y adoptar un animal, completa la solicitud.
                 </p>
                 <Link to="/adopcion">
                   <Button className="w-full bg-primary hover:bg-primary/90">
@@ -362,7 +360,7 @@ export default function InformationPage() {
               <div className="mt-6 bg-primary/5 rounded-lg p-6">
                 <h3 className="text-lg font-bold mb-4">¿No puedes adoptar?</h3>
                 <p className="text-muted-foreground mb-4">
-                  Considera otras formas de ayudar, como donaciones o voluntariado.
+                  Considera otras formas de ayudar, como donaciones.
                 </p>
                 <Link to="/donaciones">
                   <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
@@ -394,7 +392,7 @@ export default function InformationPage() {
                   <Mail className="h-5 w-5 text-primary mr-3 mt-1" />
                   <div>
                     <h3 className="font-bold">Correo electrónico</h3>
-                    <p className="text-muted-foreground">salvandohuellasjm@gmail.com</p>
+                    <p className="text-muted-foreground">salvandohuellasjesusmaria@gmail.com</p>
                   </div>
                 </div>
               </div>

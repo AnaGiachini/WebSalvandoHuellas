@@ -57,16 +57,23 @@ export default function AdminEvents() {
     const load = async () => {
       try {
         const list = await getEvents();
-        const mapped = (list || []).map((e) => ({
-          id: e.idEvento,
-          title: e.titulo,
-          date: e.fecha,
-          time: "",
-          location: e.lugar,
-          status: new Date(e.fecha) >= new Date() ? "Próximo" : "Finalizado",
-          image: e.foto,
-          description: e.descripcion,
-        }));
+        const mapped = (list || []).map((e) => {
+          const dateObj = e.fecha ? new Date(e.fecha) : null;
+          const time = dateObj
+            ? dateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+            : "";
+
+          return {
+            id: e.idEvento,
+            title: e.titulo,
+            date: e.fecha,
+            time,
+            location: e.lugar,
+            status: dateObj && dateObj >= new Date() ? "Próximo" : "Finalizado",
+            image: e.foto,
+            description: e.descripcion,
+          };
+        });
         setEvents(mapped);
       } catch (e) {
         setError("No se pudieron cargar los eventos");
@@ -223,15 +230,20 @@ export default function AdminEvents() {
                         payload.fecha = new Date(payload.fecha).toISOString();
                       }
                       const created = await createEvent(payload);
+                      const createdDateObj = created.fecha ? new Date(created.fecha) : null;
+                      const createdTime = createdDateObj
+                        ? createdDateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                        : "";
+
                       setEvents((prev) => [
                         ...prev,
                         {
                           id: created.idEvento,
                           title: created.titulo,
                           date: created.fecha,
-                          time: "",
+                          time: createdTime,
                           location: created.lugar,
-                          status: new Date(created.fecha) >= new Date() ? "Próximo" : "Finalizado",
+                          status: createdDateObj && createdDateObj >= new Date() ? "Próximo" : "Finalizado",
                           image: created.foto,
                           description: created.descripcion,
                         },
