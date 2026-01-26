@@ -32,7 +32,7 @@ const errorMiddleware = (err, _req, res, _next) => {
   console.error(err);
   res.status(err.status || 500).json({
     message: err.message || 'Internal server error',
-    details: err.errors || undefined
+    errors: err.errors || undefined // Cambiado de 'details' a 'errors' para consistencia con frontend
   });
 };
 

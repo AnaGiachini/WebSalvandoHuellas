@@ -34,6 +34,9 @@ require('dotenv').config();
 const associations = require('./src/configs/associations');
 associations(); // Cargar asociaciones de modelos
 
+// Passport (estrategias OAuth)
+const passport = require('./src/configs/passport');
+
 // Configuración de CORS
 const corsOptions = {
   origin: process.env.FRONT_URL || 'http://localhost:3000',
@@ -65,13 +68,15 @@ app.use(cors(corsOptions)); // Habilitar CORS con opciones personalizadas
 app.use(morgan('dev')); // Logging
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+// Inicializar Passport (stateless)
+app.use(passport.initialize());
 
 // Ruta de verificación
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running!' });
 });
 
-// Implementación de rutas (descomentá cuando implementes las rutas)
+// Implementación de rutas
 app.use('/api/v1', routes);
 
 // Middlewares para manejo de errores

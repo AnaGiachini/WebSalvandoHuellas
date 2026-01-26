@@ -20,27 +20,43 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const generate = payload => {
-  // Si el payload es un número (ID), convertirlo a objeto con id y rol por defecto
+  // Si el payload es un número (ID), usar idUsuario por consistencia
   if (typeof payload === 'number') {
-    payload = { id: payload, rol: 'user' };
+    payload = { idUsuario: payload, rol: 'user' };
   } else if (payload && typeof payload === 'object') {
-    // Asegurarse de que el payload tiene la estructura correcta
-    if (!payload.rol) {
-      payload.rol = 'user'; // Rol por defecto
+    // Asegurar rol por defecto
+    if (!payload.rol) payload.rol = 'user';
+    // Estandarizar clave de id
+    if (payload.id && !payload.idUsuario) {
+      payload.idUsuario = payload.id;
+      delete payload.id;
     }
   }
-  
+
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+};
+
+// Generar token con expiración custom (e.g., "15m")
+const generateWithExpiry = (payload, expiresIn) => {
+  if (typeof payload === 'number') {
+    payload = { idUsuario: payload, rol: 'user' };
+  } else if (payload && typeof payload === 'object') {
+    if (!payload.rol) payload.rol = 'user';
+    if (payload.id && !payload.idUsuario) {
+      payload.idUsuario = payload.id;
+      delete payload.id;
+    }
+  }
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 };
 
 const verify = token => {
   // Verifica el token y devuelve el payload decodificado
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  // Asegurar que el objeto decodificado tenga la estructura esperada
-  if (decoded && !decoded.rol) {
-    decoded.rol = 'user'; // Rol por defecto si no existe
-  }
+  // Normalizar estructura
+  if (decoded && !decoded.rol) decoded.rol = 'user';
+  if (decoded && decoded.id && !decoded.idUsuario) decoded.idUsuario = decoded.id;
   return decoded;
 };
 
-module.exports = { generate, verify };
+module.exports = { generate, generateWithExpiry, verify };

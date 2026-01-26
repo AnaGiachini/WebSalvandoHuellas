@@ -83,12 +83,12 @@ const getAdoptionApplicationByAnimalService = async (idAnimal) => {
 
 /**
  * Crea una nueva solicitud de adopción
- * @param {Object} data - Datos de la solicitud (idUsuario, idAnimal)
+ * @param {Object} data - Datos de la solicitud (idUsuario, idAnimal, nombre, apellido, email, telefono, direccion, experienciaPrevia, motivacion)
  * @returns {Promise<Object>} Solicitud creada
  * @throws {AppError} Si el animal no está disponible o ya tiene una solicitud en proceso
  */
 const createAdoptionApplicationService = async (data) => {
-  const { idAnimal } = data;
+  const { idAnimal, idUsuario, nombre, apellido, email, telefono, direccion, experienciaPrevia, motivacion } = data;
   
   // Verificar si el animal existe y está disponible
   const animal = await Animal.findByPk(idAnimal);
@@ -102,11 +102,23 @@ const createAdoptionApplicationService = async (data) => {
     );
   }
   
-  // Crear la solicitud y cambiar el estado del animal a "en_proceso"
-  console.log('TIPO DE SEQUELIZE:', typeof sequelize);
-
+  // Crear la solicitud con snapshot de datos del adoptante y cambiar el estado del animal a "en_proceso"
   const result = await sequelize.transaction(async (t) => {
-    const solicitud = await SolicitudAdopcion.create(data, { transaction: t });
+    // Normalizar datos antes de guardar
+    const payload = {
+      idUsuario,
+      idAnimal,
+      nombre: nombre?.trim(),
+      apellido: apellido?.trim(),
+      email: email?.trim().toLowerCase(),
+      telefono: telefono?.trim(),
+      direccion: direccion?.trim(),
+      experienciaPrevia: experienciaPrevia?.trim() || null,
+      motivacion: motivacion?.trim() || null,
+      estado: 'pendiente'
+    };
+    
+    const solicitud = await SolicitudAdopcion.create(payload, { transaction: t });
     
     await Animal.update(
       { estadoAdopcion: 'en_proceso' },
@@ -123,17 +135,23 @@ const createAdoptionApplicationService = async (data) => {
  * Actualiza el estado de una solicitud de adopción
  * @param {number} id - ID de la solicitud
  * @param {string} estado - Nuevo estado ('pendiente', 'aprobada', 'rechazada')
+ * @param {string} [observaciones] - Notas internas del administrador (opcional)
  * @returns {Promise<Object>} Solicitud actualizada
  * @throws {AppError} Si la solicitud no existe
  */
-const updateAdoptionApplicationService = async (id, estado) => {
+const updateAdoptionApplicationService = async (id, estado, observaciones) => {
   const solicitud = await getAdoptionApplicationByIdService(id);
   const idAnimal = solicitud.idAnimal;
   
-  // Actualizar la solicitud y el estado del animal según el resultado
+  // Actualizar la solicitud (estado + observaciones) y el estado del animal según el resultado
   const result = await sequelize.transaction(async (t) => {
-    // Actualizar el estado de la solicitud
-    await solicitud.update({ estado }, { transaction: t });
+    // Actualizar el estado de la solicitud y guardar observaciones si se proporcionan
+    await solicitud.update({
+      estado,
+      observaciones: typeof observaciones === 'string' && observaciones.trim().length
+        ? observaciones.trim()
+        : solicitud.observaciones
+    }, { transaction: t });
     
     // Actualizar el estado del animal según el resultado de la solicitud
     let estadoAnimal;

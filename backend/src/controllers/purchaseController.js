@@ -24,19 +24,32 @@ const {
   createPurchaseService,
   getPurchaseByIdService,
   getUserPurchasesService,
-  updatePurchaseStatusService
+  updatePurchaseStatusService,
+  getAllPurchasesService,
+  getSalesMetricsService,
 } = require('../services/purchaseService');
 
 /**
- * Crea una nueva compra a partir del carrito del usuario
+ * UC03: Crear compra desde carrito
+ * --------------------------------------------------------------------------
+ * Crea una nueva compra a partir del carrito actual del usuario.
+ *
+ *  • Request body esperado
+ *      { idCarrito, metodoPago? }
+ *
+ *  • Comportamiento
+ *      - Para compras directas (sin metodoPago) se descuenta stock y se vacía el carrito
+ *      - Para pagos diferidos (ej. Mercado Pago, transferencia) se deja la compra en
+ *        estado 'pendiente' y el stock se descuenta al confirmar el pago
+ *
  * @param {Object} req - Objeto de solicitud Express con usuario autenticado y body (idCarrito)
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const createPurchase = async (req, res, next) => {
   try {
-    const { idCarrito } = req.body;
-    const purchase = await createPurchaseService(idCarrito, req.user.idUsuario);
+    const { idCarrito, metodoPago } = req.body;
+    const purchase = await createPurchaseService(idCarrito, req.user.idUsuario, { metodoPago });
     res.status(201).json(purchase);
   } catch (err) { next(err); }
 };
@@ -64,13 +77,22 @@ const getPurchaseById = async (req, res, next) => {
 };
 
 /**
- * Obtiene todas las compras del usuario actual
+ * UC03: Historial de compras del usuario actual
+ * --------------------------------------------------------------------------
+ * Obtiene todas las compras del usuario actual. Si el usuario es admin y pasa
+ * el query param ?all=1, devuelve todas las compras registradas en el sistema.
+ *
  * @param {Object} req - Objeto de solicitud Express con usuario autenticado
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const getUserPurchases = async (req, res, next) => {
   try {
+    // Si el usuario es admin y pasa ?all=1, listar todas las compras
+    if (req.user?.rol === 'admin' && String(req.query.all) === '1') {
+      const all = await getAllPurchasesService();
+      return res.json(all);
+    }
     const purchases = await getUserPurchasesService(req.user.idUsuario);
     res.json(purchases);
   } catch (err) { next(err); }
@@ -103,5 +125,16 @@ module.exports = {
   createPurchase,
   getPurchaseById,
   getUserPurchases,
-  updatePurchaseStatus
+  updatePurchaseStatus,
+  /**
+   * Métricas de ventas (solo admin)
+   * Query: from, to (ISO o fecha parseable)
+   */
+  async getSalesMetrics(req, res, next) {
+    try {
+      const { from, to } = req.query;
+      const metrics = await getSalesMetricsService({ from, to });
+      res.json(metrics);
+    } catch (err) { next(err); }
+  }
 };

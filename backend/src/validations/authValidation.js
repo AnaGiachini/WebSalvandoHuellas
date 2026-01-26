@@ -9,28 +9,42 @@
  *
  *  • Conjuntos de reglas
  *      login → validaciones para inicio de sesión
- *
- *  • Notas
- *      – La normalización del email garantiza consistencia en la autenticación
- *      – Para el login solo se verifica la longitud mínima de la contraseña
  */
 
 const { body } = require('express-validator');
-const { validateRequest } = require('../middlewares/validateRequest');
 
 /**
  * Validación de email: no vacío, formato correcto y normalizado
  */
-const email = body('email').notEmpty().isEmail().normalizeEmail();
+const email = body('email')
+  .notEmpty().withMessage('El correo electrónico es requerido')
+  .isEmail().withMessage('Correo electrónico inválido')
+  .normalizeEmail();
 
 /**
  * Validación de contraseña: mínimo 8 caracteres
  */
-const password = body('contrasena').isLength({ min: 8 });
+const password = body('contrasena')
+  .notEmpty().withMessage('La contraseña es requerida')
+  .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres');
 
 /**
  * Reglas de validación para inicio de sesión
+ * (El middleware validateRequest se agrega en las rutas)
  */
-const loginValidation = [email, password, validateRequest];
+const loginValidation = [email, password];
 
-module.exports = { loginValidation };
+/**
+ * Validación para "olvidaste tu contraseña"
+ */
+const forgotPasswordValidation = [email];
+
+/**
+ * Validación para "resetear contraseña"
+ */
+const resetPasswordValidation = [
+  body('token').notEmpty().withMessage('Token requerido'),
+  body('nuevaContrasena').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
+];
+
+module.exports = { loginValidation, forgotPasswordValidation, resetPasswordValidation };

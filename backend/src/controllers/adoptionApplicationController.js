@@ -30,18 +30,28 @@ const {
 
 /**
  * Crea una nueva solicitud de adopción
- * @param {Object} req - Objeto de solicitud Express con datos en el body (solo idAnimal)
+ * @param {Object} req - Objeto de solicitud Express con datos completos del adoptante en el body
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const createAdoptionApplication = async (req, res, next) => {
   try {
-    const { idAnimal } = req.body;
+    const { idAnimal, nombre, apellido, email, telefono, direccion, experienciaPrevia, motivacion } = req.body;
 
     // ✅ el idUsuario viene del token (req.user)
     const idUsuario = req.user.idUsuario;
 
-    const solicitud = await createAdoptionApplicationService({ idUsuario, idAnimal });
+    const solicitud = await createAdoptionApplicationService({ 
+      idUsuario, 
+      idAnimal, 
+      nombre, 
+      apellido, 
+      email, 
+      telefono, 
+      direccion, 
+      experienciaPrevia, 
+      motivacion 
+    });
 
     res.status(201).json({
       status: 'success',
@@ -133,16 +143,16 @@ const getAdoptionApplicationByAnimal = async (req, res, next) => {
 
 /**
  * Actualiza el estado de una solicitud de adopción
- * @param {Object} req - Objeto de solicitud Express con parámetro id y estado en el body
+ * @param {Object} req - Objeto de solicitud Express con parámetro id y estado/observaciones en el body
  * @param {Object} res - Objeto de respuesta Express
  * @param {Function} next - Función para continuar al middleware de error
  */
 const updateAdoptionApplication = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { estado } = req.body;
+    const { estado, observaciones } = req.body;
 
-    const solicitudActualizada = await updateAdoptionApplicationService(id, estado);
+    const solicitudActualizada = await updateAdoptionApplicationService(id, estado, observaciones);
 
     res.json({
       status: 'success',

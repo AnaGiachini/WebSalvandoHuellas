@@ -31,3 +31,4 @@ exports.validateRequest = (req, _res, next) => {
     return next(new AppError(400, 'Validation errors', errors.array()));
   next();
 };
+

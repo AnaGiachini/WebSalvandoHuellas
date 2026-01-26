@@ -16,7 +16,8 @@ describe('API de Animales', () => {
   let animalId;
 
   const testAnimal = { 
-    nombre: 'Firulais', 
+    nombre: 'Firulais',
+    especie: 'perro',
     sexo: 'macho', 
     edad: 'adulto', 
     tamano: 'mediano', 
@@ -68,6 +69,7 @@ describe('API de Animales', () => {
   it('POST /animals - Crea un nuevo animal (requiere autenticación)', async () => {
     const newAnimal = {
       nombre: 'Pelusa',
+      especie: 'gato',
       sexo: 'hembra',
       edad: 'joven',
       tamano: 'pequeño',
@@ -109,6 +111,7 @@ describe('API de Animales', () => {
   it('DELETE /animals/:id - Elimina un animal (requiere autenticación)', async () => {
     const animalToDelete = await Animal.create({
       nombre: 'AnimalToDelete',
+      especie: 'perro',
       sexo: 'macho',
       edad: 'cachorro',
       tamano: 'pequeño',

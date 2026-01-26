@@ -3,11 +3,16 @@
  * --------------------------------------------------------------------------
  * Gestiona las rutas de la API relacionadas con usuarios.
  *
+ *  • Caso de uso principal
+ *      UC07: Gestión de usuarios (perfil del usuario logueado y panel admin).
+ *
  *  • Operaciones principales
- *      getAllUsers   → lista todos los usuarios registrados
- *      getUserById   → obtiene un usuario específico por ID
+ *      getAllUsers   → lista todos los usuarios registrados (solo admin)
+ *      getUserById   → obtiene un usuario específico por ID (solo admin)
  *      updateUser    → actualiza datos de un usuario existente
- *      deleteUser    → elimina un usuario del sistema
+ *      deleteUser    → elimina un usuario del sistema (solo admin)
+ *      getMe         → devuelve el perfil completo del usuario autenticado
+ *      adminCreateUser / changeUserRole → funciones específicas de panel admin
  *
  *  • Características
  *      - Implementa manejo de errores con try/catch
@@ -24,7 +29,10 @@ const {
   getAllUsersService,
   getUserByIdService,
   updateUserService,
-  deleteUserService
+  deleteUserService,
+  getMeFullService,
+  adminCreateUserService,
+  changeUserRoleService,
 } = require('../services/userService');
 
 /**
@@ -85,4 +93,43 @@ const deleteUser = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getAllUsers, getUserById, updateUser, deleteUser };
+/**
+ * Obtiene el perfil completo del usuario autenticado desde la BD
+ */
+const getMe = async (req, res, next) => {
+  try {
+    const me = await getMeFullService(req.user.idUsuario);
+    res.json(me);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAllUsers, getUserById, updateUser, deleteUser, getMe };
+/**
+ * Crea un usuario manualmente (solo admin, UC07)
+ * --------------------------------------------------------------------------
+ * Forma parte del panel de gestión de usuarios: permite al administrador
+ * registrar cuentas sin pasar por el formulario de registro público.
+ */
+const adminCreateUser = async (req, res, next) => {
+  try {
+    const created = await adminCreateUserService(req.body);
+    res.status(201).json(created);
+  } catch (err) { next(err); }
+};
+
+/**
+ * Cambia el rol de un usuario (solo admin, UC07)
+ * --------------------------------------------------------------------------
+ * Permite administrar permisos dentro del sistema, alternando entre los roles
+ * "user" y "admin" según las necesidades de la organización.
+ */
+const changeUserRole = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rol } = req.body;
+    const updated = await changeUserRoleService(id, rol);
+    res.json(updated);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAllUsers, getUserById, updateUser, deleteUser, getMe, adminCreateUser, changeUserRole };
