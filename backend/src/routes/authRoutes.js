@@ -63,6 +63,7 @@ router.get('/google/callback', (req, res, next) => {
 router.get('/facebook',
   passport.authenticate('facebook', { scope: ['email'], session: false })
 );
+
 router.get('/facebook/callback',
   passport.authenticate('facebook', { failureRedirect: `${FRONT_URL}/login?error=oauth`, session: false }),
   authController.socialCallback

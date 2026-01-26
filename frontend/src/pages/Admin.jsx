@@ -1,6 +1,5 @@
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { useEffect, useState } from "react";
 import {
   Users,
@@ -185,7 +184,7 @@ export default function AdminPage() {
 
       {/* Menú lateral y contenido */}
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
-        {/* Menú lateral */}
+        {/* Menú lateral (naranja) */}
         <div className="space-y-4">
           <div className="lg:hidden">
             <Button className="w-full bg-primary hover:bg-primary/90">Menú</Button>
@@ -226,40 +225,15 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Contenido principal */}
+        {/* Contenido principal: se muestra según la opción elegida en el menú lateral */}
         <div>
-          <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="grid grid-cols-7 mb-8">
-              <TabsTrigger value="users">Usuarios</TabsTrigger>
-              <TabsTrigger value="adoptions">Adopciones</TabsTrigger>
-              <TabsTrigger value="animals">Animales</TabsTrigger>
-              <TabsTrigger value="products">Productos</TabsTrigger>
-              <TabsTrigger value="orders">Pedidos</TabsTrigger>
-              <TabsTrigger value="donations">Donaciones</TabsTrigger>
-              <TabsTrigger value="events">Eventos</TabsTrigger>
-            </TabsList>
-            <TabsContent value="users">
-              <AdminUsers />
-            </TabsContent>
-            <TabsContent value="adoptions">
-              <AdminAdoptions />
-            </TabsContent>
-            <TabsContent value="animals">
-              <AdminAnimals />
-            </TabsContent>
-            <TabsContent value="products">
-              <AdminProducts />
-            </TabsContent>
-            <TabsContent value="orders">
-              <AdminOrders />
-            </TabsContent>
-            <TabsContent value="donations">
-              <AdminDonations />
-            </TabsContent>
-            <TabsContent value="events">
-              <AdminEvents />
-            </TabsContent>
-          </Tabs>
+          {tab === "users" && <AdminUsers />}
+          {tab === "adoptions" && <AdminAdoptions />}
+          {tab === "animals" && <AdminAnimals />}
+          {tab === "products" && <AdminProducts />}
+          {tab === "orders" && <AdminOrders />}
+          {tab === "donations" && <AdminDonations />}
+          {tab === "events" && <AdminEvents />}
         </div>
       </div>
     </div>

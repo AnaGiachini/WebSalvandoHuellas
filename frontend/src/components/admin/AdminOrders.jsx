@@ -21,36 +21,46 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdownMenu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Search, MoreHorizontal, Eye, Truck, Ban } from "lucide-react";
 import ordersService from "../../services/ordersService";
-import Loading from "../ui/Loading";
+//import Loading from "../ui/Loading";
 import ConfirmDialog from "../ui/ConfirmDialog";
 
 export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState("");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  //const [error, setError] = useState("");
   const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       try {
         const list = await ordersService.listAll();
         // Map a estructura de tabla
-        const mapped = (list || []).map((o) => ({
-          id: o.idCompra,
-          customer: o.idUsuario ? `Usuario #${o.idUsuario}` : 'N/A',
-          email: '',
-          date: o.fechaCompra,
-          total: o.total,
-          status: o.estadoPago,
-          items: Array.isArray(o.items) ? o.items.length : 0,
-          raw: o,
-        }));
+        const mapped = (list || []).map((o) => {
+          const fullName = o.usuario
+            ? `${o.usuario.nombre || ''} ${o.usuario.apellido || ''}`.trim()
+            : '';
+          const email = (o.usuario && o.usuario.email) ? o.usuario.email : (o.email || '');
+
+          return {
+            id: o.idCompra,
+            // Prioridad: nombre completo > email > fallback "Usuario #id"
+            customer: fullName || email || (o.idUsuario ? `Usuario #${o.idUsuario}` : 'N/A'),
+            email,
+            date: o.fechaCompra,
+            total: o.total,
+            status: o.estadoPago,
+            items: Array.isArray(o.items) ? o.items.length : 0,
+            raw: o,
+          };
+        });
         setOrders(mapped);
       } catch (e) {
-        setError('No se pudieron cargar los pedidos');
+        //setError('No se pudieron cargar los pedidos');
       } finally {
         setLoading(false);
       }
@@ -133,7 +143,7 @@ export default function AdminOrders() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => window.alert(`Compra #${order.id}`)}>
+                        <DropdownMenuItem onClick={() => setSelectedOrder(order)}>
                           <Eye className="h-4 w-4 mr-2" />
                           Ver detalles
                         </DropdownMenuItem>
@@ -198,6 +208,67 @@ export default function AdminOrders() {
         confirmText="Confirmar"
         cancelText="Cancelar"
       />
+      {selectedOrder && (
+        <Dialog open={!!selectedOrder} onOpenChange={(open) => { if (!open) setSelectedOrder(null); }}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Pedido #{selectedOrder.id}</DialogTitle>
+              <DialogDescription>
+                Detalle de la compra realizada por {selectedOrder.customer}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-2 text-sm">
+              <div>
+                <p className="font-medium">Cliente</p>
+                <p>{selectedOrder.customer}</p>
+                {selectedOrder.email && (
+                  <p className="text-muted-foreground">{selectedOrder.email}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Fecha</p>
+                  <p>{formatDate(selectedOrder.date)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Estado de pago</p>
+                  <Badge
+                    className={
+                      selectedOrder.status === "pagado"
+                        ? "bg-green-600"
+                        : selectedOrder.status === "pendiente"
+                        ? "bg-yellow-500"
+                        : "bg-red-600"
+                    }
+                  >
+                    {selectedOrder.status}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-lg font-semibold">${selectedOrder.total.toLocaleString()}</p>
+              </div>
+              {Array.isArray(selectedOrder.raw?.items) && selectedOrder.raw.items.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Productos</p>
+                  <ul className="list-disc pl-4 space-y-1">
+                    {selectedOrder.raw.items.map((it, idx) => (
+                      <li key={idx}>
+                        {it.nombreArticulo || it.nombre || `Producto #${it.idArticulo || ''}`} 
+                        {" "}
+                        <span className="text-xs text-muted-foreground">
+                          (x{it.cantidad || 1})
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

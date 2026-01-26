@@ -25,11 +25,16 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
   const { toast } = useToast();
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Cargar datos de perfil para prellenar y bloquear campos de contacto
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (!token) return;
+    if (!token) {
+      setIsAuthenticated(false);
+      return;
+    }
+    setIsAuthenticated(true);
     (async () => {
       try {
         const data = await userService.me();
@@ -60,7 +65,11 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
     const token = localStorage.getItem("authToken");
     if (!token) {
       toast({ title: "Necesitas iniciar sesión", description: "Inicia sesión para enviar una solicitud de adopción." });
-      navigate("/login");
+      const from = window.location.pathname + window.location.search + window.location.hash;
+      try {
+        localStorage.setItem("postLoginRedirect", from);
+      } catch (_e) {}
+      navigate("/login", { state: { from } });
       return;
     }
 
@@ -89,7 +98,13 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
     } catch (err) {
       const msg = err?.response?.data?.message || "No pudimos validar tu perfil. Inicia sesión nuevamente.";
       toast({ title: "Error de perfil", description: msg });
-      if (err?.response?.status === 401) navigate("/login");
+      if (err?.response?.status === 401) {
+        const from = window.location.pathname + window.location.search + window.location.hash;
+        try {
+          localStorage.setItem("postLoginRedirect", from);
+        } catch (_e) {}
+        navigate("/login", { state: { from } });
+      }
       return;
     }
 
@@ -132,6 +147,38 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
       setIsSubmitting(false);
     }
   };
+
+  // Si no hay sesión iniciada, mostrar aviso y botones en lugar del formulario
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-4 text-sm">
+        <p className="text-muted-foreground">
+          Para completar una solicitud de adopción necesitás iniciar sesión o crear una cuenta.
+          Usaremos los datos de tu perfil (teléfono y dirección) como datos de contacto.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => {
+              const from = window.location.pathname + window.location.search + window.location.hash;
+              try {
+                localStorage.setItem("postLoginRedirect", from);
+              } catch (_e) {}
+              navigate("/login", { state: { from } });
+            }}
+          >
+            Iniciar sesión
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/register")}
+          >
+            Crear cuenta
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

@@ -46,9 +46,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Guardar de sesión: si no hay usuario, ir a login
+        // Guardar de sesión: si no hay usuario, ir a login y recordar desde dónde vino
         if (!user) {
-          navigate('/login');
+          const from = window.location.pathname + window.location.search + window.location.hash;
+          try {
+            localStorage.setItem("postLoginRedirect", from);
+          } catch (_e) {}
+          navigate('/login', { state: { from } });
           return;
         }
         const data = await cartService.getMyCart();

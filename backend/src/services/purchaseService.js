@@ -25,6 +25,7 @@ const ItemCompra = require('../models/itemCompra');
 const Articulo = require('../models/articulo');
 const Carrito = require('../models/carrito');
 const ItemCarrito = require('../models/itemCarrito');
+const Usuario = require('../models/usuario');
 
 /**
  * Crea una nueva compra a partir del carrito de un usuario
@@ -165,6 +166,11 @@ const getUserPurchasesService = async (idUsuario) => {
 const getAllPurchasesService = async () => {
   const purchases = await Compra.findAll({
     include: [
+      {
+        model: Usuario,
+        as: 'usuario',
+        attributes: ['idUsuario', 'nombre', 'apellido', 'email']
+      },
       {
         model: ItemCompra,
         as: 'items',

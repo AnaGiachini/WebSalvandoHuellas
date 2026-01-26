@@ -361,11 +361,26 @@ export default function AdminAdoptions() {
             <div className="flex justify-end gap-2 pt-4">
               {selectedRequest.estado === "pendiente" && (
                 <>
-                  <Button variant="outline" className="text-red-600 border-red-600" onClick={() => onReject(selectedRequest)}>
+                  <Button
+                    variant="outline"
+                    className="text-red-600 border-red-600"
+                    onClick={() => {
+                      setDecisionRequest(selectedRequest)
+                      setDecisionMode("rechazada")
+                      setDecisionNotes("")
+                    }}
+                  >
                     <X className="h-4 w-4 mr-2" />
                     Rechazar
                   </Button>
-                  <Button className="bg-green-600 hover:bg-green-700" onClick={() => onApprove(selectedRequest)}>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => {
+                      setDecisionRequest(selectedRequest)
+                      setDecisionMode("aprobada")
+                      setDecisionNotes("")
+                    }}
+                  >
                     <Check className="h-4 w-4 mr-2" />
                     Aprobar
                   </Button>

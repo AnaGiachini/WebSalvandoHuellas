@@ -15,7 +15,7 @@
  */
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -41,6 +41,7 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   /**
    * Maneja el envío del formulario de registro (UC01)
@@ -110,7 +111,17 @@ export default function RegisterPage() {
       await register(payload);
 
       toast({ title: "Registro exitoso", description: "¡Bienvenida/o a Salvando Huellas!" });
-      navigate("/");
+      let storedFrom = null;
+      try {
+        storedFrom = localStorage.getItem("postLoginRedirect");
+        if (storedFrom) {
+          localStorage.removeItem("postLoginRedirect");
+        }
+      } catch (_e) {
+        storedFrom = null;
+      }
+      const from = location.state?.from || storedFrom || "/";
+      navigate(from, { replace: true });
     } catch (err) {
       const backendErrors = err?.response?.data?.errors;
       const message = err?.response?.data?.message;

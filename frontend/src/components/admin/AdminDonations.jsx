@@ -24,12 +24,14 @@ import {
 import { Search, MoreHorizontal, Eye, CheckCircle, XCircle, DollarSign } from "lucide-react";
 import donationService from "../../services/donationService";
 import ConfirmDialog from "../ui/ConfirmDialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 
 export default function AdminDonations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -196,18 +198,7 @@ export default function AdminDonations() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          const info = `
-Donación #${donation.id}
-Donante: ${donation.customer}
-Email: ${donation.email}
-Fecha: ${formatDate(donation.date)}
-Monto: $${Number(donation.amount).toLocaleString()}
-Método: ${donation.method}
-Estado: ${donation.status}
-                          `;
-                          window.alert(info.trim());
-                        }}>
+                        <DropdownMenuItem onClick={() => setSelectedDonation(donation)}>
                           <Eye className="h-4 w-4 mr-2" />
                           Ver detalles
                         </DropdownMenuItem>
@@ -282,6 +273,57 @@ Estado: ${donation.status}
         confirmText="Confirmar"
         cancelText="Cancelar"
       />
+      {selectedDonation && (
+        <Dialog open={!!selectedDonation} onOpenChange={(open) => { if (!open) setSelectedDonation(null); }}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Donación #{selectedDonation.id}</DialogTitle>
+              <DialogDescription>
+                Detalle de la donación realizada por {selectedDonation.customer}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-2 text-sm">
+              <div>
+                <p className="font-medium">Donante</p>
+                <p>{selectedDonation.customer}</p>
+                {selectedDonation.email && (
+                  <p className="text-muted-foreground">{selectedDonation.email}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Fecha</p>
+                  <p>{formatDate(selectedDonation.date)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Estado de pago</p>
+                  <Badge
+                    className={
+                      selectedDonation.status === "pagado"
+                        ? "bg-green-600"
+                        : selectedDonation.status === "pendiente"
+                        ? "bg-yellow-500"
+                        : "bg-red-600"
+                    }
+                  >
+                    {selectedDonation.status}
+                  </Badge>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Monto</p>
+                  <p className="text-lg font-semibold">${Number(selectedDonation.amount).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Método</p>
+                  <p className="capitalize">{selectedDonation.method}</p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

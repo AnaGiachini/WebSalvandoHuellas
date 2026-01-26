@@ -40,7 +40,20 @@ export default function SocialCallback() {
     }
 
     toast({ title: "Inicio de sesión exitoso", description: "Has iniciado sesión con tu cuenta social." });
-    navigate("/");
+
+    // Intentar volver a la pantalla desde la que se inició el flujo de login
+    let redirectTo = "/";
+    try {
+      const storedFrom = localStorage.getItem("postLoginRedirect");
+      if (storedFrom) {
+        redirectTo = storedFrom;
+        // Importante: no borramos inmediatamente la clave para evitar condiciones de carrera
+      }
+    } catch (_e) {
+      // ignore storage errors y caer al home
+    }
+
+    navigate(redirectTo, { replace: true });
   }, [location.search, navigate, toast]);
 
   return null;

@@ -7,15 +7,15 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 export default function DonacionesPage() {
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const navigate = useNavigate()
 
   // Precondición UC06: el usuario debe estar autenticado
   useEffect(() => {
-    if (!user) {
+    if (!isLoading && !user) {
       navigate('/login?next=/donaciones', { replace: true })
     }
-  }, [user, navigate])
+  }, [user, isLoading, navigate])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
