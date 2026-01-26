@@ -32,7 +32,6 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
-  Eye,
   Calendar,
 } from "lucide-react";
 import Loading from "../ui/Loading";
