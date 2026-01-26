@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Heart, ArrowLeft } from "lucide-react";
 import { Button } from "../../components/ui/button";
@@ -30,7 +30,7 @@ export default function AnimalDetalle() {
   const [error, setError] = useState(null);
   const formAnchorId = "adoption-form-anchor";
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     try {
       if (!id) return;
       setLoading(true);
@@ -42,9 +42,9 @@ export default function AnimalDetalle() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, toast]);
 
-  useEffect(() => { refetch(); }, [id]);
+  useEffect(() => { refetch(); }, [refetch]);
 
   if (loading) {
     return (
