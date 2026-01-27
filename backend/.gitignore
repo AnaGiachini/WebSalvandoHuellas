@@ -4,6 +4,9 @@ package-lock.json
 
 # Archivos de entorno
 .env
+.env.*
+.backend/.env
+.backend/.env.*
 .env.local
 .env.development
 .env.test
