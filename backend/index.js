@@ -59,41 +59,31 @@ const app = require("./app");
 const sequelize = require("./src/configs/db");
 require("dotenv").config();
 
-// Railway setea PORT automáticamente. Fallback seguro.
-const PORT = Number(process.env.PORT) || 4000;
-const isProd = process.env.NODE_ENV === "production";
+const PORT = Number(process.env.PORT) || 8080;
 
 async function startServer() {
   try {
-    // Verificar conexión DB
     await sequelize.authenticate();
     console.log("✅ Conexión a la base de datos OK.");
 
-    /**
-     * ⚠️ IMPORTANTE:
-     * En producción NO usar sync con alter:true porque:
-     * - puede colgarse
-     * - puede fallar con constraints/locks
-     * - te deja el server sin levantar (502 en Railway)
-     *
-     * En dev sí puede servir.
-     */
-    if (!isProd) {
+    // En producción NO sincronices (puede tardar/morir el deploy)
+    if (process.env.NODE_ENV !== "production") {
       await sequelize.sync({ alter: true, force: false });
-      console.log("✅ Modelos sincronizados (DEV).");
+      console.log("✅ Modelos sincronizados (dev).");
     } else {
       console.log("ℹ️ Producción: sequelize.sync desactivado (usar migraciones).");
     }
 
-    // Levantar servidor
-    app.listen(PORT, () => {
+    // 🔥 Importante: bind explícito a 0.0.0.0
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+      console.log(`✅ Health: http://0.0.0.0:${PORT}/api/health`);
     });
   } catch (error) {
     console.error("❌ Error al iniciar el servidor:", error);
-    // Importante para Railway: si falla, que reinicie el contenedor
-    process.exit(1);
+    process.exit(1); // si falla DB, que el deploy falle claro
   }
 }
 
 startServer();
+

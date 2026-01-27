@@ -91,6 +91,8 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 require("dotenv").config();
 
+
+
 // Importación de asociaciones
 const associations = require("./src/configs/associations");
 associations(); // Cargar asociaciones de modelos
@@ -110,6 +112,11 @@ const {
 // Inicialización de la aplicación
 const app = express();
 
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
+
 /**
  * =========================
  * CORS (Vercel + Local)
@@ -120,7 +127,7 @@ const app = express();
  * - Resuelve preflight (OPTIONS) para login y endpoints protegidos
  */
 const allowedOrigins = [
-  process.env.FRONT_URL,       // ej: https://web-salvando-huellas.vercel.app
+  process.env.FRONT_URL, // ej: https://web-salvando-huellas.vercel.app
   "http://localhost:3000",
 ].filter(Boolean);
 
@@ -128,6 +135,9 @@ const corsOptions = {
   origin: (origin, cb) => {
     // Permite requests sin origin (Postman, curl, server-to-server)
     if (!origin) return cb(null, true);
+
+    // Permitir cualquier subdominio de vercel.app (deploys y previews)
+    if (origin.endsWith(".vercel.app")) return cb(null, true);
 
     if (allowedOrigins.includes(origin)) return cb(null, true);
 
