@@ -24,22 +24,115 @@
  *      – La ruta /api/health proporciona un punto de verificación simple
  */
 
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const helmet = require('helmet');
-require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const morgan = require('morgan');
+// const helmet = require('helmet');
+// require('dotenv').config();
+
+// // Importación de asociaciones
+// const associations = require('./src/configs/associations');
+// associations(); // Cargar asociaciones de modelos
+
+// // Passport (estrategias OAuth)
+// const passport = require('./src/configs/passport');
+
+// // Configuración de CORS
+// const corsOptions = {
+//   origin: process.env.FRONT_URL || 'http://localhost:3000',
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//   credentials: true,
+//   allowedHeaders: [
+//     "Origin",
+//     "X-Requested-With",
+//     "Content-Type",
+//     "Accept",
+//     "Authorization",
+//     "user-device-id",
+//     "user-device-name",
+//   ],
+// };
+
+// // Importación de rutas (a implementar)
+// const routes = require('./src/routes');
+
+// // Importación de middlewares
+// const { notFoundMiddleware, errorMiddleware } = require('./src/middlewares/errorMiddleware');
+
+// // Inicialización de la aplicación
+// const app = express();
+
+// // Middlewares
+// app.use(helmet()); // Seguridad
+// app.use(cors(corsOptions)); // Habilitar CORS con opciones personalizadas
+// app.use(morgan('dev')); // Logging
+// app.use(express.json()); // Parse JSON bodies
+// app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+// // Inicializar Passport (stateless)
+// app.use(passport.initialize());
+
+// // Ruta de verificación
+// app.get('/api/health', (req, res) => {
+//   res.status(200).json({ status: 'ok', message: 'Server is running!' });
+// });
+
+// // Implementación de rutas
+// app.use('/api/v1', routes);
+
+// // Middlewares para manejo de errores
+// app.use(notFoundMiddleware); // Manejo de rutas no encontradas (404)
+// app.use(errorMiddleware);    // Manejo de errores generales
+
+// module.exports = app;
+
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const helmet = require("helmet");
+require("dotenv").config();
 
 // Importación de asociaciones
-const associations = require('./src/configs/associations');
+const associations = require("./src/configs/associations");
 associations(); // Cargar asociaciones de modelos
 
 // Passport (estrategias OAuth)
-const passport = require('./src/configs/passport');
+const passport = require("./src/configs/passport");
 
-// Configuración de CORS
+// Importación de rutas
+const routes = require("./src/routes");
+
+// Importación de middlewares
+const {
+  notFoundMiddleware,
+  errorMiddleware,
+} = require("./src/middlewares/errorMiddleware");
+
+// Inicialización de la aplicación
+const app = express();
+
+/**
+ * =========================
+ * CORS (Vercel + Local)
+ * =========================
+ * - Permite el dominio definido en FRONT_URL
+ * - Permite localhost para desarrollo
+ * - Permite requests sin Origin (Postman/curl)
+ * - Resuelve preflight (OPTIONS) para login y endpoints protegidos
+ */
+const allowedOrigins = [
+  process.env.FRONT_URL,       // ej: https://web-salvando-huellas.vercel.app
+  "http://localhost:3000",
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.FRONT_URL || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    // Permite requests sin origin (Postman, curl, server-to-server)
+    if (!origin) return cb(null, true);
+
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+
+    return cb(new Error(`CORS blocked for origin: ${origin}`));
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: [
@@ -53,34 +146,27 @@ const corsOptions = {
   ],
 };
 
-// Importación de rutas (a implementar)
-const routes = require('./src/routes');
+// Middlewares (orden importante)
+app.use(helmet());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ Preflight
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Importación de middlewares
-const { notFoundMiddleware, errorMiddleware } = require('./src/middlewares/errorMiddleware');
-
-// Inicialización de la aplicación
-const app = express();
-
-// Middlewares
-app.use(helmet()); // Seguridad
-app.use(cors(corsOptions)); // Habilitar CORS con opciones personalizadas
-app.use(morgan('dev')); // Logging
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 // Inicializar Passport (stateless)
 app.use(passport.initialize());
 
 // Ruta de verificación
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running!' });
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running!" });
 });
 
-// Implementación de rutas
-app.use('/api/v1', routes);
+// Rutas API
+app.use("/api/v1", routes);
 
 // Middlewares para manejo de errores
-app.use(notFoundMiddleware); // Manejo de rutas no encontradas (404)
-app.use(errorMiddleware);    // Manejo de errores generales
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
 
 module.exports = app;

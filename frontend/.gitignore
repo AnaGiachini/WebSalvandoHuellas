@@ -24,7 +24,11 @@ yarn-error.log*
 
 # Archivos de entorno
 .env
+.env.*
+.frontend/.env
+.frontend/.env.*
 .env.local
 .env.development
 .env.test
 .env.production
+
