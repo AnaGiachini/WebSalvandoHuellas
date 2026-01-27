@@ -126,23 +126,11 @@ app.get("/", (req, res) => {
  * - Permite requests sin Origin (Postman/curl)
  * - Resuelve preflight (OPTIONS) para login y endpoints protegidos
  */
-const allowedOrigins = [
-  process.env.FRONT_URL, // ej: https://web-salvando-huellas.vercel.app
-  "http://localhost:3000",
-].filter(Boolean);
-
 const corsOptions = {
-  origin: (origin, cb) => {
-    // Permite requests sin origin (Postman, curl, server-to-server)
-    if (!origin) return cb(null, true);
-
-    // Permitir cualquier subdominio de vercel.app (deploys y previews)
-    if (origin.endsWith(".vercel.app")) return cb(null, true);
-
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-
-    return cb(new Error(`CORS blocked for origin: ${origin}`));
-  },
+  // Permitir cualquier origen válido. Para tesis/demo es suficiente y evita
+  // problemas de configuración entre dominios (Vercel, Railway, etc.).
+  // Express-CORS devolverá dinámicamente el mismo origin del request.
+  origin: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: [
