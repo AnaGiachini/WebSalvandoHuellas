@@ -401,7 +401,7 @@ export default function InformationPage() {
                 <h3 className="text-lg font-bold mb-4">Síguenos en redes sociales</h3>
                 <div className="flex space-x-4">
                   <a
-                    href="https://facebook.com"
+                    href="https://www.facebook.com/profile.php?id=100079609239145"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors"
@@ -409,7 +409,7 @@ export default function InformationPage() {
                     <Facebook className="h-5 w-5 text-primary" />
                   </a>
                   <a
-                    href="https://instagram.com"
+                    href="https://www.instagram.com/salvandohuellas01/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors"
@@ -417,7 +417,7 @@ export default function InformationPage() {
                     <Instagram className="h-5 w-5 text-primary" />
                   </a>
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com/Salvand0Huellas"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors"

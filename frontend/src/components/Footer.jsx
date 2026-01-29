@@ -52,7 +52,7 @@ export default function Footer() {
             <h4 className="font-medium text-base mb-4">Síguenos</h4>
             <div className="flex space-x-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/profile.php?id=100079609239145"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
@@ -61,7 +61,7 @@ export default function Footer() {
                 <span className="sr-only">Facebook</span>
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/salvandohuellas01/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
@@ -70,7 +70,7 @@ export default function Footer() {
                 <span className="sr-only">Instagram</span>
               </a>
               <a
-                href="https://twitter.com"
+                href="https://x.com/Salvand0Huellas"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"

@@ -9,18 +9,15 @@
  *      - Manejo de errores durante el proceso de inicialización
  *
  *  • Configuraciones
- *      - Puerto: Obtenido de variables de entorno (PORT) o 3001 por defecto
- *      - Base de datos: Utiliza la conexión configurada en configs/db.js
+ *      - Puerto: Obtenido de variables de entorno (PORT) o 8080 por defecto
+ *      - Base de datos: Utiliza la conexión configurada en src/configs/db.js
  *
  *  • Notas
  *      – El servidor no se inicia si la conexión a la base de datos falla
- *      – Se proporcionan URLs informativas en la consola al iniciar
- *      – Todos los detalles de configuración de rutas están en app.js
+ *      – En producción no se ejecuta sequelize.sync (usar migraciones)
+ *      – El servidor se vincula a 0.0.0.0 para funcionar en Railway/containers
+ *      – Las rutas y middlewares de la API se definen en app.js
  */
-
-// const app = require('./app');
-// const sequelize = require('./src/configs/db');
-// require('dotenv').config();
 
 // // Puerto donde se ejecutará el servidor
 // const PORT = process.env.PORT || 3001;
