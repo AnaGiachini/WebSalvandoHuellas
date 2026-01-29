@@ -18,6 +18,9 @@ const Animal = require('../models/animal');
 const SolicitudAdopcion = require('../models/solicitudAdopcion');
 const Articulo = require('../models/articulo');
 const Evento = require('../models/evento');
+const Donacion = require('../models/donacion');
+const Compra = require('../models/compra');
+const ItemCompra = require('../models/itemCompra');
 
 (async () => {
   try {
@@ -68,42 +71,42 @@ const Evento = require('../models/evento');
 
     const animales = await Animal.bulkCreate(animalesData, { returning: true });
 
-    console.log('> Creando artículos (productos) para la tienda...');
+    console.log('> Creando artículos (ropa) para la feria americana...');
     const articulosData = [
       {
-        nombre: 'Alimento Premium para Perros',
-        descripcion: 'Alimento balanceado de alta calidad para perros adultos. Ingredientes naturales y sin conservantes.',
-        precio: 2500,
-        stock: 50,
-        foto: 'https://images.unsplash.com/photo-1610085833750-cf59bb6b2c83?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Campera de abrigo unisex',
+        descripcion: 'Campera de invierno en excelente estado, ideal para días fríos. Talle M/L.',
+        precio: 6000,
+        stock: 5,
+        foto: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Cama para Gatos',
-        descripcion: 'Cama suave y cómoda para gatos de todos los tamaños.',
-        precio: 1800,
-        stock: 30,
-        foto: 'https://images.unsplash.com/photo-1568640381651-9273950f7f21?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Sweater tejido',
+        descripcion: 'Sweater tejido a mano, muy abrigado y suave. Talle único.',
+        precio: 4500,
+        stock: 8,
+        foto: 'https://images.unsplash.com/photo-1523381294911-8d3cead13475?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Juguete Interactivo',
-        descripcion: 'Juguete interactivo para mantener a tu mascota entretenida.',
-        precio: 950,
-        stock: 100,
-        foto: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Jean azul clásico',
+        descripcion: 'Pantalón de jean azul, corte recto. Poco uso. Talle 40.',
+        precio: 5500,
+        stock: 6,
+        foto: 'https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Shampoo Hipoalergénico',
-        descripcion: 'Shampoo suave para pieles sensibles, apto para perros y gatos.',
-        precio: 1200,
-        stock: 40,
-        foto: 'https://images.unsplash.com/photo-1598550874175-2b1f30586b43?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Vestido floreado',
+        descripcion: 'Vestido informal con estampado floral, ideal para primavera/verano. Talle S/M.',
+        precio: 5200,
+        stock: 4,
+        foto: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1200&auto=format&fit=crop'
       },
       {
-        nombre: 'Correa Reforzada',
-        descripcion: 'Correa de nylon reforzado, ideal para paseos seguros.',
-        precio: 1400,
-        stock: 60,
-        foto: 'https://images.unsplash.com/photo-1612538494402-6fdb9fee9601?q=80&w=1200&auto=format&fit=crop'
+        nombre: 'Zapatillas urbanas',
+        descripcion: 'Zapatillas deportivas urbanas, cómodas y versátiles. Talle 38.',
+        precio: 7000,
+        stock: 3,
+        foto: 'https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=1200&auto=format&fit=crop'
       }
     ];
     const articulos = await Articulo.bulkCreate(articulosData, { returning: true });
@@ -194,6 +197,71 @@ const Evento = require('../models/evento');
     });
     await animalRechazada.update({ estadoAdopcion: 'sin_hogar' });
 
+    console.log('> Creando donaciones de ejemplo...');
+    const donaciones = await Donacion.bulkCreate(
+      [
+        {
+          idUsuario: user.idUsuario,
+          monto: 10000,
+          estadoPago: 'pagado',
+          metodoPago: 'mercado_pago',
+        },
+        {
+          idUsuario: user.idUsuario,
+          monto: 5000,
+          estadoPago: 'pagado',
+          metodoPago: 'transferencia',
+        },
+      ],
+      { returning: true }
+    );
+
+    console.log('> Creando compras de ejemplo...');
+    // Compra 1: 1 unidad del primer y segundo artículo, pagada por MP
+    const compra1Total = articulos[0].precio + articulos[1].precio;
+    const compra1 = await Compra.create({
+      idUsuario: user.idUsuario,
+      total: compra1Total,
+      estadoPago: 'pagado',
+      metodoPago: 'mercado_pago',
+    });
+
+    await ItemCompra.bulkCreate([
+      {
+        idCompra: compra1.idCompra,
+        idArticulo: articulos[0].idArticulo,
+        cantidad: 1,
+        precioUnitario: articulos[0].precio,
+        subtotal: articulos[0].precio,
+      },
+      {
+        idCompra: compra1.idCompra,
+        idArticulo: articulos[1].idArticulo,
+        cantidad: 1,
+        precioUnitario: articulos[1].precio,
+        subtotal: articulos[1].precio,
+      },
+    ]);
+
+    // Compra 2: 2 unidades del tercer artículo, pagada por transferencia
+    const compra2Total = articulos[2].precio * 2;
+    const compra2 = await Compra.create({
+      idUsuario: user.idUsuario,
+      total: compra2Total,
+      estadoPago: 'pagado',
+      metodoPago: 'transferencia',
+    });
+
+    await ItemCompra.bulkCreate([
+      {
+        idCompra: compra2.idCompra,
+        idArticulo: articulos[2].idArticulo,
+        cantidad: 2,
+        precioUnitario: articulos[2].precio,
+        subtotal: articulos[2].precio * 2,
+      },
+    ]);
+
     console.log('> Seed completado ✅');
     console.log('Resumen:');
     console.log(`  Usuarios: admin=${admin.email} (Admin1234), user=${user.email} (User1234)`);
@@ -204,6 +272,8 @@ const Evento = require('../models/evento');
     console.log(`   - Pendiente #${solPendiente.idSolicitud} → Animal ${animalPendiente.nombre} en_proceso`);
     console.log(`   - Aprobada  #${solAprobada.idSolicitud} → Animal ${animalAprobada.nombre} adoptado`);
     console.log(`   - Rechazada #${solRechazada.idSolicitud} → Animal ${animalRechazada.nombre} sin_hogar`);
+    console.log(`  Donaciones creadas: ${donaciones.length}`);
+    console.log(`  Compras creadas: 2 (IDs: ${compra1.idCompra}, ${compra2.idCompra})`);
 
     process.exit(0);
   } catch (err) {
