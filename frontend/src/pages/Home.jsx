@@ -46,7 +46,7 @@ export default function Home() {
             </div>
             <div className="mx-auto w-full max-w-[260px] sm:max-w-[300px] lg:max-w-[340px] lg:order-last rounded-full shadow-md bg-white flex items-center justify-center">
               <img
-                src="/images/logo.jpg"
+                src="/images/Logo.jpg"
                 alt="Logo Salvando Huellas"
                 className="w-[75%] h-[75%] object-contain rounded-full"
               />
