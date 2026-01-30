@@ -33,8 +33,19 @@ export default function UpcomingEvents() {
           })
           .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
+        // Mapeamos para que la imagen use el campo `foto` que viene del backend
+        const mapped = upcoming.slice(0, 3).map((e) => ({
+          idEvento: e.idEvento,
+          titulo: e.titulo,
+          fecha: e.fecha,
+          hora: e.hora || "",
+          lugar: e.lugar,
+          imagen: e.foto,
+          descripcion: e.descripcion,
+        }));
+
         // Mostramos máximo 3 en Home
-        setEvents(upcoming.slice(0, 3));
+        setEvents(mapped);
         setError("");
       } catch (e) {
         console.error("Error cargando eventos", e);
