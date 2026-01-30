@@ -16,7 +16,6 @@ import {
   Facebook,
   Instagram,
   Twitter,
-  Youtube,
 } from "lucide-react";
 
 export default function InformationPage() {
@@ -423,14 +422,6 @@ export default function InformationPage() {
                     className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors"
                   >
                     <Twitter className="h-5 w-5 text-primary" />
-                  </a>
-                  <a
-                    href="https://youtube.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors"
-                  >
-                    <Youtube className="h-5 w-5 text-primary" />
                   </a>
                 </div>
               </div>
