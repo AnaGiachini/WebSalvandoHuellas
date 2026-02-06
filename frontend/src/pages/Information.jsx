@@ -72,21 +72,13 @@ export default function InformationPage() {
             <div>
               <h2 className="text-2xl font-bold text-primary mb-4">Nuestra Historia</h2>
               <p className="text-muted-foreground mb-4">
-                Salvando Huellas nació en 2015 como una iniciativa de un grupo de amantes de los animales en Jesús
-                María, Córdoba. Lo que comenzó como un pequeño refugio para perros y gatos abandonados, ha crecido hasta
-                convertirse en una organización reconocida en la región por su labor en el rescate, rehabilitación y
-                adopción de animales.
+                Salvando Huellas nació hace más de 20 años en Jesús María, Córdoba, como la iniciativa de un grupo de voluntarios que trabajaba de manera independiente por los derechos de los animales. Con el tiempo, decidimos unir fuerzas para organizar mejor la ayuda y poder llegar a más casos.
               </p>
               <p className="text-muted-foreground mb-4">
-                A lo largo de estos años, hemos rescatado a más de 1,000 animales, proporcionándoles atención médica,
-                alimentación y un hogar temporal mientras encuentran una familia permanente. Nuestro equipo está formado
-                por voluntarios apasionados que dedican su tiempo y esfuerzo a mejorar la vida de estos seres
-                indefensos.
+               A lo largo de estos años, hemos asistido a muchísimos animales, brindándoles atención veterinaria, alimentación, hogares de tránsito mientras esperan una familia definitiva, adopción, castraciones y todo el acompañamiento que esté a nuestro alcance. Detrás de cada rescate hay un equipo que dedica tiempo, esfuerzo y compromiso para mejorar la vida de estos seres indefensos.
               </p>
               <p className="text-muted-foreground">
-                Además del rescate y adopción, también nos dedicamos a la educación sobre tenencia responsable de
-                mascotas, realizamos campañas de esterilización y vacunación, y trabajamos para concienciar sobre el
-                abandono y maltrato animal.
+             Además de la asistencia directa, trabajamos en la concientización de la comunidad sobre la tenencia responsable de animales de compañía y sobre los derechos, el respeto y el cuidado de todos los animales, reconociéndolos como lo que son: seres sintientes.
               </p>
             </div>
             <div className="relative aspect-video rounded-lg overflow-hidden">
