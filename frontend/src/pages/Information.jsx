@@ -375,7 +375,14 @@ export default function InformationPage() {
                   <Phone className="h-5 w-5 text-primary mr-3 mt-1" />
                   <div>
                     <h3 className="font-bold">Teléfono</h3>
-                    <p className="text-muted-foreground">+54 3525 418986</p>
+                    <a
+                      href="https://wa.me/543525418986"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      +54 3525 418986 (WhatsApp)
+                    </a>
                   </div>
                 </div>
 
@@ -383,7 +390,12 @@ export default function InformationPage() {
                   <Mail className="h-5 w-5 text-primary mr-3 mt-1" />
                   <div>
                     <h3 className="font-bold">Correo electrónico</h3>
-                    <p className="text-muted-foreground">salvandohuellasjesusmaria@gmail.com</p>
+                    <a
+                      href="mailto:salvandohuellasjesusmaria@gmail.com"
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      salvandohuellasjesusmaria@gmail.com
+                    </a>
                   </div>
                 </div>
               </div>
