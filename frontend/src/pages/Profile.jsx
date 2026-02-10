@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import { useAuth } from "../components/auth/AuthProvider";
@@ -17,6 +18,7 @@ function initials(name, apellido) {
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [me, setMe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,6 +65,14 @@ export default function Profile() {
       setMe(data);
       setDireccion(data?.direccion || "");
       setTelefono(data?.telefono || "");
+      // Si venía de completar un flujo (por ejemplo, adopción), redirigir de vuelta
+      try {
+        const postProfileRedirect = localStorage.getItem("postProfileRedirect");
+        if (postProfileRedirect) {
+          localStorage.removeItem("postProfileRedirect");
+          navigate(postProfileRedirect);
+        }
+      } catch (_e) {}
     } catch (err) {
       const msg = err?.response?.data?.message || "No pudimos guardar tus cambios";
       toast({ title: "Error", description: msg });
