@@ -168,7 +168,7 @@ export default function EventDetail() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Contáctanos para más información sobre este evento.
                   </p>
-                  <Link to="/contacto">
+                  <Link to="/informacion?tab=contact">
                     <Button className="w-full bg-primary hover:bg-primary/90">
                       Contactar
                     </Button>
