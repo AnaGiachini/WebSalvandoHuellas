@@ -43,8 +43,24 @@ export default function Footer() {
             <h4 className="font-medium text-base mb-4">Contacto</h4>
             <ul className="space-y-2 text-sm">
               <li className="text-muted-foreground">Jesús María, Córdoba</li>
-              <li className="text-muted-foreground">salvandohuellasjesusmaria@gmail.com</li>
-              <li className="text-muted-foreground">+54 3525 418986</li>
+              <li>
+                <a
+                  href="mailto:salvandohuellasjesusmaria@gmail.com"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  salvandohuellasjesusmaria@gmail.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/543525418986"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  WhatsApp: +54 3525 418986
+                </a>
+              </li>
             </ul>
           </div>
 

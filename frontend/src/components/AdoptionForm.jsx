@@ -92,6 +92,10 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
           title: "Completa tu perfil",
           description: "Necesitamos tu teléfono y dirección antes de enviar la solicitud.",
         });
+        const from = window.location.pathname + window.location.search + window.location.hash;
+        try {
+          localStorage.setItem("postProfileRedirect", from);
+        } catch (_e) {}
         navigate("/perfil");
         return;
       }
@@ -108,19 +112,30 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
       return;
     }
 
+    // Validar que las preguntas abiertas estén respondidas
+    const formData = new FormData(e.currentTarget);
+    const experiencia = formData.get('experience')?.toString().trim();
+    const motivacion = formData.get('reason')?.toString().trim();
+    if (!experiencia || !motivacion) {
+      toast({
+        title: "Faltan respuestas",
+        description: "Por favor contanos tu experiencia con mascotas y por qué querés adoptar antes de enviar la solicitud.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Capturar todos los datos del formulario
-      const formData = new FormData(e.currentTarget);
       const payload = {
         idAnimal: animalId,
-        nombre: formData.get('firstName')?.trim() || me?.nombre || '',
-        apellido: formData.get('lastName')?.trim() || me?.apellido || '',
-        email: formData.get('email')?.trim() || me?.email || '',
+        nombre: formData.get('firstName')?.toString().trim() || me?.nombre || '',
+        apellido: formData.get('lastName')?.toString().trim() || me?.apellido || '',
+        email: formData.get('email')?.toString().trim() || me?.email || '',
         telefono: me?.telefono?.toString().trim() || '',
         direccion: me?.direccion?.toString().trim() || '',
-        experienciaPrevia: formData.get('experience')?.trim() || '',
-        motivacion: formData.get('reason')?.trim() || ''
+        experienciaPrevia: experiencia,
+        motivacion: motivacion,
       };
       
       await adoptionApplicationsService.create(payload);
@@ -171,7 +186,13 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate("/register")}
+            onClick={() => {
+              const from = window.location.pathname + window.location.search + window.location.hash;
+              try {
+                localStorage.setItem("postLoginRedirect", from);
+              } catch (_e) {}
+              navigate("/register", { state: { from } });
+            }}
           >
             Crear cuenta
           </Button>
@@ -182,6 +203,33 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Aviso si faltan datos de contacto en el perfil */}
+      {(!me?.telefono || !me?.direccion) && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-1">
+          <p className="font-semibold text-[0.8rem] uppercase tracking-wide">Completa tus datos de contacto</p>
+          <p>
+            Antes de enviar la solicitud, necesitamos que completes tu <span className="font-semibold">teléfono</span> y
+            <span className="font-semibold"> dirección</span> en tu perfil.
+          </p>
+          <div className="pt-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="border-amber-400 text-amber-900 hover:bg-amber-100"
+              onClick={() => {
+                const from = window.location.pathname + window.location.search + window.location.hash;
+                try {
+                  localStorage.setItem("postProfileRedirect", from);
+                } catch (_e) {}
+                navigate("/perfil");
+              }}
+            >
+              Completar mi perfil
+            </Button>
+          </div>
+        </div>
+      )}
       <div className="rounded-md bg-white/70 border p-3 text-xs text-muted-foreground space-y-1">
         <p className="font-semibold text-[0.8rem] uppercase tracking-wide text-primary">
           Requisitos para adoptar
@@ -233,17 +281,49 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
       <div className="space-y-2">
         <Label htmlFor="phone">Teléfono (desde tu perfil)</Label>
         <Input id="phone" type="tel" value={me?.telefono || ""} readOnly disabled={disabled || isSubmitting} />
-        <div className="text-xs text-muted-foreground">Para cambiarlo, edita tu <button type="button" className="text-primary underline" onClick={() => navigate('/perfil')}>perfil</button>.</div>
+        <div className="text-xs text-muted-foreground">
+          Para cambiarlo, edita tu
+          {" "}
+          <button
+            type="button"
+            className="text-primary underline"
+            onClick={() => {
+              const from = window.location.pathname + window.location.search + window.location.hash;
+              try {
+                localStorage.setItem("postProfileRedirect", from);
+              } catch (_e) {}
+              navigate('/perfil');
+            }}
+          >
+            perfil
+          </button>.
+        </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="address">Dirección (desde tu perfil)</Label>
         <Input id="address" value={me?.direccion || ""} readOnly disabled={disabled || isSubmitting} />
-        <div className="text-xs text-muted-foreground">Para cambiarla, edita tu <button type="button" className="text-primary underline" onClick={() => navigate('/perfil')}>perfil</button>.</div>
+        <div className="text-xs text-muted-foreground">
+          Para cambiarla, edita tu
+          {" "}
+          <button
+            type="button"
+            className="text-primary underline"
+            onClick={() => {
+              const from = window.location.pathname + window.location.search + window.location.hash;
+              try {
+                localStorage.setItem("postProfileRedirect", from);
+              } catch (_e) {}
+              navigate('/perfil');
+            }}
+          >
+            perfil
+          </button>.
+        </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="experience">¿Has tenido mascotas antes? Cuéntanos tu experiencia</Label>
+        <Label htmlFor="experience">¿Has tenido mascotas antes? Cuéntanos tu experiencia *</Label>
         <Textarea 
           id="experience" 
           name="experience"
@@ -253,7 +333,7 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="reason">¿Por qué quieres adoptar a {animalName}?</Label>
+        <Label htmlFor="reason">¿Por qué quieres adoptar a {animalName}? *</Label>
         <Textarea 
           id="reason" 
           name="reason"
@@ -276,7 +356,11 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
         </div>
       </div>
 
-      <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={disabled || isSubmitting}>
+      <Button
+        type="submit"
+        className="w-full bg-primary hover:bg-primary/90"
+        disabled={disabled || isSubmitting || !me?.telefono || !me?.direccion}
+      >
         {isSubmitting ? "Enviando..." : "Enviar solicitud"}
       </Button>
     </form>
