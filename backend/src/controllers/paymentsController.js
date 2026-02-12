@@ -72,6 +72,7 @@ const createMpPreference = async (req, res, next) => {
 
     const BACK_URL = process.env.BACK_URL || 'http://localhost:4000';
     const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+    const isProd = process.env.NODE_ENV === 'production';
 
     const prefBody = {
       items,
@@ -81,9 +82,14 @@ const createMpPreference = async (req, res, next) => {
         pending: `${FRONT_URL}/gracias`,
         failure: `${FRONT_URL}/gracias`,
       },
-      auto_return: 'approved',
       notification_url: `${BACK_URL}/api/v1/payments/mp/webhook`,
     };
+
+    // En producción, habilitamos auto_return para que MP redirija automáticamente al frontend.
+    // En local, lo omitimos para evitar el error "auto_return invalid" sobre URLs no públicas.
+    if (isProd) {
+      prefBody.auto_return = 'approved';
+    }
 
     const prefRes = await mp.Preference.create({ body: prefBody });
     const init_point = prefRes?.init_point || prefRes?.sandbox_init_point;
