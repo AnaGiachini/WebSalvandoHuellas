@@ -35,7 +35,12 @@ export default function SocialLogin() {
       }
 
       if (!from) {
-        from = window.location.pathname + window.location.search + window.location.hash;
+        const current = window.location.pathname + window.location.search + window.location.hash;
+        from = (current === "/login" || current === "/register") ? "/" : current;
+      }
+
+      if (from === "/login" || from === "/register") {
+        from = "/";
       }
 
       // Persistimos el destino para que SocialCallback pueda usarlo si el backend no reenvía `from`
