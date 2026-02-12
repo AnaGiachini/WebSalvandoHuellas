@@ -27,6 +27,11 @@ export default function GuestLogin() {
           redirectTo = storedFrom;
         }
       } catch (_e) {}
+
+      if (redirectTo === "/login" || redirectTo === "/register") {
+        redirectTo = "/";
+      }
+
       navigate(redirectTo); // Reemplazo de router.push("/")
     }, 1000);
   };

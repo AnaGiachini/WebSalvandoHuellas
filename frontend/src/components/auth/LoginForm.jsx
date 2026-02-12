@@ -74,7 +74,11 @@ export default function LoginForm() {
       } catch (_e) {
         storedFrom = null;
       }
-      const from = location.state?.from || storedFrom || "/";
+
+      let from = location.state?.from || storedFrom || "/";
+      if (from === "/login" || from === "/register") {
+        from = "/";
+      }
       navigate(from, { replace: true });
     } catch (err) {
       const backendErrors = err?.response?.data?.errors;
