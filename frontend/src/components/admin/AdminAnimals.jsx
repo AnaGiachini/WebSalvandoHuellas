@@ -58,6 +58,7 @@ export default function AdminAnimals() {
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
+  const [selectedAnimal, setSelectedAnimal] = useState(null);
 
   const loadAnimals = useCallback(async () => {
     try {
@@ -239,11 +240,9 @@ export default function AdminAnimals() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <a href={`/adopcion/${animal.idAnimal}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver detalles
-                          </a>
+                        <DropdownMenuItem onClick={() => setSelectedAnimal(animal)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver detalles
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openEdit(animal)}>
                           <Edit className="h-4 w-4 mr-2" />
@@ -269,6 +268,7 @@ export default function AdminAnimals() {
         </Table>
       </div>
 
+      {/* Dialog de creación/edición de animal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -357,6 +357,41 @@ export default function AdminAnimals() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de detalles del animal (solo lectura) */}
+      {selectedAnimal && (
+        <Dialog open={!!selectedAnimal} onOpenChange={(open) => { if (!open) setSelectedAnimal(null); }}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                Detalles de {selectedAnimal.nombre}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 mt-2">
+              <div className="w-full h-40 md:h-56 rounded-md overflow-hidden bg-muted">
+                <img
+                  src={selectedAnimal.foto || "/placeholder.svg"}
+                  alt={selectedAnimal.nombre}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-2 text-sm">
+                <p><span className="font-semibold">Nombre:</span> {selectedAnimal.nombre}</p>
+                <p><span className="font-semibold">Especie:</span> {selectedAnimal.especie}</p>
+                <p><span className="font-semibold">Sexo:</span> {selectedAnimal.sexo}</p>
+                <p><span className="font-semibold">Edad:</span> {selectedAnimal.edad}</p>
+                <p><span className="font-semibold">Tamaño:</span> {selectedAnimal.tamano}</p>
+                <p><span className="font-semibold">Estado de adopción:</span> {selectedAnimal.estadoAdopcion}</p>
+                {selectedAnimal.historia && (
+                  <p className="mt-2">
+                    <span className="font-semibold">Historia:</span> {selectedAnimal.historia}
+                  </p>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       <ConfirmDialog
         open={confirm.open}
         onOpenChange={(v) => setConfirm((c) => ({ ...c, open: v }))}

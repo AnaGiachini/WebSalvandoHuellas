@@ -26,6 +26,9 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [experience, setExperience] = useState("");
+  const [reason, setReason] = useState("");
+  const [termsChecked, setTermsChecked] = useState(false);
 
   // Cargar datos de perfil para prellenar y bloquear campos de contacto
   useEffect(() => {
@@ -74,7 +77,6 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
     }
 
     // Requiere confirmación de datos correctos
-    const termsChecked = e.currentTarget?.querySelector('#terms')?.checked;
     if (!termsChecked) {
       toast({
         title: "Confirma tus datos",
@@ -200,6 +202,10 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
       </div>
     );
   }
+
+  const hasContactInfo = !!(me?.telefono && me?.direccion);
+  const hasRequiredAnswers = experience.trim().length > 0 && reason.trim().length > 0;
+  const canSubmit = isAuthenticated && hasContactInfo && hasRequiredAnswers && termsChecked && !isSubmitting && !disabled;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -328,7 +334,9 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
           id="experience" 
           name="experience"
           placeholder="Ej: He tenido perros toda mi vida, actualmente tengo un gato..."
-          disabled={disabled || isSubmitting} 
+          disabled={disabled || isSubmitting}
+          value={experience}
+          onChange={(e) => setExperience(e.target.value)}
         />
       </div>
 
@@ -338,13 +346,20 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
           id="reason" 
           name="reason"
           placeholder={`Ej: Me encanta la personalidad de ${animalName}, tengo un hogar preparado...`}
-          disabled={disabled || isSubmitting} 
+          disabled={disabled || isSubmitting}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
         />
       </div>
 
       <div className="space-y-3">
         <div className="flex items-start space-x-2">
-          <Checkbox id="terms" disabled={disabled || isSubmitting} />
+          <Checkbox
+            id="terms"
+            disabled={disabled || isSubmitting}
+            checked={termsChecked}
+            onCheckedChange={(v) => setTermsChecked(!!v)}
+          />
           <div className="space-y-1 leading-none">
             <Label htmlFor="terms" className="text-sm font-medium">
               Confirmo que mis datos son correctos y que cumplo con los requisitos de adopción.
@@ -358,11 +373,16 @@ export default function AdoptionForm({ animalId, animalName, disabled = false, o
 
       <Button
         type="submit"
-        className="w-full bg-primary hover:bg-primary/90"
-        disabled={disabled || isSubmitting || !me?.telefono || !me?.direccion}
+        className={`w-full bg-primary hover:bg-primary/90 transition-opacity ${
+          canSubmit ? "opacity-100 cursor-pointer" : "opacity-50 cursor-not-allowed hover:bg-primary/90"
+        }`}
+        disabled={!canSubmit}
       >
         {isSubmitting ? "Enviando..." : "Enviar solicitud"}
       </Button>
+      <p className="mt-2 text-[0.75rem] text-muted-foreground text-center">
+        Para habilitar el envío, completá todos los campos marcados con * y confirmá que cumplís con los requisitos de adopción.
+      </p>
     </form>
   );
 }

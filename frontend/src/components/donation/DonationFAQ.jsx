@@ -54,7 +54,7 @@ export function DonationFAQ() {
             <AccordionItem value="item-1">
               <AccordionTrigger>¿Cómo sé que mi donación llega a los animales?</AccordionTrigger>
               <AccordionContent>
-                ublicamos en nuestras redes y en nuestra página informes de transparencia con los saldos/estado de cuenta de las veterinarias con las que trabajamos y el detalle de los principales gastos. Además, cuando hay rescates o casos especiales, compartimos actualizaciones y comprobantes para que puedas ver exactamente en qué se utiliza cada donación.
+                Publicamos en nuestras redes y en nuestra página informes de transparencia con los saldos/estado de cuenta de las veterinarias con las que trabajamos y el detalle de los principales gastos. Además, cuando hay rescates o casos especiales, compartimos actualizaciones y comprobantes para que puedas ver exactamente en qué se utiliza cada donación.
               </AccordionContent>
             </AccordionItem>
 {/* 

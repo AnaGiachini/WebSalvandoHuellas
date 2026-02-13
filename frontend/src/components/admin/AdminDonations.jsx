@@ -226,7 +226,7 @@ export default function AdminDonations() {
                           </DropdownMenuItem>
                         )}
                         
-                        {donation.status !== 'cancelado' && (
+                        {donation.status === 'pendiente' && (
                           <DropdownMenuItem className="text-destructive" onClick={() => {
                             setConfirm({
                               open: true,

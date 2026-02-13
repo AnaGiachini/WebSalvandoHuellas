@@ -42,6 +42,13 @@ export default function LoginPage() {
     } catch (_e) {
       // ignore storage errors
     }
+  } else if (!next) {
+    // Acceso directo a /login (por ejemplo desde Home o menú): normalizamos destino a home
+    try {
+      localStorage.setItem("postLoginRedirect", "/");
+    } catch (_e) {
+      // ignore storage errors
+    }
   }
 
   const fromState = location.state?.from;
