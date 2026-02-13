@@ -25,14 +25,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdownMenu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "../ui/dialog";
 import {
   Search,
   Plus,
   MoreHorizontal,
   Edit,
   Trash2,
-  Calendar,
+  Eye,
 } from "lucide-react";
 import Loading from "../ui/Loading";
 import { createEvent, getEvents, updateEvent as updateEventApi, deleteEvent as deleteEventApi } from "../../services/eventsService";
@@ -50,6 +57,8 @@ export default function AdminEvents() {
   const [error, setError] = useState("");
   const [confirm, setConfirm] = useState({ open: false, title: "", description: "", onConfirm: null });
   const [editDialog, setEditDialog] = useState({ open: false, mode: null, value: "", event: null });
+  const [editForm, setEditForm] = useState({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Cargar eventos desde backend
   useEffect(() => {
@@ -96,57 +105,86 @@ export default function AdminEvents() {
     return new Date(dateString).toLocaleDateString("es-ES", options);
   };
 
-  const openEditDialog = (event, mode) => {
-    if (mode === "title") {
-      setEditDialog({ open: true, mode: "title", value: event.title, event });
-    } else if (mode === "date") {
-      const current = event.date ? new Date(event.date) : new Date();
-      const value = current.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
-      setEditDialog({ open: true, mode: "date", value, event });
-    }
+  const openFullEdit = (event) => {
+    const current = event.date ? new Date(event.date) : null;
+    const fechaValue = current ? current.toISOString().slice(0, 16) : ""; // para input datetime-local
+    setEditForm({
+      titulo: event.title || "",
+      descripcion: event.description || "",
+      fecha: fechaValue,
+      lugar: event.location || "",
+      foto: event.image || "",
+    });
+    setEditDialog({ open: true, mode: "full", value: "", event });
   };
 
   const handleEditSave = async () => {
-    const { mode, value, event } = editDialog;
+    const { mode, event } = editDialog;
     if (!event || !mode) return;
 
     try {
-      if (mode === "title") {
-        const nuevoTitulo = value?.trim();
-        if (!nuevoTitulo || nuevoTitulo === event.title) {
-          setEditDialog({ open: false, mode: null, value: "", event: null });
+      if (mode === "full") {
+        const titulo = editForm.titulo?.trim();
+        if (!titulo) {
+          toast({
+            title: "Campo requerido",
+            description: "El título es obligatorio.",
+            variant: "destructive",
+          });
           return;
         }
-        const payload = { titulo: nuevoTitulo };
+        if (titulo.length < 2) {
+          toast({
+            title: "Título muy corto",
+            description: "El título debe tener al menos 2 caracteres.",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!editForm.fecha) {
+          toast({
+            title: "Campo requerido",
+            description: "La fecha es obligatoria.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const payload = {
+          titulo,
+          descripcion: editForm.descripcion,
+          lugar: editForm.lugar,
+          foto: editForm.foto,
+        };
+        if (editForm.fecha) {
+          payload.fecha = new Date(editForm.fecha).toISOString();
+        }
+
         const updated = await updateEventApi(event.id, payload);
+        const updatedDateObj = updated.fecha ? new Date(updated.fecha) : null;
+        const updatedTime = updatedDateObj
+          ? updatedDateObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+          : "";
+
         setEvents((prev) => prev.map((e) => e.id === event.id ? {
           ...e,
           title: updated.titulo,
           date: updated.fecha,
+          time: updatedTime,
           location: updated.lugar,
+          status: updatedDateObj && updatedDateObj >= new Date() ? "Próximo" : "Finalizado",
           image: updated.foto,
           description: updated.descripcion,
         } : e));
         toast({
           title: "Evento actualizado",
-          description: `El título se cambió a "${updated.titulo}".`,
-        });
-      } else if (mode === "date") {
-        if (!value) {
-          setEditDialog({ open: false, mode: null, value: "", event: null });
-          return;
-        }
-        const iso = new Date(value).toISOString();
-        const updated = await updateEventApi(event.id, { fecha: iso });
-        setEvents((prev) => prev.map((e) => e.id === event.id ? { ...e, date: updated.fecha } : e));
-        toast({
-          title: "Evento reprogramado",
-          description: "La fecha se actualizó correctamente.",
+          description: "Los datos del evento se actualizaron correctamente.",
         });
       }
       setEditDialog({ open: false, mode: null, value: "", event: null });
+      setEditForm({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
     } catch (e) {
-      const errorMsg = e?.response?.data?.message || (mode === "title" ? "No se pudo actualizar el evento" : "No se pudo reprogramar el evento");
+      const errorMsg = e?.response?.data?.message || "No se pudo actualizar el evento";
       toast({
         title: "Error",
         description: errorMsg,
@@ -317,13 +355,13 @@ export default function AdminEvents() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(event, "title")}>
+                        <DropdownMenuItem onClick={() => setSelectedEvent(event)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openFullEdit(event)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openEditDialog(event, "date")}>
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Reprogramar
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive" onClick={() => {
                           setConfirm({
@@ -377,43 +415,108 @@ export default function AdminEvents() {
         confirmText="Confirmar"
         cancelText="Cancelar"
       />
+      {selectedEvent && (
+        <Dialog open={!!selectedEvent} onOpenChange={(open) => { if (!open) setSelectedEvent(null); }}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{selectedEvent.title}</DialogTitle>
+              <DialogDescription>
+                Detalle del evento programado en {selectedEvent.location}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 mt-2 text-sm">
+              <div className="w-full h-48 rounded-md overflow-hidden">
+                <img
+                  src={selectedEvent.image || "/placeholder.svg"}
+                  alt={selectedEvent.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Fecha</p>
+                  <p>{formatDate(selectedEvent.date)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Horario</p>
+                  <p>{selectedEvent.time}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Ubicación</p>
+                  <p>{selectedEvent.location}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Estado</p>
+                  <Badge className={selectedEvent.status === "Próximo" ? "bg-green-500" : "bg-gray-500"}>
+                    {selectedEvent.status}
+                  </Badge>
+                </div>
+              </div>
+              {selectedEvent.description && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Descripción</p>
+                  <p>{selectedEvent.description}</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       <Dialog open={editDialog.open} onOpenChange={(open) => {
         if (!open) {
           setEditDialog({ open: false, mode: null, value: "", event: null });
+          setEditForm({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
         }
       }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editDialog.mode === "title" ? "Editar título" : "Reprogramar fecha"}
+              Editar evento
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-3 mt-2">
-            {editDialog.mode === "title" && (
-              <Input
-                placeholder="Nuevo título"
-                value={editDialog.value}
-                onChange={(e) => setEditDialog((prev) => ({ ...prev, value: e.target.value }))}
-              />
+          <div className="space-y-4 mt-2">
+            {editDialog.mode === "full" && (
+              <div className="grid gap-3">
+                <Input
+                  placeholder="Título"
+                  value={editForm.titulo}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, titulo: e.target.value }))}
+                />
+                <Input
+                  placeholder="Descripción"
+                  value={editForm.descripcion}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, descripcion: e.target.value }))}
+                />
+                <Input
+                  type="datetime-local"
+                  placeholder="Fecha"
+                  value={editForm.fecha}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, fecha: e.target.value }))}
+                />
+                <Input
+                  placeholder="Lugar"
+                  value={editForm.lugar}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, lugar: e.target.value }))}
+                />
+                <Input
+                  placeholder="URL de foto"
+                  value={editForm.foto}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, foto: e.target.value }))}
+                />
+              </div>
             )}
-            {editDialog.mode === "date" && (
-              <Input
-                type="datetime-local"
-                placeholder="Nueva fecha"
-                value={editDialog.value}
-                onChange={(e) => setEditDialog((prev) => ({ ...prev, value: e.target.value }))}
-              />
-            )}
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setEditDialog({ open: false, mode: null, value: "", event: null })}
+                onClick={() => {
+                  setEditDialog({ open: false, mode: null, value: "", event: null });
+                  setEditForm({ titulo: "", descripcion: "", fecha: "", lugar: "", foto: "" });
+                }}
               >
                 Cancelar
               </Button>
-              <Button onClick={handleEditSave}>
-                Guardar
-              </Button>
+              <Button onClick={handleEditSave}>Guardar</Button>
             </div>
           </div>
         </DialogContent>

@@ -166,24 +166,26 @@ export default function AdminOrders() {
                           <Truck className="h-4 w-4 mr-2" />
                           Actualizar estado
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={() => {
-                          setConfirm({
-                            open: true,
-                            title: "Cancelar pedido",
-                            description: `Cancelar compra #${order.id}?`,
-                            onConfirm: async () => {
-                              try {
-                                const updated = await ordersService.updateStatus(order.id, 'cancelado');
-                                setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: updated.estadoPago } : o));
-                              } catch (e) {
-                                // noop simple
+                        {order.status === 'pendiente' && (
+                          <DropdownMenuItem className="text-destructive" onClick={() => {
+                            setConfirm({
+                              open: true,
+                              title: "Cancelar pedido",
+                              description: `Cancelar compra #${order.id}?`,
+                              onConfirm: async () => {
+                                try {
+                                  const updated = await ordersService.updateStatus(order.id, 'cancelado');
+                                  setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: updated.estadoPago } : o));
+                                } catch (e) {
+                                  // noop simple
+                                }
                               }
-                            }
-                          });
-                        }}>
-                          <Ban className="h-4 w-4 mr-2" />
-                          Cancelar pedido
-                        </DropdownMenuItem>
+                            });
+                          }}>
+                            <Ban className="h-4 w-4 mr-2" />
+                            Cancelar pedido
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -255,7 +257,10 @@ export default function AdminOrders() {
                   <ul className="list-disc pl-4 space-y-1">
                     {selectedOrder.raw.items.map((it, idx) => (
                       <li key={idx}>
-                        {it.nombreArticulo || it.nombre || `Producto #${it.idArticulo || ''}`} 
+                        {it.articulo?.nombre
+                          || it.nombreArticulo
+                          || it.nombre
+                          || `Producto #${it.idArticulo || ''}`} 
                         {" "}
                         <span className="text-xs text-muted-foreground">
                           (x{it.cantidad || 1})

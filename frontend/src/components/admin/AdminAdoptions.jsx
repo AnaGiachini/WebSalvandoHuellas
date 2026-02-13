@@ -6,7 +6,7 @@
  */
 import { useEffect, useState, useCallback } from "react"
 import {
-  Search, MoreHorizontal, Eye, Check, X, Calendar, User, Heart,
+  Search, MoreHorizontal, Eye, Check, X, Calendar, User, Heart, Trash2, Pencil,
 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -27,8 +27,9 @@ export default function AdminAdoptions() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [decisionRequest, setDecisionRequest] = useState(null)
-  const [decisionMode, setDecisionMode] = useState(null) // 'aprobada' | 'rechazada'
+  const [decisionMode, setDecisionMode] = useState(null) // 'aprobada' | 'rechazada' | 'editar'
   const [decisionNotes, setDecisionNotes] = useState("")
+  const [deleteRequest, setDeleteRequest] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -91,13 +92,12 @@ export default function AdminAdoptions() {
   }
 
   const onDelete = async (req) => {
-    if (!window.confirm(`¿Eliminar la solicitud #${req.idSolicitud}?`)) return
     try {
       await adoptionApplicationsService.remove(req.idSolicitud)
-      toast({ title: "Eliminada", description: `Solicitud #${req.idSolicitud} eliminada` })
+      toast({ title: "Solicitud eliminada", description: `La solicitud #${req.idSolicitud} fue eliminada correctamente.` })
       load()
     } catch (err) {
-      toast({ title: "Error al eliminar", description: err?.response?.data?.message || "No se pudo eliminar" })
+      toast({ title: "Error al eliminar", description: err?.response?.data?.message || "No se pudo eliminar la solicitud." })
     }
   }
 
@@ -198,7 +198,23 @@ export default function AdminAdoptions() {
                             </DropdownMenuItem>
                           </>
                         )}
-                        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(request)}>
+                        {request.estado !== "pendiente" && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setDecisionRequest(request)
+                              setDecisionMode("editar")
+                              setDecisionNotes(request.observaciones || "")
+                            }}
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Editar observaciones
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          className="text-destructive flex items-center gap-2"
+                          onClick={() => setDeleteRequest(request)}
+                        >
+                          <Trash2 className="h-4 w-4" />
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -391,13 +407,61 @@ export default function AdminAdoptions() {
         </Dialog>
       )}
 
+      {/* Dialog para confirmar eliminación */}
+      {deleteRequest && (
+        <Dialog
+          open={!!deleteRequest}
+          onOpenChange={(open) => {
+            if (!open) setDeleteRequest(null)
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Eliminar solicitud #{deleteRequest.idSolicitud}
+              </DialogTitle>
+              <DialogDescription>
+                Esta acción no se puede deshacer. La solicitud de adopción se eliminará definitivamente del sistema.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 mb-2 text-sm text-muted-foreground">
+              <p>
+                Solicitante: <span className="font-medium">{deleteRequest.usuario ? `${deleteRequest.usuario.nombre} ${deleteRequest.usuario.apellido || ""}` : ""}</span>
+              </p>
+              <p>
+                Animal: <span className="font-medium">{deleteRequest.animal?.nombre || ""}</span>
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDeleteRequest(null)}>
+                Cancelar
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={async () => {
+                  const req = deleteRequest
+                  setDeleteRequest(null)
+                  await onDelete(req)
+                }}
+              >
+                Eliminar solicitud
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Dialog para decisión con observaciones */}
       {decisionRequest && (
         <Dialog open={!!decisionRequest} onOpenChange={(open) => { if (!open) { setDecisionRequest(null); setDecisionMode(null); setDecisionNotes(""); } }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {decisionMode === "aprobada" ? "Aprobar solicitud" : "Rechazar solicitud"} #{decisionRequest.idSolicitud}
+                {decisionMode === "aprobada"
+                  ? "Aprobar solicitud"
+                  : decisionMode === "rechazada"
+                    ? "Rechazar solicitud"
+                    : "Editar observaciones"} #{decisionRequest.idSolicitud}
               </DialogTitle>
               <DialogDescription>
                 Podés agregar observaciones internas para dejar registro del motivo de la decisión. Este texto no lo ve el usuario final.
@@ -419,23 +483,44 @@ export default function AdminAdoptions() {
                 Cancelar
               </Button>
               <Button
-                className={decisionMode === "aprobada" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                className={
+                  decisionMode === "aprobada"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : decisionMode === "rechazada"
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-primary hover:bg-primary/90"
+                }
                 onClick={async () => {
                   try {
                     if (decisionMode === "aprobada") {
                       await onApprove(decisionRequest, decisionNotes)
                     } else if (decisionMode === "rechazada") {
                       await onReject(decisionRequest, decisionNotes)
+                    } else if (decisionMode === "editar") {
+                      await adoptionApplicationsService.updateStatus(
+                        decisionRequest.idSolicitud,
+                        decisionRequest.estado,
+                        decisionNotes,
+                      )
+                      toast({
+                        title: "Observaciones actualizadas",
+                        description: `Las observaciones de la solicitud #${decisionRequest.idSolicitud} fueron actualizadas.`,
+                      })
+                      load()
                     }
                     setDecisionRequest(null)
                     setDecisionMode(null)
                     setDecisionNotes("")
                   } catch (err) {
-                    // Errores ya son notificados en onApprove/onReject
+                    // Errores ya son notificados en onApprove/onReject o aquí
                   }
                 }}
               >
-                {decisionMode === "aprobada" ? "Confirmar aprobación" : "Confirmar rechazo"}
+                {decisionMode === "aprobada"
+                  ? "Confirmar aprobación"
+                  : decisionMode === "rechazada"
+                    ? "Confirmar rechazo"
+                    : "Guardar cambios"}
               </Button>
             </div>
           </DialogContent>

@@ -218,7 +218,7 @@ export default function AdminPage() {
               <Calendar className="h-5 w-5 mr-2" />
               Eventos
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
+            <Button variant="ghost" className="w-full justify-start" onClick={() => setTab("settings")}>
               <Settings className="h-5 w-5 mr-2" />
               Configuración
             </Button>
@@ -234,6 +234,28 @@ export default function AdminPage() {
           {tab === "orders" && <AdminOrders />}
           {tab === "donations" && <AdminDonations />}
           {tab === "events" && <AdminEvents />}
+          {tab === "settings" && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Settings className="h-6 w-6" />
+                Configuración (versión 2)
+              </h2>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                En esta versión, la sección de configuración se reserva para futuras mejoras del panel.
+                Aquí se podrían administrar parámetros generales del sistema, como datos de contacto,
+                texto institucional, límites o preferencias para donaciones y eventos.
+              </p>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                <li>Datos de la organización (nombre, logo, redes sociales).</li>
+                <li>Textos predeterminados para campañas, donaciones y adopciones.</li>
+                <li>Parámetros generales (por ejemplo, montos sugeridos de donación).</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                Nota: Estas opciones se dejan para una segunda versión, pero se incluye la sección
+                para mostrar cómo podría escalar el panel de administración.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
