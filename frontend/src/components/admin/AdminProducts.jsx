@@ -40,6 +40,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState(null); // { id, name, price, stock, image, raw }
   const [form, setForm] = useState({ nombre: "", precio: "", stock: "", descripcion: "", foto: "", categoria: "", segmento: "", descuento: "", variantes: "", activo: true });
   const [photoFile, setPhotoFile] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -171,7 +172,7 @@ export default function AdminProducts() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => window.alert("Próximamente: detalle de producto")}>
+                        <DropdownMenuItem onClick={() => setSelectedProduct(product)}>
                           <Eye className="h-4 w-4 mr-2" />
                           Ver detalles
                         </DropdownMenuItem>
@@ -432,6 +433,50 @@ export default function AdminProducts() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Modal de detalles de producto (solo lectura) */}
+      {selectedProduct && (
+        <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) setSelectedProduct(null); }}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Detalle de producto</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 mt-2 text-sm">
+              <div className="w-full h-40 md:h-56 rounded-md overflow-hidden bg-muted">
+                <img
+                  src={selectedProduct.image || "/placeholder.svg"}
+                  alt={selectedProduct.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-2">
+                <p><span className="font-semibold">Nombre:</span> {selectedProduct.name}</p>
+                <p><span className="font-semibold">Categoría:</span> {selectedProduct.category}</p>
+                <p><span className="font-semibold">Precio base:</span> ${selectedProduct.price?.toLocaleString()}</p>
+                {(() => {
+                  const d = Number(selectedProduct.raw?.descuento || 0);
+                  const hasDiscount = !isNaN(d) && d > 0;
+                  if (!hasDiscount) return null;
+                  const finalPrice = selectedProduct.price * (1 - d / 100);
+                  return (
+                    <p>
+                      <span className="font-semibold">Precio con descuento:</span> ${finalPrice.toLocaleString()} ({d}% off)
+                    </p>
+                  );
+                })()}
+                <p><span className="font-semibold">Stock:</span> {selectedProduct.stock} unidades</p>
+                {selectedProduct.raw?.segmento && (
+                  <p><span className="font-semibold">Segmento:</span> {selectedProduct.raw.segmento}</p>
+                )}
+                {selectedProduct.raw?.descripcion && (
+                  <p className="mt-2">
+                    <span className="font-semibold">Descripción:</span> {selectedProduct.raw.descripcion}
+                  </p>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       <ConfirmDialog
         open={confirm.open}
         onOpenChange={(v) => setConfirm((c) => ({ ...c, open: v }))}
