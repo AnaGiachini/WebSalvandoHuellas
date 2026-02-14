@@ -128,8 +128,13 @@ const forgotPassword = async (req, res, next) => {
     const smtpEnabled = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
 
     if (smtpEnabled) {
-      // Camino principal en prod: enviamos email y no devolvemos el link
-      await mailService.sendPasswordReset(email, resetLink);
+      // Camino principal en prod: disparamos el envío en segundo plano para no bloquear la respuesta
+      mailService
+        .sendPasswordReset(email, resetLink)
+        .catch((error) => {
+          console.error('[Auth][ForgotPassword] Error al enviar correo de reseteo:', error?.message || error);
+        });
+
       return res.json({ message: 'Si el email existe, se envió un enlace para restablecer la contraseña.' });
     }
 

@@ -15,7 +15,13 @@ exports.sendContact = async (req, res, next) => {
       return res.status(400).json({ message: 'El correo y el mensaje son obligatorios.' });
     }
 
-    await mailService.sendContactMessage({ nombre, email, asunto, mensaje });
+    // No bloquear la respuesta del usuario por demoras del SMTP.
+    // Disparamos el envío "en segundo plano" y registramos cualquier error en consola.
+    mailService
+      .sendContactMessage({ nombre, email, asunto, mensaje })
+      .catch((error) => {
+        console.error('[Contact] Error al enviar correo de contacto:', error?.message || error);
+      });
 
     return res.status(200).json({ message: 'Mensaje enviado correctamente.' });
   } catch (err) {
