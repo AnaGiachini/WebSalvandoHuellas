@@ -54,7 +54,7 @@ export default function AdminPage() {
         endOfMonth.setMonth(endOfMonth.getMonth() + 1);
         endOfMonth.setMilliseconds(-1);
 
-        const [animals, products, events, adoptions, sales, donations] = await Promise.all([
+        const [animals, products, events, adoptionsRaw, sales, donations] = await Promise.all([
           animalsService.list().catch(() => []),
           articlesService.getAll().catch(() => []),
           getEvents().catch(() => []),
@@ -68,9 +68,9 @@ export default function AdminPage() {
         const upcoming = Array.isArray(events)
           ? events.filter((e) => (e.fecha ? new Date(e.fecha) : null) && new Date(e.fecha) >= now).length
           : 0;
-        const approved = Array.isArray(adoptions)
-          ? adoptions.filter((a) => a.estado === "aprobada").length
-          : 0;
+        // Normalizar estructura de adopciones (puede venir como array directo o { data: [...] })
+        const adoptions = Array.isArray(adoptionsRaw) ? adoptionsRaw : adoptionsRaw?.data || [];
+        const approved = adoptions.filter((a) => a.estado === "aprobada").length;
         
         // Calcular donaciones pagadas del mes
         const donationsPaid = Array.isArray(donations)
