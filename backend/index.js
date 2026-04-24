@@ -54,12 +54,14 @@
 
 const app = require("./app");
 const sequelize = require("./src/configs/db");
+const { validateEnv } = require("./src/configs/env");
 require("dotenv").config();
 
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = Number(process.env.PORT) || 4000;
 
 async function startServer() {
   try {
+    validateEnv();
     await sequelize.authenticate();
     console.log("✅ Conexión a la base de datos OK.");
 
@@ -83,4 +85,3 @@ async function startServer() {
 }
 
 startServer();
-

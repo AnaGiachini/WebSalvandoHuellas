@@ -25,10 +25,10 @@ yarn-error.log*
 # Archivos de entorno
 .env
 .env.*
+!.env.example
 .frontend/.env
 .frontend/.env.*
 .env.local
 .env.development
 .env.test
 .env.production
-

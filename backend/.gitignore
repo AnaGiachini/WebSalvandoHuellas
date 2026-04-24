@@ -1,10 +1,10 @@
 # Dependencias
 node_modules/
-package-lock.json
 
 # Archivos de entorno
 .env
 .env.*
+!.env.example
 .backend/.env
 .backend/.env.*
 .env.local

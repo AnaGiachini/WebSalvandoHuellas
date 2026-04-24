@@ -34,7 +34,7 @@ import CheckoutPage from "./pages/store/CheckoutPage";
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <RootLayout>
         <Routes>
           <Route path="/" element={<Home />} />
