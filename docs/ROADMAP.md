@@ -1,56 +1,56 @@
-# Roadmap Profesional
+# Professional Roadmap
 
-Este roadmap prioriza mejoras que hacen el proyecto más sólido para portfolio y más útil para una protectora real.
+This roadmap prioritizes improvements that would make the project stronger as a backend portfolio project and more useful for a real animal rescue organization.
 
-## Corto Plazo
+## Short Term
 
-- Crear `.env.example` y mantener secretos fuera del repositorio.
-- Unificar puertos locales entre frontend y backend.
-- Agregar validación de variables obligatorias al iniciar backend.
-- Corregir tests base del frontend para que prueben la app real.
-- Documentar instalación, scripts y arquitectura.
-- Agregar capturas de pantalla al README cuando haya una versión visual estable.
+- Keep `.env.example` files updated and keep secrets out of the repository.
+- Keep local frontend/backend ports documented and consistent.
+- Improve required environment variable validation at backend startup.
+- Add frontend tests that cover the real application flow.
+- Keep setup, scripts and architecture documentation updated.
+- Add screenshots to the README when there is a stable public demo.
 
-## Producto para Protectora
+## Product Improvements
 
-- Tablero de indicadores: animales publicados, solicitudes pendientes, adopciones aprobadas, donaciones del mes, ventas solidarias y eventos próximos.
-- Estados claros para cada solicitud de adopción: recibida, en revisión, entrevista, aprobada, rechazada, seguimiento.
-- Historial por animal: rescate, tratamientos, vacunas, castración, tránsito, adopción y seguimiento.
-- Perfil del adoptante con historial de solicitudes y datos de contacto.
-- Registro de gastos veterinarios asociado a cada animal.
-- Donaciones con destino: alimento, medicamentos, castraciones, traslados u otros fondos.
-- Reportes descargables para rendición de cuentas.
+- Dashboard with published animals, pending requests, approved adoptions, monthly donations, store sales and upcoming events.
+- More detailed adoption request states: received, in review, interview, approved, rejected and follow-up.
+- Animal history: rescue, treatments, vaccines, neutering, foster care, adoption and follow-up.
+- Adopter profile with request history and contact information.
+- Veterinary expense records linked to each animal.
+- Donations assigned to specific goals such as food, medicine, neutering or transport.
+- Downloadable reports for accountability.
 
-## Comunicación
+## Communication
 
-- Notificaciones por email para solicitud recibida, cambio de estado y adopción aprobada.
-- Plantillas de respuesta para admins.
-- Recordatorios de seguimiento post-adopción.
-- Mensajes automáticos para donantes con comprobante y agradecimiento.
+- Email notifications for received requests, status changes and approved adoptions.
+- Response templates for admins.
+- Post-adoption follow-up reminders.
+- Automatic donor messages with receipt and thank-you notes.
 
-## Seguridad y Operación
+## Security And Operations
 
-- Rate limiting en auth y contacto.
-- Validación de firma en webhooks de Mercado Pago.
-- Auditoría básica de acciones administrativas.
-- Logs estructurados para errores importantes.
-- Backups documentados de base de datos.
-- Roles más granulares: admin, voluntario, tesorería, adopciones.
+- Rate limiting for auth and contact endpoints.
+- Mercado Pago webhook signature validation.
+- Basic audit trail for admin actions.
+- Structured logs for important errors.
+- Documented database backups.
+- More granular roles: admin, volunteer, treasury and adoptions.
 
-## Calidad Técnica
+## Technical Quality
 
-- Tests de integración para flujos críticos.
-- Tests de componentes principales del frontend.
-- CI en GitHub Actions: lint, test y build.
-- Migraciones completas y versionadas.
-- Seeders de demo seguros para portfolio.
-- Documentación OpenAPI/Swagger para la API.
+- More integration tests for critical flows.
+- Tests for the main frontend components.
+- CI with GitHub Actions: lint, test and build.
+- Complete and versioned migrations.
+- Safe demo seeders for portfolio use.
+- OpenAPI/Swagger documentation for the API.
 
 ## Portfolio
 
-- README con screenshots, demo y credenciales de prueba.
-- Video corto mostrando flujo de adopción, compra y panel admin.
-- Deploy público del frontend.
-- Deploy público del backend con base de datos demo.
-- Issues organizadas por `bug`, `feature`, `documentation` y `good first issue`.
-- Releases con changelog.
+- README with screenshots, demo link and test credentials if a public demo is available.
+- Short video showing the adoption flow, purchase flow and admin panel.
+- Public frontend deployment.
+- Public backend deployment with a demo database.
+- Issues organized with labels like `bug`, `feature`, `documentation` and `good first issue`.
+- Releases with changelog.

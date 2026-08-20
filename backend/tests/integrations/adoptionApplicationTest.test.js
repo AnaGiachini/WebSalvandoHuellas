@@ -14,6 +14,17 @@ const { generate } = require("../../src/utils/jwt");
 describe("API de Solicitudes de Adopción", () => {
   let user, admin, userToken, adminToken, animal;
 
+  const buildAdoptionPayload = (idAnimal) => ({
+    idAnimal,
+    nombre: "Ana",
+    apellido: "Giachini",
+    email: "ana@example.com",
+    telefono: "1123456789",
+    direccion: "Calle Test 123",
+    experienciaPrevia: "Tuve perros y gatos anteriormente",
+    motivacion: "Quiero adoptar y darle un hogar responsable"
+  });
+
   beforeEach(async () => {
     await resetDatabase();
 
@@ -52,7 +63,7 @@ describe("API de Solicitudes de Adopción", () => {
     const res = await request(app)
       .post("/api/v1/adoptions")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ idAnimal: animal.idAnimal });
+      .send(buildAdoptionPayload(animal.idAnimal));
 
     expect(res.statusCode).toBe(201);
     expect(res.body.data.idUsuario).toBe(user.idUsuario);
@@ -64,12 +75,12 @@ describe("API de Solicitudes de Adopción", () => {
     await request(app)
       .post("/api/v1/adoptions")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ idAnimal: animal.idAnimal });
+      .send(buildAdoptionPayload(animal.idAnimal));
 
     const res = await request(app)
       .post("/api/v1/adoptions")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ idAnimal: animal.idAnimal });
+      .send(buildAdoptionPayload(animal.idAnimal));
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toMatch(/no está disponible/i); // actualizado
@@ -79,7 +90,7 @@ describe("API de Solicitudes de Adopción", () => {
     await request(app)
       .post("/api/v1/adoptions")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ idAnimal: animal.idAnimal });
+      .send(buildAdoptionPayload(animal.idAnimal));
 
     const res = await request(app)
       .get("/api/v1/adoptions")
@@ -106,10 +117,9 @@ describe("API de Solicitudes de Adopción", () => {
     const createRes = await request(app)
       .post("/api/v1/adoptions")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ idAnimal: newAnimal.idAnimal });
+      .send(buildAdoptionPayload(newAnimal.idAnimal));
   
     const solicitudId = createRes.body.data.idSolicitud;
-    console.log("ID SOLICITUD EN TEST:", solicitudId);
 
   
     const res = await request(app)
@@ -144,10 +154,9 @@ describe("API de Solicitudes de Adopción", () => {
   const createRes = await request(app)
     .post("/api/v1/adoptions")
     .set("Authorization", `Bearer ${userToken}`)
-    .send({ idAnimal: anotherAnimal.idAnimal });
+    .send(buildAdoptionPayload(anotherAnimal.idAnimal));
 
   const solicitudId = createRes.body.data.idSolicitud;
-  console.log("ID SOLICITUD EN TEST:", solicitudId);
 
 
   const res = await request(app)

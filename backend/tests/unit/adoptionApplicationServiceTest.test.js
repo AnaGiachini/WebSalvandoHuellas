@@ -40,6 +40,18 @@ describe('adoptionApplicationService unit tests', () => {
     foto: 'ruta/luna.jpg'
   };
 
+  const buildSolicitudData = (user, animal) => ({
+    idUsuario: user.idUsuario,
+    idAnimal: animal.idAnimal,
+    nombre: 'Ana',
+    apellido: 'Giachini',
+    email: 'ana@example.com',
+    telefono: '1123456789',
+    direccion: 'Calle Test 123',
+    experienciaPrevia: 'Tuve perros y gatos anteriormente',
+    motivacion: 'Quiero adoptar y darle un hogar responsable'
+  });
+
   beforeEach(async () => {
     await resetDatabase();
     loadAssociations();
@@ -49,11 +61,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
 
-    // Modificado: Pasar un objeto en lugar de parámetros separados
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     const solicitud = await createAdoptionApplicationService(solicitudData);
 
     expect(solicitud).toHaveProperty('idSolicitud');
@@ -66,11 +74,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
 
-    // Modificado: Pasar un objeto en lugar de parámetros separados
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     await createAdoptionApplicationService(solicitudData);
 
     await expect(
@@ -82,11 +86,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
 
-    // Modificado: Pasar un objeto en lugar de parámetros separados
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     await createAdoptionApplicationService(solicitudData);
 
     const solicitudes = await getAllAdoptionApplicationService();
@@ -101,10 +101,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
     
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     const solicitud = await createAdoptionApplicationService(solicitudData);
     
     const encontrada = await getAdoptionApplicationByIdService(solicitud.idSolicitud);
@@ -126,10 +123,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
     
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     await createAdoptionApplicationService(solicitudData);
     
     const solicitudes = await getAdoptionApplicationByUserService(user.idUsuario);
@@ -144,10 +138,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
     
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     await createAdoptionApplicationService(solicitudData);
     
     const solicitudes = await getAdoptionApplicationByAnimalService(animal.idAnimal);
@@ -161,11 +152,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
 
-    // Modificado: Pasar un objeto en lugar de parámetros separados
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     const solicitud = await createAdoptionApplicationService(solicitudData);
 
     const actualizada = await updateAdoptionApplicationService(solicitud.idSolicitud, 'aprobada');
@@ -184,10 +171,7 @@ describe('adoptionApplicationService unit tests', () => {
     const user = await Usuario.create(userData);
     const animal = await Animal.create(animalData);
     
-    const solicitudData = {
-      idUsuario: user.idUsuario,
-      idAnimal: animal.idAnimal
-    };
+    const solicitudData = buildSolicitudData(user, animal);
     const solicitud = await createAdoptionApplicationService(solicitudData);
     
     await deleteAdoptionApplicationService(solicitud.idSolicitud);

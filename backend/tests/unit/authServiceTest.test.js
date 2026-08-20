@@ -29,8 +29,9 @@ describe('authService unit tests', () => {
 
   // Test: Registro de usuario
   it('registerService crea usuario y devuelve token', async () => {
-    const token = await registerService(data);
-    expect(typeof token).toBe('string');
+    const result = await registerService(data);
+    expect(typeof result.token).toBe('string');
+    expect(result.user.email).toBe(data.email);
 
     const user = await Usuario.findOne({ where: { email: data.email } });
     expect(user).not.toBeNull();
@@ -40,8 +41,9 @@ describe('authService unit tests', () => {
   // Test: Login correcto
   it('loginService devuelve token con credenciales válidas', async () => {
     await registerService(data);
-    const token = await loginService({ email: data.email, contrasena: data.contrasena });
-    expect(typeof token).toBe('string');
+    const result = await loginService({ email: data.email, contrasena: data.contrasena });
+    expect(typeof result.token).toBe('string');
+    expect(result.user.email).toBe(data.email);
   });
 
   // Test: Login con contraseña incorrecta
