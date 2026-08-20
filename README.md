@@ -1,74 +1,132 @@
 # Salvando Huellas
 
-Plataforma web full stack para una protectora de animales. Centraliza adopciones, donaciones, eventos solidarios, tienda de recaudación, gestión administrativa y pagos en línea.
+Web application for **Salvando Huellas**, an animal rescue organization. The project helps manage animals for adoption, adoption requests, donations, events, store products, users, and admin tasks.
 
-## Objetivo
+I built this project as a full stack application, with my main focus on the backend: REST API design, authentication, PostgreSQL data modeling, business logic, validations, and integrations.
 
-El proyecto busca ayudar a una protectora a ordenar su operación diaria y aumentar su impacto:
-
-- Publicar animales disponibles para adopción.
-- Recibir solicitudes de adopción con datos del postulante.
-- Gestionar donaciones y compras solidarias.
-- Difundir eventos de recaudación.
-- Administrar usuarios, animales, productos, pedidos, donaciones y solicitudes desde un panel privado.
-
-## Stack
-
-**Frontend**
-
-- React 19
-- React Router
-- Tailwind CSS
-- Radix UI
-- Axios
-- Lucide React
+## Tech Stack
 
 **Backend**
 
 - Node.js
 - Express
-- Sequelize
 - PostgreSQL
+- Sequelize
 - JWT
-- Passport OAuth
 - Mercado Pago
 - Cloudinary
 - Nodemailer
 - Jest + Supertest
 
-## Funcionalidades Principales
+**Frontend**
 
-- Registro e inicio de sesión con JWT.
-- Recuperación de contraseña.
-- Login social con Google/Facebook, sujeto a configuración de credenciales.
-- Catálogo de animales y detalle de cada animal.
-- Formulario de solicitud de adopción.
-- Panel de administración con CRUD de animales, productos, eventos, usuarios, pedidos, donaciones y adopciones.
-- Tienda solidaria con carrito, checkout y pedidos.
-- Donaciones con integración de Mercado Pago.
-- Eventos solidarios.
-- Formulario de contacto.
-- Subida de imágenes mediante Cloudinary.
+- React
+- React Router
+- Axios
+- Tailwind CSS
 
-## Estructura
+## Main Features
+
+- User registration and login.
+- JWT authentication and protected routes.
+- Public animal catalog.
+- Adoption request form for logged-in users.
+- Admin panel for animals, users, products, events, donations, orders, and adoption requests.
+- Store flow with cart and purchases.
+- Donation flow with Mercado Pago.
+- Image uploads with Cloudinary.
+
+## Backend Structure
 
 ```text
-.
-├── backend/   # API REST, modelos, servicios, rutas, tests y configuración
-├── frontend/  # Aplicación React
-└── docs/      # Documentación funcional, técnica y de casos de uso
+backend/
+├── app.js
+├── index.js
+└── src/
+    ├── routes/
+    ├── controllers/
+    ├── services/
+    ├── models/
+    ├── validations/
+    ├── middlewares/
+    ├── configs/
+    └── utils/
 ```
 
-## Puesta en Marcha
+The backend follows this flow:
 
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/AnaGiachini/WebSalvandoHuellas.git
-cd WebSalvandoHuellas
+```text
+Request
+-> route
+-> middleware / validation
+-> controller
+-> service
+-> Sequelize model
+-> PostgreSQL
 ```
 
-### 2. Configurar backend
+## Adoption Request Flow
+
+One of the main backend flows is the adoption request:
+
+```text
+User submits the form from React
+-> Axios sends POST /api/v1/adoptions
+-> JWT is sent in the Authorization header
+-> backend validates the token
+-> backend validates the request body
+-> service checks if the animal exists and is available
+-> transaction creates the adoption request
+-> transaction updates the animal status to en_proceso
+```
+
+The backend gets the user ID from the JWT (`req.user`) instead of trusting an ID sent from the frontend.
+
+## API Examples
+
+```text
+POST   /api/v1/auth/register
+POST   /api/v1/auth/login
+
+GET    /api/v1/animals
+GET    /api/v1/animals/:id
+POST   /api/v1/animals              # admin
+PUT    /api/v1/animals/:id          # admin
+DELETE /api/v1/animals/:id          # admin
+
+POST   /api/v1/adoptions            # logged-in user
+GET    /api/v1/adoptions            # admin
+PUT    /api/v1/adoptions/:id/estado # admin
+```
+
+## Environment Variables
+
+Use the example files:
+
+- `backend/.env.example`
+- `frontend/.env.example`
+
+The backend can connect to PostgreSQL using either:
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
+```
+
+or local variables:
+
+```env
+DB_NAME=salvando_huellas
+DB_USER=postgres
+DB_PASSWORD=
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+Real `.env` files should not be committed.
+
+## Local Setup
+
+Backend:
 
 ```bash
 cd backend
@@ -77,14 +135,7 @@ npm install
 npm run dev
 ```
 
-La API queda disponible en:
-
-```text
-http://localhost:4000/api/health
-http://localhost:4000/api/v1
-```
-
-### 3. Configurar frontend
+Frontend:
 
 ```bash
 cd frontend
@@ -93,50 +144,17 @@ npm install
 npm start
 ```
 
-La aplicación queda disponible en:
+Local URLs:
 
 ```text
-http://localhost:3000
+Backend:  http://localhost:4000
+Frontend: http://localhost:3000
 ```
 
-## Scripts
+## Status
 
-### Backend
+Functional full stack project built for a real animal rescue organization. I am currently using it as a backend-focused project for my portfolio and job applications.
 
-```bash
-npm run dev      # servidor con nodemon
-npm start        # servidor en modo producción/local
-npm test         # tests con Jest y Supertest
-npm run seed     # datos iniciales de ejemplo
-npm run migrate  # migraciones con sequelize-cli
-```
-
-### Frontend
-
-```bash
-npm start        # servidor de desarrollo
-npm run build    # build de producción
-npm test -- --watchAll=false
-```
-
-## Variables de Entorno
-
-Los valores reales no deben subirse al repositorio. Usar:
-
-- [backend/.env.example](backend/.env.example)
-- [frontend/.env.example](frontend/.env.example)
-
-## Documentación
-
-- [Arquitectura](docs/ARQUITECTURA.md)
-- [Roadmap profesional](docs/ROADMAP.md)
-- [Valor para la protectora](docs/VALOR-PARA-LA-PROTECTORA.md)
-- Casos de uso y verificaciones en [docs/](docs/)
-
-## Estado del Proyecto
-
-Proyecto académico/profesional en evolución, preparado para portfolio. Incluye una base funcional amplia y documentación de casos de uso. Las próximas mejoras recomendadas están orientadas a trazabilidad real de adopciones, transparencia de donaciones, automatización de comunicación y métricas para la protectora.
-
-## Autora
+## Author
 
 Ana Giachini
